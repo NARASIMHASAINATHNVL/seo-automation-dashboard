@@ -1,0 +1,66 @@
+{
+  "projects": [
+    {
+      "project": "FAQ Schema Generator",
+      "assignedTo": "Bhagya",
+      "status": "Review Pending",
+      "priority": "Medium",
+      "dateAssigned": "2026-07-01",
+      "targetDate": "2026-08-15",
+      "dateCompleted": "",
+      "help": "",
+      "notes": "Waiting on review from Sainath"
+    },
+    {
+      "project": "GSC Issues",
+      "assignedTo": "Mahalakshmi",
+      "status": "Ongoing",
+      "priority": "High",
+      "dateAssigned": "2026-06-20",
+      "targetDate": "2026-08-10",
+      "dateCompleted": "",
+      "help": "Yes",
+      "notes": "Blocked on crawl budget question"
+    },
+    {
+      "project": "Content Audit Handsoff",
+      "assignedTo": "Lochan",
+      "status": "Assigned",
+      "priority": "Low",
+      "dateAssigned": "2026-08-01",
+      "targetDate": "",
+      "dateCompleted": "",
+      "help": "",
+      "notes": ""
+    }
+  ],
+  "dailyLog": [
+    {
+      "date": "2026-07-13",
+      "Lochan": "",
+      "Divakar": "",
+      "Mahalakshmi": "Image SEO Auditor",
+      "Bhagya": "",
+      "Pradeepa": "",
+      "Neeraja S": "GEO Citation Dashboard"
+    }
+  ],
+  "analysts": [
+    "Lochan",
+    "Divakar",
+    "Mahalakshmi",
+    "Bhagya",
+    "Pradeepa",
+    "Neeraja S",
+    "Narasimha Sainath"
+  ],
+  "dailyAnalysts": [
+    "Lochan",
+    "Divakar",
+    "Mahalakshmi",
+    "Bhagya",
+    "Pradeepa",
+    "Neeraja S"
+  ],
+  "savedAt": "2026-08-06T08:23:00.000Z"
+}
