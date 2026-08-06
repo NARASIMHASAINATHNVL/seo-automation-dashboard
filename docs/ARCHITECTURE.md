@@ -2,30 +2,38 @@
 
 ## Design principle
 
-Everything lives in one file: `index.html`. No backend, no build step, no
-package manager. HTML + inline `<style>` + inline `<script>` + one inlined
-third-party library (SheetJS). This keeps the "install" story at "double-
-click the file" for a non-technical team.
+The UI still lives in one file: `index.html` — no build step, no package
+manager, HTML + inline `<style>` + inline `<script>` + one inlined
+third-party library (SheetJS). What changed: the app is no longer offline
+/ zero-infrastructure. It now talks to a Supabase project (Postgres + Auth
++ Realtime) over the network for auth and all persistence, loaded via the
+`@supabase/supabase-js` CDN script tag in `<head>`. Opening the file still
+requires no install/server of your own, but it does require a network
+connection and a bankbazaar.com login.
 
 ## High-level component map
 
 ```
 index.html
-├── <style>            theming (CSS custom properties), layout, components
+├── <style>            theming (CSS custom properties), layout, components,
+│                       plus auth-screen / loading-screen / user-chip styles
 ├── HTML body
-│   ├── header + nav (4 tabs: Dashboard / Project Tracker / Daily Status Log / Team)
-│   ├── syncBar        autosave status + Connect/Download JSON buttons
-│   └── <section> per tab (only one .view.active shown at a time)
+│   ├── #authScreen     sign in / create account card (shown pre-login)
+│   ├── #loadingScreen  spinner shown while the initial data fetch runs
+│   └── #appRoot         header + nav (4 tabs) + <section> per tab — hidden
+│                        until a session exists
 └── <script>
-    ├── SheetJS (vendored, minified)   — xlsx export engine
-    ├── canonical lists                — ANALYSTS, STATUSES, PRIORITIES, YESNO, DAILY_ANALYSTS
-    ├── in-memory state                — projects[], dailyLog[], ANALYSTS[], DAILY_ANALYSTS[]
-    ├── restoreFromLocalStorage()      — runs once on load, before first render
-    ├── render*() functions            — pure functions of state -> DOM (re-run in full on every change)
-    ├── mutation functions             — updateX()/addX()/deleteX(), each: mutate state -> re-render -> persistAll()
-    ├── computeSummary() + chart code  — derives KPIs/chart data from projects[] each render
-    ├── persistence layer              — collectData(), saveToLocalStorage(), writeToFileHandle(), persistAll()
-    └── export functions               — downloadWorkbook() (xlsx), downloadJsonFallback() (json)
+    ├── SheetJS (vendored, minified)      — xlsx export engine
+    ├── Supabase client + auth state       — sb, currentUser, currentProfile, PROFILES
+    ├── canonical lists                    — STATUSES/PRIORITIES/YESNO (fixed); ANALYSTS/
+    │                                        DAILY_ANALYSTS derived from PROFILES via applyProfiles()
+    ├── in-memory state                    — projects[], dailyLog[] (denormalized views of the DB)
+    ├── render*() functions                — pure functions of state -> DOM (unchanged from before)
+    ├── mutation functions                 — updateX()/addX()/deleteX(), each: await a Supabase
+    │                                        call keyed by DB `id` -> update local state -> re-render -> toast
+    ├── computeSummary() + chart code      — derives KPIs/chart data from projects[] each render
+    ├── loadAllData()/subscribeRealtime()  — initial fetch + postgres_changes subscriptions
+    └── export functions                   — downloadWorkbook() (xlsx), unchanged
 ```
 
 ## Data flow (edit -> save)
@@ -34,55 +42,64 @@ index.html
 User edits a field (project row / daily log cell / team roster)
         │
         ▼
-  update*()/add*()/delete*() mutates the in-memory array
-  (projects / dailyLog / ANALYSTS / DAILY_ANALYSTS)
+  update*()/add*()/delete*() mutates the in-memory array by DB id
+  (projects / dailyLog / PROFILES -> ANALYSTS / DAILY_ANALYSTS)
         │
-        ├──────────────► render*() re-renders affected DOM
+        ├──────────────► render*() re-renders affected DOM immediately (optimistic)
         │                 (table, KPIs, charts, team list, daily header)
         │
-        └──────────────► persistAll()
+        └──────────────► await sb.from(table).insert/update/delete(...)
                               │
-                              ├─► saveToLocalStorage()
-                              │     always runs — safety net, per-browser
-                              │
-                              └─► writeToFileHandle()  (only if a file is connected)
-                                    │
-                                    ▼
-                              real .json file on disk, rewritten in full
-                              on every single edit
+                              ├─► success: showToast(...) confirms the write
+                              └─► error: showToast(..., "danger") surfaces it;
+                                    local state is left as-is (no automatic rollback)
 ```
 
-## Data flow (load)
+Row identity is the Postgres `id` (uuid) everywhere — `deleteProject(id)`,
+`updateProject(id, field, value)`, etc. — not array index, since Realtime
+events and concurrent edits from other teammates can reorder or splice the
+local arrays at any time.
+
+## Data flow (load / login)
 
 ```
 Page load
    │
    ▼
-seed data assigned to projects/dailyLog/ANALYSTS/DAILY_ANALYSTS (defaults)
+initAuth(): sb.auth.getSession() — if a session exists, skip straight in;
+otherwise show #authScreen and wait for sign in / sign up
    │
    ▼
-restoreFromLocalStorage() — if a prior autosave exists in this browser,
-it overwrites the seed data above (project/dailyLog/analysts/dailyAnalysts)
+onLoggedIn(user): look up this user's `profiles` row by auth_user_id,
+show #loadingScreen, then loadAllData() — fetches ALL profiles/projects/
+daily_logs rows in parallel and rebuilds ANALYSTS/DAILY_ANALYSTS/projects/dailyLog
    │
    ▼
-renderAll() + renderDailyHeader() + renderDaily() + renderTeam()
+renderEverything() (renderDailyHeader + renderTeam + renderDaily + renderAll)
    │
    ▼
-(user may click "Connect JSON file" to also link a real file — this does
- NOT re-import from that file; it only starts writing future edits to it.
- See TROUBLESHOOTING.md if you need file -> app import.)
+subscribeRealtime() — opens 3 postgres_changes channels (profiles/projects/
+daily_logs); every INSERT/UPDATE/DELETE from ANY signed-in teammate is
+reconciled into local state by id and re-rendered, live, no refresh needed
+   │
+   ▼
+showApp() swaps #loadingScreen for #appRoot
 ```
 
-## Why no multi-user sync
+`sb.auth.onAuthStateChange` also drives this — a SIGNED_IN event (e.g. after
+`signUp`/`signInWithPassword` resolves) calls `onLoggedIn`, and SIGNED_OUT
+calls `onLoggedOut()`, which unsubscribes Realtime and clears local state
+back to empty arrays before showing the auth screen again.
 
-Each browser tab holds its own copy of the state in memory + localStorage.
-"Connect JSON file" makes one browser's edits land in a real file, but
-there's no listener that re-reads that file if someone else changes it —
-so two people editing concurrently will diverge. This was an intentional
-trade-off (see `PROJECT_SPECIFICATION.md` §3) to keep the tool at
-zero-infrastructure. See the SEO Automation Dashboard's improvement
-backlog for how real sync could be added (a small backend or a connector
-like Google Sheets/Notion) if the team outgrows single-file sharing.
+## Multi-user sync
+
+This is now a real shared multi-user app: Supabase Realtime (`postgres_
+changes` on all three tables) pushes every insert/update/delete to every
+signed-in tab, so two people editing concurrently converge instead of
+diverging. RLS allows any authenticated bankbazaar.com user to read/write
+all rows in `profiles`/`projects`/`daily_logs` — there's no per-row
+ownership model, matching the old single-shared-file mental model but with
+real concurrency instead of "last save wins" file overwrites.
 
 ## Why the file is large
 

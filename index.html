@@ -40,6 +40,7 @@ var o=((a=s[17])==null?void 0:a[0])?Ob(e,e[_b(s[17][0].data)][0]):[];var l=vb(s[
 var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.s.r;c<=n.e.r;++c){i=Ta(c);for(f=n.s.c;f<=n.e.c;++f){r=s[f]+i;t=l?(e[c]||[])[f]:e[r];a="";if(t===undefined)continue;else if(t.F!=null){r=t.F;if(!t.f)continue;a=t.f;if(r.indexOf(":")==-1)r=r+":"+r}if(t.f!=null)a=t.f;else if(t.t=="z")continue;else if(t.t=="n"&&t.v!=null)a=""+t.v;else if(t.t=="b")a=t.v?"TRUE":"FALSE";else if(t.w!==undefined)a="'"+t.w;else if(t.v===undefined)continue;else if(t.t=="s")a="'"+t.v;else a=""+t.v;o[o.length]=r+"="+a}}return o}function xw(e,r,t){var a=t||{};var n=+!a.skipHeader;var i=e||{};var s=0,f=0;if(i&&a.origin!=null){if(typeof a.origin=="number")s=a.origin;else{var o=typeof a.origin=="string"?Oa(a.origin):a.origin;s=o.r;f=o.c}}var l;var c={s:{c:0,r:0},e:{c:f,r:s+r.length-1+n}};if(i["!ref"]){var h=Da(i["!ref"]);c.e.c=Math.max(c.e.c,h.e.c);c.e.r=Math.max(c.e.r,h.e.r);if(s==-1){s=h.e.r+1;c.e.r=s+r.length-1+n}}else{if(s==-1){s=0;c.e.r=r.length-1+n}}var u=a.header||[],d=0;r.forEach(function(e,r){rr(e).forEach(function(t){if((d=u.indexOf(t))==-1)u[d=u.length]=t;var o=e[t];var c="z";var h="";var v=Ra({c:f+d,r:s+r+n});l=Rw(i,v);if(o&&typeof o==="object"&&!(o instanceof Date)){i[v]=o}else{if(typeof o=="number")c="n";else if(typeof o=="boolean")c="b";else if(typeof o=="string")c="s";else if(o instanceof Date){c="d";if(!a.cellDates){c="n";o=fr(o)}h=a.dateNF||X[14]}else if(o===null&&a.nullError){c="e";o=0}if(!l)i[v]=l={t:c,v:o};else{l.t=c;l.v=o;delete l.w;delete l.R;if(h)l.z=h}if(h)l.z=h}})});c.e.c=Math.max(c.e.c,f+u.length-1);var v=Ta(s);if(n)for(d=0;d<u.length;++d)i[ya(d+f)+v]={t:"s",v:u[d]};i["!ref"]=Na(c);return i}function Ow(e,r){return xw(null,e,r)}function Rw(e,r,t){if(typeof r=="string"){if(Array.isArray(e)){var a=Oa(r);if(!e[a.r])e[a.r]=[];return e[a.r][a.c]||(e[a.r][a.c]={t:"z"})}return e[r]||(e[r]={t:"z"})}if(typeof r!="number")return Rw(e,Ra(r));return Rw(e,Ra({r:r,c:t||0}))}function Iw(e,r){if(typeof r=="number"){if(r>=0&&e.SheetNames.length>r)return r;throw new Error("Cannot find sheet # "+r)}else if(typeof r=="string"){var t=e.SheetNames.indexOf(r);if(t>-1)return t;throw new Error("Cannot find sheet name |"+r+"|")}else throw new Error("Cannot find sheet |"+r+"|")}function Nw(){return{SheetNames:[],Sheets:{}}}function Dw(e,r,t,a){var n=1;if(!t)for(;n<=65535;++n,t=undefined)if(e.SheetNames.indexOf(t="Sheet"+n)==-1)break;if(!t||e.SheetNames.length>=65535)throw new Error("Too many worksheets");if(a&&e.SheetNames.indexOf(t)>=0){var i=t.match(/(^.*?)(\d+)$/);n=i&&+i[2]||0;var s=i&&i[1]||t;for(++n;n<=65535;++n)if(e.SheetNames.indexOf(t=s+n)==-1)break}Jp(t);if(e.SheetNames.indexOf(t)>=0)throw new Error("Worksheet with name |"+t+"| already exists!");e.SheetNames.push(t);e.Sheets[t]=r;return t}function Fw(e,r,t){if(!e.Workbook)e.Workbook={};if(!e.Workbook.Sheets)e.Workbook.Sheets=[];var a=Iw(e,r);if(!e.Workbook.Sheets[a])e.Workbook.Sheets[a]={};switch(t){case 0:;case 1:;case 2:break;default:throw new Error("Bad sheet visibility setting "+t);}e.Workbook.Sheets[a].Hidden=t}function Pw(e,r){e.z=r;return e}function Lw(e,r,t){if(!r){delete e.l}else{e.l={Target:r};if(t)e.l.Tooltip=t}return e}function Mw(e,r,t){return Lw(e,"#"+r,t)}function Uw(e,r,t){if(!e.c)e.c=[];e.c.push({t:r,a:t||"SheetJS"})}function Bw(e,r,t,a){var n=typeof r!="string"?r:Da(r);var i=typeof r=="string"?r:Na(r);for(var s=n.s.r;s<=n.e.r;++s)for(var f=n.s.c;f<=n.e.c;++f){var o=Rw(e,s,f);o.t="n";o.F=i;delete o.v;if(s==n.s.r&&f==n.s.c){o.f=t;if(a)o.D=true}}return e}var Ww={encode_col:ya,encode_row:Ta,encode_cell:Ra,encode_range:Na,decode_col:Ca,decode_row:ka,split_cell:xa,decode_cell:Oa,decode_range:Ia,format_cell:Pa,sheet_add_aoa:Ma,sheet_add_json:xw,sheet_add_dom:Gm,aoa_to_sheet:Ua,json_to_sheet:Ow,table_to_sheet:jm,table_to_book:Xm,sheet_to_csv:yw,sheet_to_txt:Sw,sheet_to_json:Aw,sheet_to_html:Vm,sheet_to_formulae:_w,sheet_to_row_object_array:Aw,sheet_get_cell:Rw,book_new:Nw,book_append_sheet:Dw,book_set_sheet_visibility:Fw,cell_set_number_format:Pw,cell_set_hyperlink:Lw,cell_set_internal_link:Mw,cell_add_comment:Uw,sheet_set_array_formula:Bw,consts:{SHEET_VISIBLE:0,SHEET_HIDDEN:1,SHEET_VERY_HIDDEN:2}};var Hw;function zw(e){Hw=e}function Vw(e,r){var t=Hw();var a=r==null?{}:r;if(e==null||e["!ref"]==null){t.push(null);return t}var n=Da(e["!ref"]);var i=a.FS!==undefined?a.FS:",",s=i.charCodeAt(0);var f=a.RS!==undefined?a.RS:"\n",o=f.charCodeAt(0);var l=new RegExp((i=="|"?"\\|":i)+"+$");var c="",h=[];a.dense=Array.isArray(e);var u=a.skipHidden&&e["!cols"]||[];var d=a.skipHidden&&e["!rows"]||[];for(var v=n.s.c;v<=n.e.c;++v)if(!(u[v]||{}).hidden)h[v]=ya(v);var p=n.s.r;var g=false,m=0;t._read=function(){if(!g){g=true;return t.push("\ufeff")}while(p<=n.e.r){++p;if((d[p-1]||{}).hidden)continue;c=Cw(e,n,p-1,h,s,o,i,a);if(c!=null){if(a.strip)c=c.replace(l,"");if(c||a.blankrows!==false)return t.push((m++?f:"")+c)}}return t.push(null)};return t}function Gw(e,r){var t=Hw();var a=r||{};var n=a.header!=null?a.header:Bm;var i=a.footer!=null?a.footer:Wm;t.push(n);var s=Ia(e["!ref"]);a.dense=Array.isArray(e);t.push(zm(e,s,a));var f=s.s.r;var o=false;t._read=function(){if(f>s.e.r){if(!o){o=true;t.push("</table>"+i)}return t.push(null)}while(f<=s.e.r){t.push(Um(e,s,f,a));++f;break}};return t}function jw(e,r){var t=Hw({objectMode:true});if(e==null||e["!ref"]==null){t.push(null);return t}var a={t:"n",v:0},n=0,i=1,s=[],f=0,o="";var l={s:{r:0,c:0},e:{r:0,c:0}};var c=r||{};var h=c.range!=null?c.range:e["!ref"];if(c.header===1)n=1;else if(c.header==="A")n=2;else if(Array.isArray(c.header))n=3;switch(typeof h){case"string":l=Da(h);break;case"number":l=Da(e["!ref"]);l.s.r=h;break;default:l=h;}if(n>0)i=0;var u=Ta(l.s.r);var d=[];var v=0;var p=Array.isArray(e);var g=l.s.r,m=0;var b={};if(p&&!e[g])e[g]=[];var w=c.skipHidden&&e["!cols"]||[];var k=c.skipHidden&&e["!rows"]||[];for(m=l.s.c;m<=l.e.c;++m){if((w[m]||{}).hidden)continue;d[m]=ya(m);a=p?e[g][m]:e[d[m]+u];switch(n){case 1:s[m]=m-l.s.c;break;case 2:s[m]=d[m];break;case 3:s[m]=c.header[m-l.s.c];break;default:if(a==null)a={w:"__EMPTY",t:"s"};o=f=Pa(a,null,c);v=b[f]||0;if(!v)b[f]=1;else{do{o=f+"_"+v++}while(b[o]);b[f]=v;b[o]=1}s[m]=o;}}g=l.s.r+i;t._read=function(){while(g<=l.e.r){if((k[g-1]||{}).hidden)continue;var r=Tw(e,l,g,d,n,s,p,c);++g;if(r.isempty===false||(n===1?c.blankrows!==false:!!c.blankrows)){t.push(r.row);return}}return t.push(null)};return t}var Xw={to_json:jw,to_html:Gw,to_csv:Vw,set_readable:zw};if(typeof vm!=="undefined")e.parse_xlscfb=vm;e.parse_zip=Xb;e.read=iw;e.readFile=sw;e.readFileSync=sw;e.write=gw;e.writeFile=bw;e.writeFileSync=bw;e.writeFileAsync=kw;e.utils=Ww;e.writeXLSX=pw;e.writeFileXLSX=ww;e.SSF=Ve;if(typeof Xw!=="undefined")e.stream=Xw;if(typeof Ke!=="undefined")e.CFB=Ke;if(typeof require!=="undefined"){var $w=undefined;if(($w||{}).Readable)zw($w.Readable)}}if(typeof exports!=="undefined")make_xlsx_lib(exports);else if(typeof module!=="undefined"&&module.exports)make_xlsx_lib(module.exports);else if(typeof define==="function"&&define.amd)define("xlsx",function(){if(!XLSX.version)make_xlsx_lib(XLSX);return XLSX});else make_xlsx_lib(XLSX);if(typeof window!=="undefined"&&!window.XLSX)try{window.XLSX=XLSX}catch(e){}
 
 </script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <style>
   :root{
     --surface-1:#fcfcfb;
@@ -285,10 +286,134 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
     tbody td::before{content:attr(data-label);font-size:10.5px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.03em;text-align:left;flex-shrink:0;}
     tbody td select,tbody td input[type=text],tbody td input[type=date]{width:auto;max-width:60%;text-align:right;}
   }
+
+  /* ============ AUTH SCREEN ============ */
+  .auth-screen{
+    position:fixed;inset:0;z-index:900;display:flex;align-items:center;justify-content:center;padding:20px;
+  }
+  .auth-card{
+    width:100%;max-width:400px;background:var(--surface-glass);backdrop-filter:blur(18px);
+    border:1px solid var(--surface-border);border-radius:20px;box-shadow:var(--shadow-hover);
+    padding:30px 28px 24px;position:relative;overflow:hidden;
+    animation:auth-in .4s var(--ease);
+  }
+  .auth-card::before{
+    content:"";position:absolute;top:0;left:0;right:0;height:4px;
+    background:linear-gradient(90deg,var(--navy),var(--accent-2),var(--accent));
+  }
+  @keyframes auth-in{from{opacity:0;transform:translateY(10px) scale(.98);}to{opacity:1;transform:translateY(0) scale(1);}}
+  .auth-brand{display:flex;align-items:center;gap:12px;margin-bottom:22px;}
+  .auth-brand h1{margin:0 0 2px 0;font-size:16.5px;letter-spacing:-.01em;color:var(--text-primary);}
+  .auth-brand p{margin:0;color:var(--text-secondary);font-size:12px;}
+  .auth-tabs{
+    display:flex;gap:4px;background:var(--surface-1);border:1px solid var(--surface-border);
+    border-radius:999px;padding:4px;margin-bottom:18px;
+  }
+  .auth-tab{
+    flex:1;background:transparent;border:none;color:var(--text-secondary);padding:8px 10px;
+    font-size:13px;cursor:pointer;border-radius:999px;font-family:inherit;font-weight:600;
+    transition:background .18s var(--ease),color .18s var(--ease);
+  }
+  .auth-tab.active{color:#fff;background:linear-gradient(135deg,var(--navy),var(--navy-2));box-shadow:0 3px 10px -4px rgba(31,56,100,.5);}
+  .auth-forms{position:relative;}
+  .auth-form{display:none;flex-direction:column;gap:13px;animation:auth-fade .25s var(--ease);}
+  .auth-form.active{display:flex;}
+  @keyframes auth-fade{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
+  .auth-form label{display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.03em;}
+  .auth-form input{
+    padding:10px 12px;font-size:13.5px;border:1px solid var(--surface-border);border-radius:var(--radius-sm);
+    font-family:inherit;background:var(--surface-2);color:var(--text-primary);font-weight:400;
+    transition:border-color .15s var(--ease),box-shadow .15s var(--ease);
+  }
+  .auth-form input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(42,120,214,.15);}
+  .auth-submit{width:100%;justify-content:center;margin-top:4px;padding:11px 16px;font-size:13.5px;}
+  .auth-submit[disabled]{opacity:.6;cursor:not-allowed;}
+  .auth-error{
+    background:color-mix(in srgb, var(--critical) 10%, var(--surface-2));border:1px solid color-mix(in srgb, var(--critical) 35%, var(--surface-border));
+    color:var(--critical);font-size:12.5px;padding:9px 12px;border-radius:var(--radius-sm);margin-bottom:14px;
+    line-height:1.4;animation:auth-fade .2s var(--ease);
+  }
+  .auth-notice{
+    background:color-mix(in srgb, var(--good) 10%, var(--surface-2));border:1px solid color-mix(in srgb, var(--good) 35%, var(--surface-border));
+    color:var(--good);font-size:12.5px;padding:9px 12px;border-radius:var(--radius-sm);margin-bottom:14px;line-height:1.4;
+  }
+  .auth-switch-hint{text-align:center;margin:16px 0 0;font-size:12.5px;}
+  .auth-switch-hint a{color:var(--accent);font-weight:600;text-decoration:none;cursor:pointer;}
+  .auth-switch-hint a:hover{text-decoration:underline;}
+
+  /* ============ LOADING SCREEN ============ */
+  .loading-screen{position:fixed;inset:0;z-index:800;display:flex;align-items:center;justify-content:center;}
+  .loading-card{display:flex;flex-direction:column;align-items:center;gap:14px;color:var(--text-secondary);font-size:13px;font-weight:600;}
+  .spinner{
+    width:38px;height:38px;border-radius:50%;
+    border:3px solid var(--surface-border);border-top-color:var(--accent);
+    animation:spin .8s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .skeleton{
+    background:linear-gradient(100deg,var(--surface-1) 30%,var(--surface-border) 50%,var(--surface-1) 70%);
+    background-size:200% 100%;animation:skeleton-sheen 1.3s ease-in-out infinite;border-radius:var(--radius-sm);
+  }
+  @keyframes skeleton-sheen{0%{background-position:150% 0;}100%{background-position:-50% 0;}}
+
+  /* ============ HEADER USER CHIP ============ */
+  .user-chip{display:flex;align-items:center;gap:9px;padding:5px 6px 5px 6px;border-radius:999px;background:var(--surface-2);border:1px solid var(--surface-border);}
+  .user-avatar{
+    width:28px;height:28px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(135deg,var(--navy),var(--accent-2));color:#fff;font-size:12px;font-weight:700;
+  }
+  .user-name{font-size:12.5px;font-weight:700;color:var(--text-primary);white-space:nowrap;max-width:140px;overflow:hidden;text-overflow:ellipsis;}
+  .sign-out-btn{padding:6px 12px !important;font-size:11.5px !important;}
+  @media(max-width:520px){ .user-name{display:none;} }
 </style>
 </head>
 <body>
 
+<div id="authScreen" class="auth-screen">
+  <div class="auth-card">
+    <div class="auth-brand">
+      <div class="header-logo">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 16l4-5 3 3 5-7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div>
+        <h1>SEO Automation &amp; Projects Dashboard</h1>
+        <p>Sign in with your bankbazaar.com email</p>
+      </div>
+    </div>
+    <div class="auth-tabs">
+      <button type="button" class="auth-tab active" id="authTabSignin" onclick="setAuthMode('signin')">Sign in</button>
+      <button type="button" class="auth-tab" id="authTabSignup" onclick="setAuthMode('signup')">Create account</button>
+    </div>
+    <div class="auth-error" id="authError" style="display:none;"></div>
+    <div class="auth-notice" id="authNotice" style="display:none;"></div>
+    <div class="auth-forms">
+      <form id="signinForm" class="auth-form active" onsubmit="handleSignin(event)">
+        <label>Email<input type="email" id="signinEmail" placeholder="you@bankbazaar.com" autocomplete="username" required></label>
+        <label>Password<input type="password" id="signinPassword" placeholder="••••••••" autocomplete="current-password" required></label>
+        <button class="btn auth-submit" type="submit" id="signinBtn">Sign in</button>
+      </form>
+      <form id="signupForm" class="auth-form" onsubmit="handleSignup(event)">
+        <label>Full name<input type="text" id="signupName" placeholder="Your name" autocomplete="name" required></label>
+        <label>Email<input type="email" id="signupEmail" placeholder="you@bankbazaar.com" autocomplete="username" required></label>
+        <label>Password<input type="password" id="signupPassword" placeholder="At least 6 characters" autocomplete="new-password" minlength="6" required></label>
+        <button class="btn auth-submit" type="submit" id="signupBtn">Create account</button>
+      </form>
+    </div>
+    <p class="auth-switch-hint">
+      <span id="switchToSignup">New here? <a onclick="setAuthMode('signup')">Create an account</a></span>
+      <span id="switchToSignin" style="display:none;">Already have an account? <a onclick="setAuthMode('signin')">Sign in</a></span>
+    </p>
+  </div>
+</div>
+
+<div id="loadingScreen" class="loading-screen" style="display:none;">
+  <div class="loading-card">
+    <div class="spinner"></div>
+    <p>Loading the latest data…</p>
+  </div>
+</div>
+
+<div id="appRoot" style="display:none;">
 <header>
   <div class="header-left">
     <div class="header-logo">
@@ -301,6 +426,11 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
   </div>
   <div class="header-actions">
     <span class="badge" id="teamBadge"><span class="dot" style="background:var(--good)"></span>0 team members</span>
+    <div class="user-chip" id="userChip">
+      <span class="user-avatar" id="userAvatar">?</span>
+      <span class="user-name" id="userName">—</span>
+      <button class="btn secondary sign-out-btn" onclick="handleSignOut()" title="Sign out">Sign out</button>
+    </div>
     <button class="theme-toggle" id="themeToggle" title="Toggle light / dark" aria-label="Toggle light and dark theme" onclick="toggleTheme()">
       <svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></svg>
     </button>
@@ -424,6 +554,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
     <div class="card">
       <div class="toolbar">
         <input type="text" id="newPersonName" placeholder="Full name" style="max-width:220px;">
+        <input type="email" id="newPersonEmail" placeholder="name@bankbazaar.com" style="max-width:220px;">
         <label style="display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--text-secondary);white-space:nowrap;">
           <input type="checkbox" id="newPersonDaily" checked style="width:auto;"> Include in Daily Log
         </label>
@@ -444,18 +575,34 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
 
 </main>
 
+</div>
 <div class="toast-stack" id="toastStack"></div>
 
 <script>
 /* ============================================================
-   CANONICAL LISTS - mirrors the hidden "Lists" sheet in
-   SEO_Automation_Tracker.xlsx. Keep these two in sync.
+   SUPABASE CLIENT + AUTH/DATA STATE
    ============================================================ */
-let ANALYSTS = ["Lochan","Divakar","Mahalakshmi","Bhagya","Pradeepa","Neeraja S","Narasimha Sainath"];
+const SUPABASE_URL = "https://lqzwfequiylhdlvfjuce.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxxendmZXF1aXlsaGRsdmZqdWNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYwMTkwMDgsImV4cCI6MjEwMTU5NTAwOH0.q1JOYCYzdnOF9G89rgbYm92ohVK3jJAknD_gEMOoIkA";
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+let currentUser = null;      // supabase auth user object
+let currentProfile = null;   // matching row from profiles
+let PROFILES = [];           // raw profiles rows from DB: {id, full_name, email, auth_user_id, include_in_daily_log}
+let realtimeChannels = [];   // active postgres_changes subscriptions
+let authMode = "signin";
+
+/* ============================================================
+   CANONICAL LISTS - mirrors the hidden "Lists" sheet in
+   SEO_Automation_Tracker.xlsx. ANALYSTS/DAILY_ANALYSTS are now
+   derived from the live `profiles` table after login (see
+   applyProfiles() below) instead of being hardcoded.
+   ============================================================ */
+let ANALYSTS = [];
 const STATUSES = ["Assigned","Ongoing","Review Pending","Completed & Approved"];
 const PRIORITIES = ["", "High","Medium","Low"];
 const YESNO = ["", "Yes","No"];
-let DAILY_ANALYSTS = ["Lochan","Divakar","Mahalakshmi","Bhagya","Pradeepa","Neeraja S"];
+let DAILY_ANALYSTS = [];
 let projectSearchTerm = "";
 
 /* ============================================================
@@ -512,18 +659,12 @@ const STATUS_PILL_CLASS = {
 };
 
 /* ============================================================
-   SEED DATA - taken from the current "Calude Automation or
-   Projects.xlsx" / SEO_Automation_Tracker.xlsx workbook.
+   LIVE DATA - populated from Supabase (profiles/projects/
+   daily_logs) after login. No more hardcoded seed rows; see
+   loadAllData() near the bottom of this script.
    ============================================================ */
-let projects = [
-  {project:"FAQ Schema Generator", assignedTo:"Bhagya", status:"Review Pending", priority:"", dateAssigned:"", targetDate:"", dateCompleted:"", help:"", notes:""},
-  {project:"GSC Issues", assignedTo:"Mahalakshmi", status:"Ongoing", priority:"", dateAssigned:"", targetDate:"", dateCompleted:"", help:"Yes", notes:""},
-  {project:"Content Audit Handsoff", assignedTo:"Lochan", status:"Assigned", priority:"", dateAssigned:"", targetDate:"", dateCompleted:"", help:"", notes:""}
-];
-
-let dailyLog = [
-  {date:"2026-07-13", Lochan:"", Divakar:"", Mahalakshmi:"Image SEO Auditor", Bhagya:"", Pradeepa:"", "Neeraja S":"GEO Citation Dashboard"}
-];
+let projects = [];   // {id, project, assignedTo(name), status, priority, dateAssigned, targetDate, dateCompleted, help, notes}
+let dailyLog = [];    // {date, <AnalystName>: task text, ...} one row per log_date
 
 /* ============================================================
    NAV
@@ -540,8 +681,8 @@ document.querySelectorAll(".tab-btn").forEach(btn=>{
 /* ============================================================
    PROJECT TRACKER TABLE
    ============================================================ */
-function selectHtml(name, list, current, idx, field){
-  return `<select onchange="updateProject(${idx},'${field}',this.value)">` +
+function selectHtml(name, list, current, id, field){
+  return `<select onchange="updateProject('${id}','${field}',this.value)">` +
     list.map(v=>`<option value="${v}" ${v===current?"selected":""}>${v===""?"—":v}</option>`).join("") +
     `</select>`;
 }
@@ -553,7 +694,7 @@ function renderProjects(){
     return;
   }
   const term = projectSearchTerm.trim().toLowerCase();
-  const entries = projects.map((p,idx)=>({p,idx})).filter(({p})=>{
+  const entries = projects.filter((p)=>{
     if(!term) return true;
     return (p.project||"").toLowerCase().includes(term) || (p.assignedTo||"").toLowerCase().includes(term);
   });
@@ -561,36 +702,76 @@ function renderProjects(){
     body.innerHTML = `<tr class="empty-row"><td colspan="10">No projects match your filter.</td></tr>`;
     return;
   }
-  entries.forEach(({p,idx})=>{
+  entries.forEach((p)=>{
+    const id = p.id;
     const tr = document.createElement("tr");
     tr.className = "status-stripe";
     tr.style.setProperty("--stripe-color", STATUS_HEX[p.status] || "transparent");
     tr.innerHTML = `
-      <td data-label="Project"><input type="text" value="${p.project}" onchange="updateProject(${idx},'project',this.value)"></td>
-      <td data-label="Assigned to">${selectHtml('assignedTo',["",...ANALYSTS],p.assignedTo,idx,'assignedTo')}</td>
-      <td data-label="Status">${selectHtml('status',["",...STATUSES],p.status,idx,'status')}</td>
-      <td data-label="Priority">${selectHtml('priority',PRIORITIES,p.priority,idx,'priority')}</td>
-      <td data-label="Date Assigned"><input type="date" value="${p.dateAssigned}" onchange="updateProject(${idx},'dateAssigned',this.value)"></td>
-      <td data-label="Target Date"><input type="date" value="${p.targetDate}" onchange="updateProject(${idx},'targetDate',this.value)"></td>
-      <td data-label="Date Completed"><input type="date" value="${p.dateCompleted}" onchange="updateProject(${idx},'dateCompleted',this.value)"></td>
-      <td data-label="Help Needed">${selectHtml('help',YESNO,p.help,idx,'help')}</td>
-      <td data-label="Notes"><input type="text" value="${p.notes}" onchange="updateProject(${idx},'notes',this.value)"></td>
-      <td data-label=""><button class="btn danger" onclick="deleteProject(${idx})">Delete</button></td>
+      <td data-label="Project"><input type="text" value="${p.project}" onchange="updateProject('${id}','project',this.value)"></td>
+      <td data-label="Assigned to">${selectHtml('assignedTo',["",...ANALYSTS],p.assignedTo,id,'assignedTo')}</td>
+      <td data-label="Status">${selectHtml('status',["",...STATUSES],p.status,id,'status')}</td>
+      <td data-label="Priority">${selectHtml('priority',PRIORITIES,p.priority,id,'priority')}</td>
+      <td data-label="Date Assigned"><input type="date" value="${p.dateAssigned}" onchange="updateProject('${id}','dateAssigned',this.value)"></td>
+      <td data-label="Target Date"><input type="date" value="${p.targetDate}" onchange="updateProject('${id}','targetDate',this.value)"></td>
+      <td data-label="Date Completed"><input type="date" value="${p.dateCompleted}" onchange="updateProject('${id}','dateCompleted',this.value)"></td>
+      <td data-label="Help Needed">${selectHtml('help',YESNO,p.help,id,'help')}</td>
+      <td data-label="Notes"><input type="text" value="${p.notes}" onchange="updateProject('${id}','notes',this.value)"></td>
+      <td data-label=""><button class="btn danger" onclick="deleteProject('${id}')">Delete</button></td>
     `;
     body.appendChild(tr);
   });
 }
 function setProjectSearch(v){ projectSearchTerm = v; renderProjects(); }
-function updateProject(idx, field, value){ projects[idx][field] = value; renderAll(); }
-function addProjectRow(){
-  projects.push({project:"", assignedTo:"", status:"", priority:"", dateAssigned:"", targetDate:"", dateCompleted:"", help:"", notes:""});
+
+const PROJECT_FIELD_TO_COLUMN = {
+  project:"project", assignedTo:"assigned_to", status:"status", priority:"priority",
+  dateAssigned:"date_assigned", targetDate:"target_date", dateCompleted:"date_completed",
+  help:"help_needed", notes:"notes"
+};
+function mapProjectRow(row){
+  return {
+    id: row.id,
+    project: row.project || "",
+    assignedTo: profileNameById(row.assigned_to) || "",
+    status: row.status || "",
+    priority: row.priority || "",
+    dateAssigned: row.date_assigned || "",
+    targetDate: row.target_date || "",
+    dateCompleted: row.date_completed || "",
+    help: row.help_needed || "",
+    notes: row.notes || ""
+  };
+}
+async function updateProject(id, field, value){
+  const p = projects.find(x=>x.id===id);
+  if(!p) return;
+  p[field] = value;
+  renderAll();
+  const column = PROJECT_FIELD_TO_COLUMN[field];
+  const payload = {};
+  payload[column] = field==="assignedTo" ? (profileIdByName(value) || null) : (value || null);
+  const { error } = await sb.from("projects").update(payload).eq("id", id);
+  if(error){ showToast("Failed to save project change: " + error.message, "danger"); }
+}
+async function addProjectRow(){
+  const insertPayload = {
+    project:"", assigned_to:null, status:"", priority:"", date_assigned:null, target_date:null,
+    date_completed:null, help_needed:"", notes:"", created_by: currentProfile ? currentProfile.id : null
+  };
+  const { data, error } = await sb.from("projects").insert(insertPayload).select().single();
+  if(error){ showToast("Failed to add project: " + error.message, "danger"); return; }
+  projects.push(mapProjectRow(data));
   renderAll();
   showToast("Project added");
 }
-function deleteProject(idx){
-  const name = projects[idx] && projects[idx].project ? `"${projects[idx].project}"` : "this project";
+async function deleteProject(id){
+  const p = projects.find(x=>x.id===id);
+  const name = p && p.project ? `"${p.project}"` : "this project";
   if(!confirm(`Delete ${name}? This can't be undone.`)) return;
-  projects.splice(idx,1);
+  const { error } = await sb.from("projects").delete().eq("id", id);
+  if(error){ showToast("Failed to delete project: " + error.message, "danger"); return; }
+  projects = projects.filter(x=>x.id!==id);
   renderAll();
   showToast("Project deleted", "danger");
 }
@@ -617,8 +798,59 @@ function renderDaily(){
     body.appendChild(tr);
   });
 }
-function updateDaily(idx, field, value){ dailyLog[idx][field] = value; }
+function buildDailyLogFromRows(rows){
+  const byDate = {};
+  (rows||[]).forEach(r=>{
+    const name = profileNameById(r.analyst_id);
+    if(!name) return;
+    if(!byDate[r.log_date]) byDate[r.log_date] = { date: r.log_date };
+    byDate[r.log_date][name] = r.task || "";
+  });
+  return Object.values(byDate).sort((a,b)=> a.date < b.date ? -1 : a.date > b.date ? 1 : 0);
+}
+/* Each visible row is one calendar date; each cell is its own
+   daily_logs row keyed by (log_date, analyst_id) in the DB (see
+   the unique constraint on that table), so a cell edit is an
+   upsert/delete on that pair rather than a whole-row write. */
+async function updateDaily(idx, field, value){
+  const row = dailyLog[idx];
+  if(!row) return;
+  if(field === "date"){
+    const oldDate = row.date, newDate = value;
+    if(!newDate || oldDate === newDate) return;
+    row.date = newDate;
+    renderDaily();
+    const moves = DAILY_ANALYSTS.filter(a=>row[a]).map(async (a)=>{
+      const analystId = profileIdByName(a);
+      if(!analystId) return;
+      await sb.from("daily_logs").delete().eq("log_date", oldDate).eq("analyst_id", analystId);
+      const { error } = await sb.from("daily_logs").upsert(
+        { log_date: newDate, analyst_id: analystId, task: row[a] }, { onConflict: "log_date,analyst_id" }
+      );
+      if(error) showToast("Failed to move entry: " + error.message, "danger");
+    });
+    await Promise.all(moves);
+    showToast("Date updated");
+    return;
+  }
+  row[field] = value;
+  renderDaily();
+  const analystId = profileIdByName(field);
+  if(!analystId){ showToast("Unknown team member column", "danger"); return; }
+  if(value && value.trim() !== ""){
+    const { error } = await sb.from("daily_logs").upsert(
+      { log_date: row.date, analyst_id: analystId, task: value }, { onConflict: "log_date,analyst_id" }
+    );
+    if(error) showToast("Failed to save daily log: " + error.message, "danger");
+  }else{
+    const { error } = await sb.from("daily_logs").delete().eq("log_date", row.date).eq("analyst_id", analystId);
+    if(error) showToast("Failed to clear daily log: " + error.message, "danger");
+  }
+}
 function addDailyRow(){
+  // A blank date row has no analyst/task yet, so there is nothing
+  // to persist until a cell is actually filled in — that write
+  // happens in updateDaily() above.
   const last = dailyLog[dailyLog.length-1];
   let next = new Date();
   if(last && last.date){ next = new Date(last.date); next.setDate(next.getDate()+1); }
@@ -629,8 +861,12 @@ function addDailyRow(){
   renderDaily();
   showToast("Date row added");
 }
-function deleteDaily(idx){
+async function deleteDaily(idx){
+  const row = dailyLog[idx];
+  if(!row) return;
   if(!confirm("Delete this daily log row? This can't be undone.")) return;
+  const { error } = await sb.from("daily_logs").delete().eq("log_date", row.date);
+  if(error){ showToast("Failed to delete daily log row: " + error.message, "danger"); return; }
   dailyLog.splice(idx,1);
   renderDaily();
   showToast("Daily log row deleted", "danger");
@@ -647,6 +883,16 @@ function renderDailyHeader(){
 /* ============================================================
    TEAM MANAGEMENT
    ============================================================ */
+function profileByName(name){ return PROFILES.find(p=>p.full_name===name); }
+function profileIdByName(name){ const p = profileByName(name); return p ? p.id : null; }
+function profileNameById(id){ const p = PROFILES.find(x=>x.id===id); return p ? p.full_name : ""; }
+/* Rebuilds the ANALYSTS / DAILY_ANALYSTS name lists from the raw
+   PROFILES rows fetched from Supabase. Called after every load
+   and every realtime profiles change. */
+function applyProfiles(){
+  ANALYSTS = PROFILES.map(p=>p.full_name);
+  DAILY_ANALYSTS = PROFILES.filter(p=>p.include_in_daily_log).map(p=>p.full_name);
+}
 function renderTeam(){
   const badge = document.getElementById("teamBadge");
   if(badge) badge.innerHTML = `<span class="dot" style="background:var(--good)"></span>${ANALYSTS.length} team member${ANALYSTS.length===1?"":"s"}`;
@@ -657,8 +903,9 @@ function renderTeam(){
     body.innerHTML = `<tr class="empty-row"><td colspan="4">No one on the team yet — add the first person above.</td></tr>`;
     return;
   }
-  ANALYSTS.forEach(name=>{
-    const inDaily = DAILY_ANALYSTS.includes(name);
+  PROFILES.forEach(profile=>{
+    const name = profile.full_name;
+    const inDaily = !!profile.include_in_daily_log;
     const assignedCount = projects.filter(p=>p.assignedTo===name).length;
     const safeName = name.replace(/'/g,"\\'");
     const tr = document.createElement("tr");
@@ -671,14 +918,25 @@ function renderTeam(){
     body.appendChild(tr);
   });
 }
-function addPerson(){
-  const input = document.getElementById("newPersonName");
-  const name = input.value.trim();
-  if(!name) return;
-  if(ANALYSTS.includes(name)){ alert("That person is already on the team."); return; }
-  ANALYSTS.push(name);
-  if(document.getElementById("newPersonDaily").checked){ DAILY_ANALYSTS.push(name); }
-  input.value = "";
+function isValidEmail(email){
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((email||"").trim());
+}
+async function addPerson(){
+  const nameInput = document.getElementById("newPersonName");
+  const emailInput = document.getElementById("newPersonEmail");
+  const name = nameInput.value.trim();
+  const email = emailInput.value.trim();
+  if(!name || !email){ showToast("Enter both a name and an email", "danger"); return; }
+  if(!isValidEmail(email)){ showToast("Enter a valid email address", "danger"); return; }
+  if(ANALYSTS.includes(name)){ showToast("That person is already on the team.", "danger"); return; }
+  const includeDaily = document.getElementById("newPersonDaily").checked;
+  const { data, error } = await sb.from("profiles")
+    .insert({ full_name: name, email: email, include_in_daily_log: includeDaily })
+    .select().single();
+  if(error){ showToast("Failed to add person: " + error.message, "danger"); return; }
+  PROFILES.push(data);
+  applyProfiles();
+  nameInput.value = ""; emailInput.value = "";
   document.getElementById("newPersonDaily").checked = true;
   renderTeam();
   renderDailyHeader();
@@ -686,24 +944,32 @@ function addPerson(){
   renderAll();
   showToast(`${name} added to the team`);
 }
-function toggleDailyInclude(name, include){
+async function toggleDailyInclude(name, include){
+  const profile = profileByName(name);
+  if(!profile) return;
+  profile.include_in_daily_log = include;
+  applyProfiles();
   if(include){
-    if(!DAILY_ANALYSTS.includes(name)) DAILY_ANALYSTS.push(name);
     dailyLog.forEach(row=>{ if(!(name in row)) row[name] = ""; });
-  }else{
-    DAILY_ANALYSTS = DAILY_ANALYSTS.filter(a=>a!==name);
   }
   renderDailyHeader();
   renderDaily();
+  renderTeam();
+  const { error } = await sb.from("profiles").update({ include_in_daily_log: include }).eq("id", profile.id);
+  if(error){ showToast("Failed to update daily log setting: " + error.message, "danger"); }
 }
-function deletePerson(name){
+async function deletePerson(name){
+  const profile = profileByName(name);
+  if(!profile) return;
   const assignedCount = projects.filter(p=>p.assignedTo===name).length;
   const msg = assignedCount>0
     ? `${name} is assigned to ${assignedCount} project(s). Remove them from the team anyway? Those projects will keep "${name}" until you reassign them.`
     : `Remove ${name} from the team?`;
   if(!confirm(msg)) return;
-  ANALYSTS = ANALYSTS.filter(a=>a!==name);
-  DAILY_ANALYSTS = DAILY_ANALYSTS.filter(a=>a!==name);
+  const { error } = await sb.from("profiles").delete().eq("id", profile.id);
+  if(error){ showToast("Failed to remove person: " + error.message, "danger"); return; }
+  PROFILES = PROFILES.filter(p=>p.id!==profile.id);
+  applyProfiles();
   renderTeam();
   renderDailyHeader();
   renderDaily();
@@ -921,10 +1187,229 @@ function renderAll(){
   renderDonut(sum);
   renderHelpTable();
 }
-renderAll();
-renderDailyHeader();
-renderDaily();
-renderTeam();
+
+/* ============================================================
+   AUTH — sign in / sign up / sign out, gating the app behind a
+   bankbazaar.com login. Real persistence lives entirely in
+   Supabase; nothing app-data-related touches localStorage.
+   ============================================================ */
+function setAuthMode(mode){
+  authMode = mode;
+  document.getElementById("authTabSignin").classList.toggle("active", mode==="signin");
+  document.getElementById("authTabSignup").classList.toggle("active", mode==="signup");
+  document.getElementById("signinForm").classList.toggle("active", mode==="signin");
+  document.getElementById("signupForm").classList.toggle("active", mode==="signup");
+  document.getElementById("switchToSignup").style.display = mode==="signin" ? "" : "none";
+  document.getElementById("switchToSignin").style.display = mode==="signup" ? "" : "none";
+  clearAuthMessages();
+}
+function showAuthError(message){
+  const el = document.getElementById("authError");
+  el.textContent = message;
+  el.style.display = "block";
+  document.getElementById("authNotice").style.display = "none";
+}
+function showAuthNotice(message){
+  const el = document.getElementById("authNotice");
+  el.textContent = message;
+  el.style.display = "block";
+  document.getElementById("authError").style.display = "none";
+}
+function clearAuthMessages(){
+  document.getElementById("authError").style.display = "none";
+  document.getElementById("authNotice").style.display = "none";
+}
+function setAuthBusy(formPrefix, busy){
+  const btn = document.getElementById(formPrefix + "Btn");
+  if(btn){ btn.disabled = busy; btn.textContent = busy ? "Please wait…" : (formPrefix==="signin" ? "Sign in" : "Create account"); }
+}
+async function handleSignin(evt){
+  evt.preventDefault();
+  clearAuthMessages();
+  const email = document.getElementById("signinEmail").value.trim();
+  const password = document.getElementById("signinPassword").value;
+  if(!email || !password){ showAuthError("Enter your email and password."); return; }
+  setAuthBusy("signin", true);
+  const { error } = await sb.auth.signInWithPassword({ email, password });
+  setAuthBusy("signin", false);
+  if(error){ showAuthError(error.message); return; }
+  // onAuthStateChange fires SIGNED_IN and takes it from here.
+}
+async function handleSignup(evt){
+  evt.preventDefault();
+  clearAuthMessages();
+  const full_name = document.getElementById("signupName").value.trim();
+  const email = document.getElementById("signupEmail").value.trim();
+  const password = document.getElementById("signupPassword").value;
+  if(!full_name || !email || !password){ showAuthError("Fill in your name, email and password."); return; }
+  if(!isValidEmail(email)){ showAuthError("Enter a valid email address."); return; }
+  if(password.length < 6){ showAuthError("Password must be at least 6 characters."); return; }
+  setAuthBusy("signup", true);
+  const { data, error } = await sb.auth.signUp({ email, password, options: { data: { full_name } } });
+  setAuthBusy("signup", false);
+  if(error){ showAuthError(error.message); return; }
+  if(data && data.session){
+    // Confirmations are off for this project — onAuthStateChange handles login.
+    return;
+  }
+  showAuthNotice("Account created. Check your inbox to confirm your email, then sign in.");
+  setAuthMode("signin");
+}
+async function handleSignOut(){
+  await sb.auth.signOut();
+  // onAuthStateChange fires SIGNED_OUT and takes it from here.
+}
+function showAuthScreen(){
+  document.getElementById("authScreen").style.display = "flex";
+  document.getElementById("loadingScreen").style.display = "none";
+  document.getElementById("appRoot").style.display = "none";
+}
+function showLoadingScreen(show){
+  document.getElementById("loadingScreen").style.display = show ? "flex" : "none";
+}
+function showApp(){
+  document.getElementById("authScreen").style.display = "none";
+  document.getElementById("loadingScreen").style.display = "none";
+  document.getElementById("appRoot").style.display = "block";
+}
+function updateHeaderUser(){
+  const name = currentProfile ? currentProfile.full_name : (currentUser ? currentUser.email : "—");
+  const initials = (name||"?").trim().split(/\s+/).map(w=>w[0]).slice(0,2).join("").toUpperCase() || "?";
+  document.getElementById("userName").textContent = name;
+  document.getElementById("userAvatar").textContent = initials;
+}
+
+/* ============================================================
+   DATA LOADING
+   ============================================================ */
+async function loadAllData(){
+  const [profilesRes, projectsRes, dailyRes] = await Promise.all([
+    sb.from("profiles").select("*").order("created_at", { ascending: true }),
+    sb.from("projects").select("*").order("created_at", { ascending: true }),
+    sb.from("daily_logs").select("*").order("log_date", { ascending: true })
+  ]);
+  if(profilesRes.error || projectsRes.error || dailyRes.error){
+    const msg = (profilesRes.error || projectsRes.error || dailyRes.error).message;
+    showToast("Failed to load data: " + msg, "danger");
+    return false;
+  }
+  PROFILES = profilesRes.data || [];
+  applyProfiles();
+  projects = (projectsRes.data || []).map(mapProjectRow);
+  dailyLog = buildDailyLogFromRows(dailyRes.data || []);
+  return true;
+}
+function renderEverything(){
+  renderDailyHeader();
+  renderTeam();
+  renderDaily();
+  renderAll();
+}
+
+/* ============================================================
+   REALTIME SYNC — keeps every signed-in teammate's tab in sync
+   without a page refresh. Each handler idempotently reconciles
+   local state by row id, then re-renders.
+   ============================================================ */
+function subscribeRealtime(){
+  unsubscribeRealtime();
+  const profilesChannel = sb.channel("realtime-profiles")
+    .on("postgres_changes", { event: "*", schema: "public", table: "profiles" }, (payload)=>{
+      if(payload.eventType === "DELETE"){
+        PROFILES = PROFILES.filter(p=>p.id !== payload.old.id);
+      }else{
+        const idx = PROFILES.findIndex(p=>p.id === payload.new.id);
+        if(idx>-1) PROFILES[idx] = payload.new; else PROFILES.push(payload.new);
+      }
+      applyProfiles();
+      renderEverything();
+    }).subscribe();
+  const projectsChannel = sb.channel("realtime-projects")
+    .on("postgres_changes", { event: "*", schema: "public", table: "projects" }, (payload)=>{
+      if(payload.eventType === "DELETE"){
+        projects = projects.filter(p=>p.id !== payload.old.id);
+      }else{
+        const mapped = mapProjectRow(payload.new);
+        const idx = projects.findIndex(p=>p.id === mapped.id);
+        if(idx>-1) projects[idx] = mapped; else projects.push(mapped);
+      }
+      renderAll();
+      renderTeam();
+    }).subscribe();
+  const dailyChannel = sb.channel("realtime-daily-logs")
+    .on("postgres_changes", { event: "*", schema: "public", table: "daily_logs" }, (payload)=>{
+      if(payload.eventType === "DELETE"){
+        const name = profileNameById(payload.old.analyst_id);
+        const row = dailyLog.find(r=>r.date === payload.old.log_date);
+        if(row && name) delete row[name];
+      }else{
+        const name = profileNameById(payload.new.analyst_id);
+        if(name){
+          let row = dailyLog.find(r=>r.date === payload.new.log_date);
+          if(!row){ row = { date: payload.new.log_date }; dailyLog.push(row); dailyLog.sort((a,b)=> a.date<b.date?-1:a.date>b.date?1:0); }
+          row[name] = payload.new.task || "";
+        }
+      }
+      renderDaily();
+    }).subscribe();
+  realtimeChannels = [profilesChannel, projectsChannel, dailyChannel];
+}
+function unsubscribeRealtime(){
+  realtimeChannels.forEach(ch=>sb.removeChannel(ch));
+  realtimeChannels = [];
+}
+
+/* ============================================================
+   AUTH LIFECYCLE
+   ============================================================ */
+async function onLoggedIn(user){
+  currentUser = user;
+  showLoadingScreen(true);
+  document.getElementById("authScreen").style.display = "none";
+  const { data: profileRow, error: profileErr } = await sb.from("profiles").select("*").eq("auth_user_id", user.id).maybeSingle();
+  if(profileErr){ showToast("Could not load your profile: " + profileErr.message, "danger"); }
+  currentProfile = profileRow || null;
+  updateHeaderUser();
+  const ok = await loadAllData();
+  if(ok){
+    renderEverything();
+    subscribeRealtime();
+    showApp();
+    showToast(`Welcome, ${currentProfile ? currentProfile.full_name : user.email}`);
+  }else{
+    showLoadingScreen(false);
+    showAuthScreen();
+  }
+}
+function onLoggedOut(){
+  unsubscribeRealtime();
+  currentUser = null;
+  currentProfile = null;
+  PROFILES = []; ANALYSTS = []; DAILY_ANALYSTS = [];
+  projects = []; dailyLog = [];
+  document.getElementById("signinEmail") && (document.getElementById("signinEmail").value = "");
+  document.getElementById("signinPassword") && (document.getElementById("signinPassword").value = "");
+  clearAuthMessages();
+  setAuthMode("signin");
+  showAuthScreen();
+}
+async function initAuth(){
+  showLoadingScreen(true);
+  const { data: { session } } = await sb.auth.getSession();
+  if(session && session.user){
+    await onLoggedIn(session.user);
+  }else{
+    showAuthScreen();
+  }
+  sb.auth.onAuthStateChange((event, session)=>{
+    if(event === "SIGNED_IN" && session && (!currentUser || currentUser.id !== session.user.id)){
+      onLoggedIn(session.user);
+    }else if(event === "SIGNED_OUT"){
+      onLoggedOut();
+    }
+  });
+}
+initAuth();
 </script>
 </body>
 </html>
