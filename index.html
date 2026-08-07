@@ -418,7 +418,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
       </div>
       <div>
         <h1>SEO Automation &amp; Projects Dashboard</h1>
-        <p>Sign in with your bankbazaar.com email</p>
+        <p>Sign in with your username</p>
       </div>
     </div>
     <div class="auth-tabs">
@@ -429,13 +429,13 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
     <div class="auth-notice" id="authNotice" style="display:none;"></div>
     <div class="auth-forms">
       <form id="signinForm" class="auth-form active" onsubmit="handleSignin(event)">
-        <label>Email<input type="email" id="signinEmail" placeholder="you@bankbazaar.com" autocomplete="username" required></label>
+        <label>Username<input type="text" id="signinUsername" placeholder="e.g. lochan" autocomplete="username" required></label>
         <label>Password<input type="password" id="signinPassword" placeholder="••••••••" autocomplete="current-password" required></label>
         <button class="btn auth-submit" type="submit" id="signinBtn">Sign in</button>
       </form>
       <form id="signupForm" class="auth-form" onsubmit="handleSignup(event)">
         <label>Full name<input type="text" id="signupName" placeholder="Your name" autocomplete="name" required></label>
-        <label>Email<input type="email" id="signupEmail" placeholder="you@bankbazaar.com" autocomplete="username" required></label>
+        <label>Username<input type="text" id="signupUsername" placeholder="e.g. lochan" autocomplete="username" required></label>
         <label>Password<input type="password" id="signupPassword" placeholder="At least 6 characters" autocomplete="new-password" minlength="6" required></label>
         <button class="btn auth-submit" type="submit" id="signupBtn">Create account</button>
       </form>
@@ -1430,36 +1430,53 @@ function setAuthBusy(formPrefix, busy){
   const btn = document.getElementById(formPrefix + "Btn");
   if(btn){ btn.disabled = busy; btn.textContent = busy ? "Please wait…" : (formPrefix==="signin" ? "Sign in" : "Create account"); }
 }
+function usernameToEmail(username){
+  const clean = (username || "").trim().toLowerCase().replace(/[^a-z0-9._-]/g, "");
+  return `${clean}@bbseo.internal`;
+}
+function isValidUsername(username){
+  const clean = (username || "").trim().toLowerCase().replace(/[^a-z0-9._-]/g, "");
+  return clean.length > 0;
+}
+function friendlyAuthError(message){
+  if(!message) return message;
+  return message
+    .replace(/@bbseo\.internal/gi, "")
+    .replace(/\bemail address\b/gi, "username")
+    .replace(/\bemail\b/gi, "username");
+}
 async function handleSignin(evt){
   evt.preventDefault();
   clearAuthMessages();
-  const email = document.getElementById("signinEmail").value.trim();
+  const username = document.getElementById("signinUsername").value.trim();
   const password = document.getElementById("signinPassword").value;
-  if(!email || !password){ showAuthError("Enter your email and password."); return; }
+  if(!username || !password){ showAuthError("Enter your username and password."); return; }
+  const email = usernameToEmail(username);
   setAuthBusy("signin", true);
   const { error } = await sb.auth.signInWithPassword({ email, password });
   setAuthBusy("signin", false);
-  if(error){ showAuthError(error.message); return; }
+  if(error){ showAuthError(friendlyAuthError(error.message)); return; }
   // onAuthStateChange fires SIGNED_IN and takes it from here.
 }
 async function handleSignup(evt){
   evt.preventDefault();
   clearAuthMessages();
   const full_name = document.getElementById("signupName").value.trim();
-  const email = document.getElementById("signupEmail").value.trim();
+  const username = document.getElementById("signupUsername").value.trim();
   const password = document.getElementById("signupPassword").value;
-  if(!full_name || !email || !password){ showAuthError("Fill in your name, email and password."); return; }
-  if(!isValidEmail(email)){ showAuthError("Enter a valid email address."); return; }
+  if(!full_name || !username || !password){ showAuthError("Fill in your name, username and password."); return; }
+  if(!isValidUsername(username)){ showAuthError("Enter a valid username (letters, numbers, dots, dashes and underscores only)."); return; }
   if(password.length < 6){ showAuthError("Password must be at least 6 characters."); return; }
+  const email = usernameToEmail(username);
   setAuthBusy("signup", true);
   const { data, error } = await sb.auth.signUp({ email, password, options: { data: { full_name } } });
   setAuthBusy("signup", false);
-  if(error){ showAuthError(error.message); return; }
+  if(error){ showAuthError(friendlyAuthError(error.message)); return; }
   if(data && data.session){
     // Confirmations are off for this project — onAuthStateChange handles login.
     return;
   }
-  showAuthNotice("Account created. Check your inbox to confirm your email, then sign in.");
+  showAuthNotice("Account created. You can sign in now.");
   setAuthMode("signin");
 }
 async function handleSignOut(){
@@ -1480,7 +1497,7 @@ function showApp(){
   document.getElementById("appRoot").style.display = "block";
 }
 function updateHeaderUser(){
-  const name = currentProfile ? currentProfile.full_name : (currentUser ? currentUser.email : "—");
+  const name = currentProfile ? currentProfile.full_name : (currentUser && currentUser.email ? currentUser.email.split("@")[0] : "—");
   const initials = initialsOf(name);
   document.getElementById("userName").textContent = name;
   document.getElementById("userAvatar").textContent = initials;
@@ -1614,7 +1631,7 @@ function onLoggedOut(){
   currentProfile = null;
   PROFILES = []; ANALYSTS = []; DAILY_ANALYSTS = [];
   projects = []; dailyLog = [];
-  document.getElementById("signinEmail") && (document.getElementById("signinEmail").value = "");
+  document.getElementById("signinUsername") && (document.getElementById("signinUsername").value = "");
   document.getElementById("signinPassword") && (document.getElementById("signinPassword").value = "");
   clearAuthMessages();
   setAuthMode("signin");
