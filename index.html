@@ -365,6 +365,47 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
   .user-name{font-size:12.5px;font-weight:700;color:var(--text-primary);white-space:nowrap;max-width:140px;overflow:hidden;text-overflow:ellipsis;}
   .sign-out-btn{padding:6px 12px !important;font-size:11.5px !important;}
   @media(max-width:520px){ .user-name{display:none;} }
+
+  /* ============ ROLE BADGE / PERMISSIONS UI ============ */
+  .role-pill{
+    display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:999px;
+    font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;
+    background:var(--surface-1);border:1px solid var(--surface-border);color:var(--text-secondary);
+    white-space:nowrap;flex-shrink:0;cursor:default;
+  }
+  .role-pill.is-admin{
+    color:var(--accent-2);border-color:color-mix(in srgb, var(--accent-2) 40%, var(--surface-border));
+    background:color-mix(in srgb, var(--accent-2) 12%, var(--surface-2));
+  }
+  .role-pill.is-analyst{color:var(--text-secondary);}
+  .role-pill svg{width:10px;height:10px;flex-shrink:0;}
+
+  .mini-avatar{
+    width:21px;height:21px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;
+    background:linear-gradient(135deg,var(--navy),var(--accent-2));color:#fff;font-size:9px;font-weight:700;
+    flex-shrink:0;letter-spacing:0;
+  }
+  .assignee-cell{display:inline-flex;align-items:center;gap:7px;min-width:0;}
+  .assignee-cell .assignee-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12.5px;color:var(--text-primary);}
+  .th-analyst{display:inline-flex;align-items:center;gap:6px;}
+
+  .ro-text{color:var(--text-secondary);font-size:12.5px;display:inline-block;padding:6px 0;line-height:1.4;}
+  .ro-text.ro-muted{color:var(--text-muted);}
+  .ro-tag{
+    display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;color:var(--text-muted);
+    background:var(--surface-1);border:1px solid var(--surface-border);border-radius:999px;padding:4px 9px;
+    white-space:nowrap;cursor:default;text-transform:uppercase;letter-spacing:.02em;
+  }
+  .ro-tag svg{width:10px;height:10px;flex-shrink:0;}
+  tr.row-readonly{background:color-mix(in srgb, var(--surface-1) 55%, transparent);}
+  tr.row-readonly:hover td{background:color-mix(in srgb, var(--surface-1) 70%, transparent);}
+  tr.row-readonly-partial td:first-child{box-shadow:inset 3px 0 0 0 var(--surface-border);}
+  @media(max-width:720px){
+    tr.row-readonly{border-left:3px solid var(--surface-border) !important;}
+  }
+
+  .only-mine-toggle{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--text-secondary);white-space:nowrap;cursor:pointer;user-select:none;}
+  .only-mine-toggle input{width:auto;}
 </style>
 </head>
 <body>
@@ -429,6 +470,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
     <div class="user-chip" id="userChip">
       <span class="user-avatar" id="userAvatar">?</span>
       <span class="user-name" id="userName">—</span>
+      <span class="role-pill" id="roleBadge" title="Your permission level"></span>
       <button class="btn secondary sign-out-btn" onclick="handleSignOut()" title="Sign out">Sign out</button>
     </div>
     <button class="theme-toggle" id="themeToggle" title="Toggle light / dark" aria-label="Toggle light and dark theme" onclick="toggleTheme()">
@@ -495,6 +537,9 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
           <input type="text" id="projectSearch" placeholder="Filter by project or person…" oninput="setProjectSearch(this.value)">
         </span>
+        <label class="only-mine-toggle" id="onlyMineWrap">
+          <input type="checkbox" id="onlyMineToggle" onchange="setOnlyMine(this.checked)"> Show only my rows
+        </label>
         <div class="spacer"></div>
         <button class="btn secondary" onclick="downloadWorkbook()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 19h16"/></svg>
@@ -552,7 +597,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
   <!-- ============ TEAM VIEW ============ -->
   <section id="team" class="view">
     <div class="card">
-      <div class="toolbar">
+      <div class="toolbar" id="teamToolbar">
         <input type="text" id="newPersonName" placeholder="Full name" style="max-width:220px;">
         <input type="email" id="newPersonEmail" placeholder="name@bankbazaar.com" style="max-width:220px;">
         <label style="display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--text-secondary);white-space:nowrap;">
@@ -569,7 +614,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
           <tbody id="teamBody"></tbody>
         </table>
       </div>
-      <p class="hint">People added here show up in the "Assigned to" dropdown on Project Tracker, in the per-analyst chart on Dashboard, and (if checked) as a column in Daily Status Log. Adding, editing, or removing a person saves immediately, same as projects.</p>
+      <p class="hint" id="teamHint">People added here show up in the "Assigned to" dropdown on Project Tracker, in the per-analyst chart on Dashboard, and (if checked) as a column in Daily Status Log. Adding, editing, or removing a person saves immediately, same as projects.</p>
     </div>
   </section>
 
@@ -604,6 +649,7 @@ const PRIORITIES = ["", "High","Medium","Low"];
 const YESNO = ["", "Yes","No"];
 let DAILY_ANALYSTS = [];
 let projectSearchTerm = "";
+let onlyMineFilter = false;
 
 /* ============================================================
    THEME (light/dark) - defaults to light; only switches to dark
@@ -640,6 +686,51 @@ function showToast(message, kind){
   el.querySelector("span:last-child").textContent = message;
   stack.appendChild(el);
   setTimeout(()=>el.remove(), 3000);
+}
+/* Turns a raw Supabase/Postgres error (most commonly an RLS
+   policy violation) into a clear, human message instead of
+   surfacing the raw error text or failing silently. */
+function friendlyWriteError(err, kind){
+  const msg = (err && err.message) || "";
+  const isPermission = /row-level security|permission denied|policy|RLS/i.test(msg);
+  if(isPermission){
+    if(kind === "project") return "You can only edit or delete your own projects. Ask an admin if this needs to change.";
+    if(kind === "daily") return "You can only edit your own daily log entries.";
+    if(kind === "team") return "Only an admin can manage the team roster.";
+    return "You don't have permission to make that change.";
+  }
+  return `Failed to save: ${msg || "unknown error"}`;
+}
+
+/* ============================================================
+   PERMISSIONS / ROLE UI HELPERS
+   ============================================================ */
+const LOCK_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>';
+const SHIELD_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4z"/></svg>';
+function isAdminUser(){ return !!(currentProfile && currentProfile.is_admin); }
+function initialsOf(name){
+  return (name||"?").trim().split(/\s+/).map(w=>w[0]).slice(0,2).join("").toUpperCase() || "?";
+}
+function avatarHtml(name){
+  if(!name) return "";
+  return `<span class="mini-avatar" title="${name}">${initialsOf(name)}</span>`;
+}
+function viewOnlyTag(title){
+  return `<span class="ro-tag" title="${title || 'Only the assigned analyst or an admin can edit this row'}">${LOCK_ICON}View only</span>`;
+}
+function adminOnlyTag(label, title){
+  return `<span class="ro-tag" title="${title || 'Admin only'}">${LOCK_ICON}${label || 'Admin only'}</span>`;
+}
+function canEditProject(p){
+  if(!currentProfile) return false;
+  if(currentProfile.is_admin) return true;
+  return !!p.assignedToId && p.assignedToId === currentProfile.id;
+}
+function canEditDailyColumn(analystName){
+  if(!currentProfile) return false;
+  if(currentProfile.is_admin) return true;
+  const id = profileIdByName(analystName);
+  return !!id && id === currentProfile.id;
 }
 
 const STATUS_COLOR = {
@@ -689,40 +780,55 @@ function selectHtml(name, list, current, id, field){
 function renderProjects(){
   const body = document.getElementById("projectsBody");
   body.innerHTML = "";
+  const onlyMineWrap = document.getElementById("onlyMineWrap");
+  if(onlyMineWrap) onlyMineWrap.style.display = currentProfile ? "" : "none";
   if(projects.length===0){
     body.innerHTML = `<tr class="empty-row"><td colspan="10">No projects yet — click "Add Project" above to create the first one.</td></tr>`;
     return;
   }
   const term = projectSearchTerm.trim().toLowerCase();
-  const entries = projects.filter((p)=>{
+  let entries = projects.filter((p)=>{
     if(!term) return true;
     return (p.project||"").toLowerCase().includes(term) || (p.assignedTo||"").toLowerCase().includes(term);
   });
+  if(onlyMineFilter && currentProfile){
+    entries = entries.filter(p=> p.assignedToId === currentProfile.id);
+  }
   if(entries.length===0){
-    body.innerHTML = `<tr class="empty-row"><td colspan="10">No projects match your filter.</td></tr>`;
+    if(onlyMineFilter){
+      body.innerHTML = `<tr class="empty-row"><td colspan="10">No projects assigned to you yet — nice and clear! Ask an admin to assign one your way, or use "Add Project" above (it'll be assigned to you automatically).</td></tr>`;
+    }else{
+      body.innerHTML = `<tr class="empty-row"><td colspan="10">No projects match your filter.</td></tr>`;
+    }
     return;
   }
+  const isAdmin = isAdminUser();
   entries.forEach((p)=>{
     const id = p.id;
+    const editable = canEditProject(p);
     const tr = document.createElement("tr");
-    tr.className = "status-stripe";
+    tr.className = "status-stripe" + (editable ? "" : " row-readonly");
     tr.style.setProperty("--stripe-color", STATUS_HEX[p.status] || "transparent");
+    const assigneeCell = isAdmin
+      ? selectHtml('assignedTo',["",...ANALYSTS],p.assignedTo,id,'assignedTo')
+      : `<span class="assignee-cell">${avatarHtml(p.assignedTo)}<span class="assignee-name">${p.assignedTo || "—"}</span></span>`;
     tr.innerHTML = `
-      <td data-label="Project"><input type="text" value="${p.project}" onchange="updateProject('${id}','project',this.value)"></td>
-      <td data-label="Assigned to">${selectHtml('assignedTo',["",...ANALYSTS],p.assignedTo,id,'assignedTo')}</td>
-      <td data-label="Status">${selectHtml('status',["",...STATUSES],p.status,id,'status')}</td>
-      <td data-label="Priority">${selectHtml('priority',PRIORITIES,p.priority,id,'priority')}</td>
-      <td data-label="Date Assigned"><input type="date" value="${p.dateAssigned}" onchange="updateProject('${id}','dateAssigned',this.value)"></td>
-      <td data-label="Target Date"><input type="date" value="${p.targetDate}" onchange="updateProject('${id}','targetDate',this.value)"></td>
-      <td data-label="Date Completed"><input type="date" value="${p.dateCompleted}" onchange="updateProject('${id}','dateCompleted',this.value)"></td>
-      <td data-label="Help Needed">${selectHtml('help',YESNO,p.help,id,'help')}</td>
-      <td data-label="Notes"><input type="text" value="${p.notes}" onchange="updateProject('${id}','notes',this.value)"></td>
-      <td data-label=""><button class="btn danger" onclick="deleteProject('${id}')">Delete</button></td>
+      <td data-label="Project">${editable ? `<input type="text" value="${p.project}" onchange="updateProject('${id}','project',this.value)">` : `<span class="ro-text">${p.project || "—"}</span>`}</td>
+      <td data-label="Assigned to">${assigneeCell}</td>
+      <td data-label="Status">${editable ? selectHtml('status',["",...STATUSES],p.status,id,'status') : `<span class="status-pill ${STATUS_PILL_CLASS[p.status]||''}">${p.status||"—"}</span>`}</td>
+      <td data-label="Priority">${editable ? selectHtml('priority',PRIORITIES,p.priority,id,'priority') : `<span class="ro-text">${p.priority || "—"}</span>`}</td>
+      <td data-label="Date Assigned">${editable ? `<input type="date" value="${p.dateAssigned}" onchange="updateProject('${id}','dateAssigned',this.value)">` : `<span class="ro-text">${p.dateAssigned || "—"}</span>`}</td>
+      <td data-label="Target Date">${editable ? `<input type="date" value="${p.targetDate}" onchange="updateProject('${id}','targetDate',this.value)">` : `<span class="ro-text">${p.targetDate || "—"}</span>`}</td>
+      <td data-label="Date Completed">${editable ? `<input type="date" value="${p.dateCompleted}" onchange="updateProject('${id}','dateCompleted',this.value)">` : `<span class="ro-text">${p.dateCompleted || "—"}</span>`}</td>
+      <td data-label="Help Needed">${editable ? selectHtml('help',YESNO,p.help,id,'help') : `<span class="ro-text ${p.help==='Yes'?'help-yes':''}">${p.help || "—"}</span>`}</td>
+      <td data-label="Notes">${editable ? `<input type="text" value="${p.notes}" onchange="updateProject('${id}','notes',this.value)">` : `<span class="ro-text">${p.notes || "—"}</span>`}</td>
+      <td data-label="">${editable ? `<button class="btn danger" onclick="deleteProject('${id}')">Delete</button>` : viewOnlyTag()}</td>
     `;
     body.appendChild(tr);
   });
 }
 function setProjectSearch(v){ projectSearchTerm = v; renderProjects(); }
+function setOnlyMine(v){ onlyMineFilter = v; renderProjects(); }
 
 const PROJECT_FIELD_TO_COLUMN = {
   project:"project", assignedTo:"assigned_to", status:"status", priority:"priority",
@@ -733,6 +839,7 @@ function mapProjectRow(row){
   return {
     id: row.id,
     project: row.project || "",
+    assignedToId: row.assigned_to || null,
     assignedTo: profileNameById(row.assigned_to) || "",
     status: row.status || "",
     priority: row.priority || "",
@@ -746,34 +853,62 @@ function mapProjectRow(row){
 async function updateProject(id, field, value){
   const p = projects.find(x=>x.id===id);
   if(!p) return;
+  const isAdmin = isAdminUser();
+  if(!canEditProject(p) || (field==="assignedTo" && !isAdmin)){
+    showToast("You can only edit your own projects.", "danger");
+    renderProjects();
+    return;
+  }
+  const prevValue = p[field];
   p[field] = value;
   renderAll();
   const column = PROJECT_FIELD_TO_COLUMN[field];
   const payload = {};
   payload[column] = field==="assignedTo" ? (profileIdByName(value) || null) : (value || null);
-  const { error } = await sb.from("projects").update(payload).eq("id", id);
-  if(error){ showToast("Failed to save project change: " + error.message, "danger"); }
+  try{
+    const { error } = await sb.from("projects").update(payload).eq("id", id);
+    if(error) throw error;
+  }catch(err){
+    p[field] = prevValue;
+    renderAll();
+    showToast(friendlyWriteError(err, "project"), "danger");
+  }
 }
 async function addProjectRow(){
+  const isAdmin = isAdminUser();
+  const assignedTo = isAdmin ? null : (currentProfile ? currentProfile.id : null);
   const insertPayload = {
-    project:"", assigned_to:null, status:"", priority:"", date_assigned:null, target_date:null,
+    project:"", assigned_to:assignedTo, status:"", priority:"", date_assigned:null, target_date:null,
     date_completed:null, help_needed:"", notes:"", created_by: currentProfile ? currentProfile.id : null
   };
-  const { data, error } = await sb.from("projects").insert(insertPayload).select().single();
-  if(error){ showToast("Failed to add project: " + error.message, "danger"); return; }
-  projects.push(mapProjectRow(data));
-  renderAll();
-  showToast("Project added");
+  try{
+    const { data, error } = await sb.from("projects").insert(insertPayload).select().single();
+    if(error) throw error;
+    projects.push(mapProjectRow(data));
+    renderAll();
+    showToast(isAdmin ? "Project added" : "Project added — assigned to you");
+  }catch(err){
+    showToast(friendlyWriteError(err, "project"), "danger");
+  }
 }
 async function deleteProject(id){
   const p = projects.find(x=>x.id===id);
-  const name = p && p.project ? `"${p.project}"` : "this project";
+  if(!p) return;
+  if(!canEditProject(p)){
+    showToast("You can only delete your own projects.", "danger");
+    return;
+  }
+  const name = p.project ? `"${p.project}"` : "this project";
   if(!confirm(`Delete ${name}? This can't be undone.`)) return;
-  const { error } = await sb.from("projects").delete().eq("id", id);
-  if(error){ showToast("Failed to delete project: " + error.message, "danger"); return; }
-  projects = projects.filter(x=>x.id!==id);
-  renderAll();
-  showToast("Project deleted", "danger");
+  try{
+    const { error } = await sb.from("projects").delete().eq("id", id);
+    if(error) throw error;
+    projects = projects.filter(x=>x.id!==id);
+    renderAll();
+    showToast("Project deleted", "danger");
+  }catch(err){
+    showToast(friendlyWriteError(err, "project"), "danger");
+  }
 }
 
 /* ============================================================
@@ -787,13 +922,23 @@ function renderDaily(){
     body.innerHTML = `<tr class="empty-row"><td colspan="${colspan}">No daily log entries yet — click "Add Date Row" above.</td></tr>`;
     return;
   }
+  const isAdmin = isAdminUser();
   dailyLog.forEach((row,idx)=>{
     const tr = document.createElement("tr");
-    let cells = `<td data-label="Date"><input type="date" value="${row.date}" onchange="updateDaily(${idx},'date',this.value)"></td>`;
+    if(!isAdmin) tr.className = "row-readonly-partial";
+    let cells = isAdmin
+      ? `<td data-label="Date"><input type="date" value="${row.date}" onchange="updateDaily(${idx},'date',this.value)"></td>`
+      : `<td data-label="Date"><span class="ro-text">${row.date}</span></td>`;
     DAILY_ANALYSTS.forEach(a=>{
-      cells += `<td data-label="${a}"><input type="text" value="${row[a]||''}" onchange="updateDaily(${idx},'${a}',this.value)"></td>`;
+      const editable = canEditDailyColumn(a);
+      const val = row[a]||"";
+      cells += editable
+        ? `<td data-label="${a}"><input type="text" value="${val}" onchange="updateDaily(${idx},'${a}',this.value)"></td>`
+        : `<td data-label="${a}">${val ? `<span class="ro-text">${val}</span>` : `<span class="ro-text ro-muted">—</span>`}</td>`;
     });
-    cells += `<td data-label=""><button class="btn danger" onclick="deleteDaily(${idx})">Delete</button></td>`;
+    cells += isAdmin
+      ? `<td data-label=""><button class="btn danger" onclick="deleteDaily(${idx})">Delete</button></td>`
+      : `<td data-label="">${adminOnlyTag('Admin only', 'Only an admin can delete a full date row (it spans every analyst).')}</td>`;
     tr.innerHTML = cells;
     body.appendChild(tr);
   });
@@ -815,36 +960,60 @@ function buildDailyLogFromRows(rows){
 async function updateDaily(idx, field, value){
   const row = dailyLog[idx];
   if(!row) return;
+  const isAdmin = isAdminUser();
   if(field === "date"){
+    if(!isAdmin){
+      showToast("Only an admin can change the date of a log row (it spans every analyst).", "danger");
+      renderDaily();
+      return;
+    }
     const oldDate = row.date, newDate = value;
     if(!newDate || oldDate === newDate) return;
     row.date = newDate;
     renderDaily();
-    const moves = DAILY_ANALYSTS.filter(a=>row[a]).map(async (a)=>{
-      const analystId = profileIdByName(a);
-      if(!analystId) return;
-      await sb.from("daily_logs").delete().eq("log_date", oldDate).eq("analyst_id", analystId);
-      const { error } = await sb.from("daily_logs").upsert(
-        { log_date: newDate, analyst_id: analystId, task: row[a] }, { onConflict: "log_date,analyst_id" }
-      );
-      if(error) showToast("Failed to move entry: " + error.message, "danger");
-    });
-    await Promise.all(moves);
-    showToast("Date updated");
+    try{
+      const moves = DAILY_ANALYSTS.filter(a=>row[a]).map(async (a)=>{
+        const analystId = profileIdByName(a);
+        if(!analystId) return;
+        await sb.from("daily_logs").delete().eq("log_date", oldDate).eq("analyst_id", analystId);
+        const { error } = await sb.from("daily_logs").upsert(
+          { log_date: newDate, analyst_id: analystId, task: row[a] }, { onConflict: "log_date,analyst_id" }
+        );
+        if(error) throw error;
+      });
+      await Promise.all(moves);
+      showToast("Date updated");
+    }catch(err){
+      row.date = oldDate;
+      renderDaily();
+      showToast(friendlyWriteError(err, "daily"), "danger");
+    }
     return;
   }
-  row[field] = value;
-  renderDaily();
   const analystId = profileIdByName(field);
   if(!analystId){ showToast("Unknown team member column", "danger"); return; }
-  if(value && value.trim() !== ""){
-    const { error } = await sb.from("daily_logs").upsert(
-      { log_date: row.date, analyst_id: analystId, task: value }, { onConflict: "log_date,analyst_id" }
-    );
-    if(error) showToast("Failed to save daily log: " + error.message, "danger");
-  }else{
-    const { error } = await sb.from("daily_logs").delete().eq("log_date", row.date).eq("analyst_id", analystId);
-    if(error) showToast("Failed to clear daily log: " + error.message, "danger");
+  if(!isAdmin && analystId !== currentProfile.id){
+    showToast("You can only edit your own daily log entries.", "danger");
+    renderDaily();
+    return;
+  }
+  const prevValue = row[field];
+  row[field] = value;
+  renderDaily();
+  try{
+    if(value && value.trim() !== ""){
+      const { error } = await sb.from("daily_logs").upsert(
+        { log_date: row.date, analyst_id: analystId, task: value }, { onConflict: "log_date,analyst_id" }
+      );
+      if(error) throw error;
+    }else{
+      const { error } = await sb.from("daily_logs").delete().eq("log_date", row.date).eq("analyst_id", analystId);
+      if(error) throw error;
+    }
+  }catch(err){
+    row[field] = prevValue;
+    renderDaily();
+    showToast(friendlyWriteError(err, "daily"), "danger");
   }
 }
 function addDailyRow(){
@@ -864,19 +1033,27 @@ function addDailyRow(){
 async function deleteDaily(idx){
   const row = dailyLog[idx];
   if(!row) return;
+  if(!isAdminUser()){
+    showToast("Only an admin can delete a full date row.", "danger");
+    return;
+  }
   if(!confirm("Delete this daily log row? This can't be undone.")) return;
-  const { error } = await sb.from("daily_logs").delete().eq("log_date", row.date);
-  if(error){ showToast("Failed to delete daily log row: " + error.message, "danger"); return; }
-  dailyLog.splice(idx,1);
-  renderDaily();
-  showToast("Daily log row deleted", "danger");
+  try{
+    const { error } = await sb.from("daily_logs").delete().eq("log_date", row.date);
+    if(error) throw error;
+    dailyLog.splice(idx,1);
+    renderDaily();
+    showToast("Daily log row deleted", "danger");
+  }catch(err){
+    showToast(friendlyWriteError(err, "daily"), "danger");
+  }
 }
 
 function renderDailyHeader(){
   const headRow = document.querySelector("#dailyTable thead tr");
   if(!headRow) return;
   headRow.innerHTML = `<th style="min-width:110px;">Date</th>` +
-    DAILY_ANALYSTS.map(a=>`<th>${a}</th>`).join("") +
+    DAILY_ANALYSTS.map(a=>`<th><span class="th-analyst" title="${canEditDailyColumn(a) ? 'You can edit this column' : 'Read-only for you'}">${avatarHtml(a)}${a}</span></th>`).join("") +
     `<th></th>`;
 }
 
@@ -894,13 +1071,22 @@ function applyProfiles(){
   DAILY_ANALYSTS = PROFILES.filter(p=>p.include_in_daily_log).map(p=>p.full_name);
 }
 function renderTeam(){
+  const isAdmin = isAdminUser();
   const badge = document.getElementById("teamBadge");
   if(badge) badge.innerHTML = `<span class="dot" style="background:var(--good)"></span>${ANALYSTS.length} team member${ANALYSTS.length===1?"":"s"}`;
+  const toolbar = document.getElementById("teamToolbar");
+  if(toolbar) toolbar.style.display = isAdmin ? "" : "none";
+  const hint = document.getElementById("teamHint");
+  if(hint){
+    hint.textContent = isAdmin
+      ? 'People added here show up in the "Assigned to" dropdown on Project Tracker, in the per-analyst chart on Dashboard, and (if checked) as a column in Daily Status Log. Adding, editing, or removing a person saves immediately, same as projects.'
+      : 'Read-only roster — adding, removing, or editing team members is limited to admins. Reach out to an admin if this list needs a change.';
+  }
   const body = document.getElementById("teamBody");
   if(!body) return;
   body.innerHTML = "";
   if(ANALYSTS.length===0){
-    body.innerHTML = `<tr class="empty-row"><td colspan="4">No one on the team yet — add the first person above.</td></tr>`;
+    body.innerHTML = `<tr class="empty-row"><td colspan="4">No one on the team yet${isAdmin ? ' — add the first person above.' : '.'}</td></tr>`;
     return;
   }
   PROFILES.forEach(profile=>{
@@ -909,11 +1095,16 @@ function renderTeam(){
     const assignedCount = projects.filter(p=>p.assignedTo===name).length;
     const safeName = name.replace(/'/g,"\\'");
     const tr = document.createElement("tr");
+    const nameCell = `<span class="assignee-cell">${avatarHtml(name)}<span class="assignee-name">${name}</span>${profile.is_admin ? `<span class="role-pill is-admin" style="padding:2px 7px;font-size:9px;">${SHIELD_ICON}Admin</span>` : ""}</span>`;
+    const toggleCell = isAdmin
+      ? `<input type="checkbox" style="width:auto;" ${inDaily?"checked":""} onchange="toggleDailyInclude('${safeName}', this.checked)">`
+      : `<span class="status-pill ${inDaily?'pill-done':'pill-assigned'}">${inDaily?"Yes":"No"}</span>`;
+    const deleteCell = isAdmin ? `<button class="btn danger" onclick="deletePerson('${safeName}')">Delete</button>` : "";
     tr.innerHTML = `
-      <td data-label="Name">${name}</td>
-      <td data-label="In Daily Log"><input type="checkbox" style="width:auto;" ${inDaily?"checked":""} onchange="toggleDailyInclude('${safeName}', this.checked)"></td>
+      <td data-label="Name">${nameCell}</td>
+      <td data-label="In Daily Log">${toggleCell}</td>
       <td data-label="Projects Assigned">${assignedCount}</td>
-      <td data-label=""><button class="btn danger" onclick="deletePerson('${safeName}')">Delete</button></td>
+      <td data-label="">${deleteCell}</td>
     `;
     body.appendChild(tr);
   });
@@ -922,6 +1113,7 @@ function isValidEmail(email){
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((email||"").trim());
 }
 async function addPerson(){
+  if(!isAdminUser()){ showToast("Only an admin can add team members.", "danger"); return; }
   const nameInput = document.getElementById("newPersonName");
   const emailInput = document.getElementById("newPersonEmail");
   const name = nameInput.value.trim();
@@ -930,21 +1122,26 @@ async function addPerson(){
   if(!isValidEmail(email)){ showToast("Enter a valid email address", "danger"); return; }
   if(ANALYSTS.includes(name)){ showToast("That person is already on the team.", "danger"); return; }
   const includeDaily = document.getElementById("newPersonDaily").checked;
-  const { data, error } = await sb.from("profiles")
-    .insert({ full_name: name, email: email, include_in_daily_log: includeDaily })
-    .select().single();
-  if(error){ showToast("Failed to add person: " + error.message, "danger"); return; }
-  PROFILES.push(data);
-  applyProfiles();
-  nameInput.value = ""; emailInput.value = "";
-  document.getElementById("newPersonDaily").checked = true;
-  renderTeam();
-  renderDailyHeader();
-  renderDaily();
-  renderAll();
-  showToast(`${name} added to the team`);
+  try{
+    const { data, error } = await sb.from("profiles")
+      .insert({ full_name: name, email: email, include_in_daily_log: includeDaily })
+      .select().single();
+    if(error) throw error;
+    PROFILES.push(data);
+    applyProfiles();
+    nameInput.value = ""; emailInput.value = "";
+    document.getElementById("newPersonDaily").checked = true;
+    renderTeam();
+    renderDailyHeader();
+    renderDaily();
+    renderAll();
+    showToast(`${name} added to the team`);
+  }catch(err){
+    showToast(friendlyWriteError(err, "team"), "danger");
+  }
 }
 async function toggleDailyInclude(name, include){
+  if(!isAdminUser()){ showToast("Only an admin can change this.", "danger"); renderTeam(); return; }
   const profile = profileByName(name);
   if(!profile) return;
   profile.include_in_daily_log = include;
@@ -955,10 +1152,15 @@ async function toggleDailyInclude(name, include){
   renderDailyHeader();
   renderDaily();
   renderTeam();
-  const { error } = await sb.from("profiles").update({ include_in_daily_log: include }).eq("id", profile.id);
-  if(error){ showToast("Failed to update daily log setting: " + error.message, "danger"); }
+  try{
+    const { error } = await sb.from("profiles").update({ include_in_daily_log: include }).eq("id", profile.id);
+    if(error) throw error;
+  }catch(err){
+    showToast(friendlyWriteError(err, "team"), "danger");
+  }
 }
 async function deletePerson(name){
+  if(!isAdminUser()){ showToast("Only an admin can remove team members.", "danger"); return; }
   const profile = profileByName(name);
   if(!profile) return;
   const assignedCount = projects.filter(p=>p.assignedTo===name).length;
@@ -966,8 +1168,13 @@ async function deletePerson(name){
     ? `${name} is assigned to ${assignedCount} project(s). Remove them from the team anyway? Those projects will keep "${name}" until you reassign them.`
     : `Remove ${name} from the team?`;
   if(!confirm(msg)) return;
-  const { error } = await sb.from("profiles").delete().eq("id", profile.id);
-  if(error){ showToast("Failed to remove person: " + error.message, "danger"); return; }
+  try{
+    const { error } = await sb.from("profiles").delete().eq("id", profile.id);
+    if(error) throw error;
+  }catch(err){
+    showToast(friendlyWriteError(err, "team"), "danger");
+    return;
+  }
   PROFILES = PROFILES.filter(p=>p.id!==profile.id);
   applyProfiles();
   renderTeam();
@@ -1274,9 +1481,23 @@ function showApp(){
 }
 function updateHeaderUser(){
   const name = currentProfile ? currentProfile.full_name : (currentUser ? currentUser.email : "—");
-  const initials = (name||"?").trim().split(/\s+/).map(w=>w[0]).slice(0,2).join("").toUpperCase() || "?";
+  const initials = initialsOf(name);
   document.getElementById("userName").textContent = name;
   document.getElementById("userAvatar").textContent = initials;
+  const roleBadge = document.getElementById("roleBadge");
+  if(roleBadge){
+    if(!currentProfile){
+      roleBadge.style.display = "none";
+    }else{
+      const isAdmin = !!currentProfile.is_admin;
+      roleBadge.style.display = "";
+      roleBadge.innerHTML = (isAdmin ? SHIELD_ICON : "") + (isAdmin ? "Admin" : "Analyst");
+      roleBadge.className = "role-pill " + (isAdmin ? "is-admin" : "is-analyst");
+      roleBadge.title = isAdmin
+        ? "Admin — you can manage every project, daily log entry, and team member."
+        : "Analyst — you can manage your own projects and daily log entries.";
+    }
+  }
 }
 
 /* ============================================================
@@ -1320,6 +1541,12 @@ function subscribeRealtime(){
       }else{
         const idx = PROFILES.findIndex(p=>p.id === payload.new.id);
         if(idx>-1) PROFILES[idx] = payload.new; else PROFILES.push(payload.new);
+        // Keep our own permission state (is_admin etc.) fresh in case
+        // another admin changed it while this tab is open.
+        if(currentProfile && payload.new.id === currentProfile.id){
+          currentProfile = payload.new;
+          updateHeaderUser();
+        }
       }
       applyProfiles();
       renderEverything();
