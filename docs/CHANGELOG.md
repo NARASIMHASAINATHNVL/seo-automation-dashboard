@@ -10,6 +10,47 @@ All notable changes to the SEO Automation & Projects Dashboard.
 - `seo-automation-dashboard-data.sample.json` — example/reference data file.
 - A registered Claude Skill for maintaining this project in future sessions.
 
+## 2026-08-14 — Admin-only login provisioning; self-signup removed
+
+### Changed
+- **Self-signup removed entirely.** The login screen no longer offers any
+  path to create an account — `#authScreen` now shows only the username +
+  password sign-in form. Removed `.auth-tabs` (the `#authTabSignin` /
+  `#authTabSignup` tab switcher), the entire `<form id="signupForm">`
+  block, and the `.auth-switch-hint` paragraph (`#switchToSignup` /
+  `#switchToSignin`) from the HTML.
+- In `<script>`: removed the now-dead `setAuthMode(mode)`,
+  `handleSignup(evt)`, and `isValidUsername(username)` functions, and the
+  unused `authMode` state variable. Simplified `setAuthBusy()` (no longer
+  branches on signin vs signup button copy). `onLoggedOut()` no longer
+  calls `setAuthMode("signin")` (redundant with its existing
+  `clearAuthMessages()` call). Kept `usernameToEmail()`,
+  `friendlyAuthError()`, `handleSignin()`, `showAuthError()`,
+  `showAuthNotice()`, `clearAuthMessages()`, `setAuthBusy()` unchanged —
+  sign-in still depends on all of them.
+
+### Added
+- **Admin-only login provisioning on the Team tab.** `renderTeam()`'s
+  actions cell now shows, admin-only, either **"Set up login"** (for a
+  profile with no `auth_user_id` yet) or **"Reset password"** (for a
+  profile that already has one), alongside the existing Delete button.
+- `promptSetupLogin(profileId, fullName)` and
+  `promptResetPassword(profileId, fullName)` (defined after
+  `deletePerson()`): prompt for a username/password (or just password for
+  reset), validate the 6-character minimum client-side, then call the
+  already-deployed `admin-manage-users` Supabase Edge Function via
+  `sb.functions.invoke('admin-manage-users', { body: { action:
+  'create_login'|'reset_password', ... } })`. Real server errors are
+  unwrapped via `await error.context.json()` (the SDK's `error.message`
+  only ever says "Edge Function returned a non-2xx status code") and shown
+  via `showToast(msg, "danger")`. On successful login creation, the
+  profile row is re-fetched from `profiles` and `PROFILES` is patched in
+  place so the "Set up login" button flips to "Reset password" without a
+  full reload.
+- The Edge Function itself verifies the caller is an admin server-side
+  (via session JWT + `profiles.is_admin`) — the frontend still gates
+  button visibility to admins for UX, but is not the security boundary.
+
 ## 2026-08-14 — Gamified leaderboard + UI polish
 
 ### Added

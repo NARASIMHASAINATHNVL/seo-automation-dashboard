@@ -476,10 +476,6 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
         <p>Sign in with your username</p>
       </div>
     </div>
-    <div class="auth-tabs">
-      <button type="button" class="auth-tab active" id="authTabSignin" onclick="setAuthMode('signin')">Sign in</button>
-      <button type="button" class="auth-tab" id="authTabSignup" onclick="setAuthMode('signup')">Create account</button>
-    </div>
     <div class="auth-error" id="authError" style="display:none;"></div>
     <div class="auth-notice" id="authNotice" style="display:none;"></div>
     <div class="auth-forms">
@@ -488,17 +484,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
         <label>Password<input type="password" id="signinPassword" placeholder="••••••••" autocomplete="current-password" required></label>
         <button class="btn auth-submit" type="submit" id="signinBtn">Sign in</button>
       </form>
-      <form id="signupForm" class="auth-form" onsubmit="handleSignup(event)">
-        <label>Full name<input type="text" id="signupName" placeholder="Your name" autocomplete="name" required></label>
-        <label>Username<input type="text" id="signupUsername" placeholder="e.g. lochan" autocomplete="username" required></label>
-        <label>Password<input type="password" id="signupPassword" placeholder="At least 6 characters" autocomplete="new-password" minlength="6" required></label>
-        <button class="btn auth-submit" type="submit" id="signupBtn">Create account</button>
-      </form>
     </div>
-    <p class="auth-switch-hint">
-      <span id="switchToSignup">New here? <a onclick="setAuthMode('signup')">Create an account</a></span>
-      <span id="switchToSignin" style="display:none;">Already have an account? <a onclick="setAuthMode('signin')">Sign in</a></span>
-    </p>
   </div>
 </div>
 
@@ -715,7 +701,6 @@ let currentUser = null;      // supabase auth user object
 let currentProfile = null;   // matching row from profiles
 let PROFILES = [];           // raw profiles rows from DB: {id, full_name, email, auth_user_id, include_in_daily_log}
 let realtimeChannels = [];   // active postgres_changes subscriptions
-let authMode = "signin";
 
 /* ============================================================
    CANONICAL LISTS - mirrors the hidden "Lists" sheet in
@@ -1183,12 +1168,18 @@ function renderTeam(){
     const toggleCell = isAdmin
       ? `<input type="checkbox" style="width:auto;" ${inDaily?"checked":""} onchange="toggleDailyInclude('${safeName}', this.checked)">`
       : `<span class="status-pill ${inDaily?'pill-done':'pill-assigned'}">${inDaily?"Yes":"No"}</span>`;
+    const loginCell = isAdmin
+      ? (profile.auth_user_id
+          ? `<button class="btn" onclick="promptResetPassword('${profile.id}','${safeName}')">Reset password</button>`
+          : `<button class="btn" onclick="promptSetupLogin('${profile.id}','${safeName}')">Set up login</button>`)
+      : "";
     const deleteCell = isAdmin ? `<button class="btn danger" onclick="deletePerson('${safeName}')">Delete</button>` : "";
+    const actionsCell = isAdmin ? `<div style="display:flex;gap:6px;flex-wrap:wrap;">${loginCell}${deleteCell}</div>` : "";
     tr.innerHTML = `
       <td data-label="Name">${nameCell}</td>
       <td data-label="In Daily Log">${toggleCell}</td>
       <td data-label="Projects Assigned">${assignedCount}</td>
-      <td data-label="">${deleteCell}</td>
+      <td data-label="">${actionsCell}</td>
     `;
     body.appendChild(tr);
   });
@@ -1266,6 +1257,48 @@ async function deletePerson(name){
   renderDaily();
   renderAll();
   showToast(`${name} removed from the team`, "danger");
+}
+async function promptSetupLogin(profileId, fullName){
+  if(!isAdminUser()){ showToast("Only an admin can do this.", "danger"); return; }
+  const suggested = (fullName||"").trim().toLowerCase().replace(/[^a-z0-9]+/g,"").slice(0,20);
+  const username = prompt(`Choose a username for ${fullName} (they'll use this to sign in):`, suggested);
+  if(!username) return;
+  const password = prompt(`Set a password for ${fullName} (at least 6 characters). Share this with them securely.`);
+  if(!password) return;
+  if(password.length < 6){ showToast("Password must be at least 6 characters.", "danger"); return; }
+  const { data, error } = await sb.functions.invoke('admin-manage-users', {
+    body: { action: 'create_login', profile_id: profileId, username, password }
+  });
+  if(error){
+    let msg = "Failed to create login.";
+    try{ const body = await error.context.json(); if(body && body.error) msg = body.error; }catch(e){}
+    showToast(msg, "danger");
+    return;
+  }
+  const { data: fresh, error: fetchErr } = await sb.from("profiles").select("*").eq("id", profileId).single();
+  if(!fetchErr && fresh){
+    const idx = PROFILES.findIndex(p=>p.id===profileId);
+    if(idx>=0) PROFILES[idx] = fresh;
+    applyProfiles();
+    renderTeam();
+  }
+  showToast(`Login created for ${fullName} — username: ${data.username}`);
+}
+async function promptResetPassword(profileId, fullName){
+  if(!isAdminUser()){ showToast("Only an admin can do this.", "danger"); return; }
+  const password = prompt(`Set a new password for ${fullName} (at least 6 characters). Share this with them securely.`);
+  if(!password) return;
+  if(password.length < 6){ showToast("Password must be at least 6 characters.", "danger"); return; }
+  const { data, error } = await sb.functions.invoke('admin-manage-users', {
+    body: { action: 'reset_password', profile_id: profileId, new_password: password }
+  });
+  if(error){
+    let msg = "Failed to reset password.";
+    try{ const body = await error.context.json(); if(body && body.error) msg = body.error; }catch(e){}
+    showToast(msg, "danger");
+    return;
+  }
+  showToast(`Password updated for ${fullName}.`);
 }
 
 /* ============================================================
@@ -1595,20 +1628,12 @@ function renderAll(){
 }
 
 /* ============================================================
-   AUTH — sign in / sign up / sign out, gating the app behind a
-   bankbazaar.com login. Real persistence lives entirely in
-   Supabase; nothing app-data-related touches localStorage.
+   AUTH — sign in / sign out, gating the app behind a
+   bankbazaar.com login. Logins are admin-provisioned only (see
+   admin-manage-users Edge Function calls in the TEAM section).
+   Real persistence lives entirely in Supabase; nothing
+   app-data-related touches localStorage.
    ============================================================ */
-function setAuthMode(mode){
-  authMode = mode;
-  document.getElementById("authTabSignin").classList.toggle("active", mode==="signin");
-  document.getElementById("authTabSignup").classList.toggle("active", mode==="signup");
-  document.getElementById("signinForm").classList.toggle("active", mode==="signin");
-  document.getElementById("signupForm").classList.toggle("active", mode==="signup");
-  document.getElementById("switchToSignup").style.display = mode==="signin" ? "" : "none";
-  document.getElementById("switchToSignin").style.display = mode==="signup" ? "" : "none";
-  clearAuthMessages();
-}
 function showAuthError(message){
   const el = document.getElementById("authError");
   el.textContent = message;
@@ -1627,15 +1652,11 @@ function clearAuthMessages(){
 }
 function setAuthBusy(formPrefix, busy){
   const btn = document.getElementById(formPrefix + "Btn");
-  if(btn){ btn.disabled = busy; btn.textContent = busy ? "Please wait…" : (formPrefix==="signin" ? "Sign in" : "Create account"); }
+  if(btn){ btn.disabled = busy; btn.textContent = busy ? "Please wait…" : "Sign in"; }
 }
 function usernameToEmail(username){
   const clean = (username || "").trim().toLowerCase().replace(/[^a-z0-9._-]/g, "");
   return `${clean}@bbseo.internal`;
-}
-function isValidUsername(username){
-  const clean = (username || "").trim().toLowerCase().replace(/[^a-z0-9._-]/g, "");
-  return clean.length > 0;
 }
 function friendlyAuthError(message){
   if(!message) return message;
@@ -1656,27 +1677,6 @@ async function handleSignin(evt){
   setAuthBusy("signin", false);
   if(error){ showAuthError(friendlyAuthError(error.message)); return; }
   // onAuthStateChange fires SIGNED_IN and takes it from here.
-}
-async function handleSignup(evt){
-  evt.preventDefault();
-  clearAuthMessages();
-  const full_name = document.getElementById("signupName").value.trim();
-  const username = document.getElementById("signupUsername").value.trim();
-  const password = document.getElementById("signupPassword").value;
-  if(!full_name || !username || !password){ showAuthError("Fill in your name, username and password."); return; }
-  if(!isValidUsername(username)){ showAuthError("Enter a valid username (letters, numbers, dots, dashes and underscores only)."); return; }
-  if(password.length < 6){ showAuthError("Password must be at least 6 characters."); return; }
-  const email = usernameToEmail(username);
-  setAuthBusy("signup", true);
-  const { data, error } = await sb.auth.signUp({ email, password, options: { data: { full_name } } });
-  setAuthBusy("signup", false);
-  if(error){ showAuthError(friendlyAuthError(error.message)); return; }
-  if(data && data.session){
-    // Confirmations are off for this project — onAuthStateChange handles login.
-    return;
-  }
-  showAuthNotice("Account created. You can sign in now.");
-  setAuthMode("signin");
 }
 async function handleSignOut(){
   await sb.auth.signOut();
@@ -1833,7 +1833,6 @@ function onLoggedOut(){
   document.getElementById("signinUsername") && (document.getElementById("signinUsername").value = "");
   document.getElementById("signinPassword") && (document.getElementById("signinPassword").value = "");
   clearAuthMessages();
-  setAuthMode("signin");
   showAuthScreen();
 }
 async function initAuth(){
