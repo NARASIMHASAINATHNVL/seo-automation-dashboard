@@ -962,7 +962,7 @@ async function addProjectRow(){
   const isAdmin = isAdminUser();
   const assignedTo = isAdmin ? null : (currentProfile ? currentProfile.id : null);
   const insertPayload = {
-    project:"", assigned_to:assignedTo, status:"", priority:"", date_assigned:null, target_date:null,
+    project:"", assigned_to:assignedTo, status:"Assigned", priority:"", date_assigned:null, target_date:null,
     date_completed:null, help_needed:"", notes:"", created_by: currentProfile ? currentProfile.id : null
   };
   try{
@@ -970,7 +970,7 @@ async function addProjectRow(){
     if(error) throw error;
     projects.push(mapProjectRow(data));
     renderAll();
-    showToast(isAdmin ? "Project added" : "Project added — assigned to you");
+    showToast(isAdmin ? "Project added — pick an assignee in the row below" : "Project added — assigned to you");
   }catch(err){
     showToast(friendlyWriteError(err, "project"), "danger");
   }
