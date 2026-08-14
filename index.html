@@ -470,6 +470,29 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
   @media(max-width:720px){
     .dash-champion-inner{flex-direction:column;align-items:flex-start;}
   }
+
+  /* ============ OVERDUE / STALE ALERTS ============ */
+  .dash-alert-card{margin-bottom:16px;padding:12px 18px;border:1px solid color-mix(in srgb, var(--critical) 45%, var(--surface-border));background:linear-gradient(150deg, color-mix(in srgb, var(--critical) 10%, var(--surface-2)), var(--surface-2) 65%);}
+  .dash-alert-card.is-clear{border-color:var(--surface-border);background:var(--surface-2);}
+  .dash-alert-inner{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;}
+  .dash-alert-text{display:flex;align-items:center;gap:10px;}
+  .dash-alert-icon{font-size:18px;}
+  .dash-alert-label{font-size:10.5px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.03em;}
+  .dash-alert-count{font-size:14px;font-weight:800;color:var(--critical);}
+  .dash-alert-count.is-clear{color:var(--good);}
+  .dash-alert-sub{font-size:12px;font-weight:600;color:var(--text-secondary);}
+  @media(max-width:720px){ .dash-alert-inner{flex-direction:column;align-items:flex-start;} }
+
+  .staleness-tag{display:inline-flex;align-items:center;gap:4px;font-size:9.5px;font-weight:800;padding:2px 7px;border-radius:999px;text-transform:uppercase;letter-spacing:.02em;margin-left:6px;white-space:nowrap;}
+  .staleness-tag.type-overdue{background:color-mix(in srgb, var(--critical) 16%, transparent);color:var(--critical);}
+  .staleness-tag.type-stale{background:color-mix(in srgb, var(--warning) 18%, transparent);color:var(--warning);}
+
+  /* ============ BADGES ============ */
+  .badge-row{display:inline-flex;flex-wrap:wrap;gap:4px;margin-top:3px;}
+  .badge-chip{display:inline-flex;align-items:center;gap:3px;font-size:9.5px;font-weight:700;padding:2px 7px;border-radius:999px;background:var(--surface-1);border:1px solid var(--surface-border);color:var(--text-secondary);white-space:nowrap;}
+
+  /* ============ MY WORK ============ */
+  .kpi-row.kpi-row-5{grid-template-columns:repeat(5,1fr);}
 </style>
 </head>
 <body>
@@ -530,6 +553,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
 </header>
 
 <nav>
+  <button class="tab-btn" data-view="mywork">My Work</button>
   <button class="tab-btn active" data-view="dashboard">Dashboard</button>
   <button class="tab-btn" data-view="projects">Project Tracker</button>
   <button class="tab-btn" data-view="daily">Daily Status Log</button>
@@ -538,6 +562,47 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
 </nav>
 
 <main>
+
+  <!-- ============ MY WORK VIEW ============ -->
+  <section id="mywork" class="view">
+    <div class="card" id="myWorkNoProfileCard" style="display:none;">
+      <h2><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>My Work</h2>
+      <p class="hint">Sign in with an account linked to a team profile to see your personal work summary here.</p>
+    </div>
+    <div id="myWorkContent">
+      <div class="kpi-row kpi-row-5">
+        <div class="kpi assigned"><div class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div><div class="lbl">Assigned</div><div class="val" id="mwAssigned">0</div><div class="kpi-bar"><div class="kpi-bar-fill" id="mwAssignedBar"></div></div></div>
+        <div class="kpi ongoing"><div class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div><div class="lbl">Ongoing</div><div class="val" id="mwOngoing">0</div><div class="kpi-bar"><div class="kpi-bar-fill" id="mwOngoingBar"></div></div></div>
+        <div class="kpi review"><div class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg></div><div class="lbl">Review Pending</div><div class="val" id="mwReview">0</div><div class="kpi-bar"><div class="kpi-bar-fill" id="mwReviewBar"></div></div></div>
+        <div class="kpi done"><div class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg></div><div class="lbl">Completed &amp; Approved</div><div class="val" id="mwDone">0</div><div class="kpi-bar"><div class="kpi-bar-fill" id="mwDoneBar"></div></div></div>
+        <div class="kpi help"><div class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg></div><div class="lbl">Overdue / Stale</div><div class="val" id="mwFlagged">0</div><div class="kpi-bar"><div class="kpi-bar-fill" id="mwFlaggedBar"></div></div></div>
+      </div>
+
+      <div class="card">
+        <h2><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21h16M7 3h10l-1 8a4 4 0 01-8 0L7 3z"/><path d="M7 5H4a3 3 0 003 5M17 5h3a3 3 0 01-3 5"/></svg>My Progress</h2>
+        <div class="leaderboard-row" style="border-bottom:none;padding:6px 4px;">
+          <div id="mwAvatar"></div>
+          <div class="lb-info">
+            <div class="lb-name" id="mwName">—</div>
+            <div class="progress-bar"><div class="progress-fill" id="mwProgressFill" style="width:0%"></div></div>
+            <div class="lb-meta" id="mwProgressText"></div>
+            <div id="mwStreakBadges" style="margin-top:6px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>My Projects</h2>
+        <div class="table-wrap">
+          <table id="myWorkTable">
+            <thead><tr><th>Project / Automation</th><th>Status</th><th>Priority</th><th>Target Date</th><th>Date Completed</th></tr></thead>
+            <tbody id="myWorkBody"></tbody>
+          </table>
+        </div>
+        <div class="hint" id="myWorkEmptyMsg" style="display:none;">No projects assigned to you yet.</div>
+      </div>
+    </div>
+  </section>
 
   <!-- ============ DASHBOARD VIEW ============ -->
   <section id="dashboard" class="view active">
@@ -552,6 +617,10 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
 
     <div class="card dash-champion-card" id="dashChampionCard">
       <div class="dash-champion-inner" id="dashChampionInner"></div>
+    </div>
+
+    <div class="card dash-alert-card" id="dashAlertCard">
+      <div class="dash-alert-inner" id="dashAlertInner"></div>
     </div>
 
     <div class="charts-row">
@@ -577,6 +646,12 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
       <h2><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>Projects Needing Help / Assistance</h2>
       <table id="helpTable"><thead><tr><th>Project</th><th>Assigned to</th><th>Status</th><th>Notes</th></tr></thead><tbody></tbody></table>
       <div class="hint" id="noHelpMsg" style="display:none;">Nothing flagged right now — nice.</div>
+    </div>
+
+    <div class="card">
+      <h2><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>Overdue / Stale Projects</h2>
+      <table id="staleTable"><thead><tr><th>Project</th><th>Assigned to</th><th>Status</th><th>Flag</th></tr></thead><tbody></tbody></table>
+      <div class="hint" id="noStaleMsg" style="display:none;">Nothing overdue or stale right now — clean.</div>
     </div>
   </section>
 
@@ -683,6 +758,14 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
       <div class="card spotlight-card spotlight-overall" id="spotlightOverall">
         <h2><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21h16M7 3h10l-1 8a4 4 0 01-8 0L7 3z"/><path d="M7 5H4a3 3 0 003 5M17 5h3a3 3 0 01-3 5"/></svg>Champion Overall</h2>
         <div class="spotlight-body" id="spotlightOverallBody"></div>
+      </div>
+    </div>
+
+    <div class="card chart-card">
+      <h2><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>Completions — Last 8 Weeks</h2>
+      <div style="position:relative;">
+        <svg id="trendChart" width="100%" height="260" viewBox="0 0 760 260"></svg>
+        <div class="tooltip" id="trendTooltip"></div>
       </div>
     </div>
 
@@ -890,10 +973,12 @@ function renderProjects(){
     const assigneeCell = isAdmin
       ? selectHtml('assignedTo',["",...ANALYSTS],p.assignedTo,id,'assignedTo')
       : `<span class="assignee-cell">${avatarHtml(p.assignedTo)}<span class="assignee-name">${p.assignedTo || "—"}</span></span>`;
+    const staleness = getProjectStaleness(p);
+    const stalenessTag = staleness ? `<span class="staleness-tag type-${staleness.type}" title="${staleness.label}">${staleness.type==='overdue'?'⚠':'⏳'} ${staleness.type==='overdue'?'Overdue':'Stale'}</span>` : '';
     tr.innerHTML = `
       <td data-label="Project">${editable ? `<input type="text" value="${p.project}" onchange="updateProject('${id}','project',this.value)">` : `<span class="ro-text">${p.project || "—"}</span>`}</td>
       <td data-label="Assigned to">${assigneeCell}</td>
-      <td data-label="Status">${editable ? selectHtml('status',["",...STATUSES],p.status,id,'status') : `<span class="status-pill ${STATUS_PILL_CLASS[p.status]||''}">${p.status||"—"}</span>`}</td>
+      <td data-label="Status">${editable ? selectHtml('status',["",...STATUSES],p.status,id,'status') : `<span class="status-pill ${STATUS_PILL_CLASS[p.status]||''}">${p.status||"—"}</span>`}${stalenessTag}</td>
       <td data-label="Priority">${editable ? selectHtml('priority',PRIORITIES,p.priority,id,'priority') : `<span class="ro-text">${p.priority || "—"}</span>`}</td>
       <td data-label="Date Assigned">${editable ? `<input type="date" value="${p.dateAssigned}" onchange="updateProject('${id}','dateAssigned',this.value)">` : `<span class="ro-text">${p.dateAssigned || "—"}</span>`}</td>
       <td data-label="Target Date">${editable ? `<input type="date" value="${p.targetDate}" onchange="updateProject('${id}','targetDate',this.value)">` : `<span class="ro-text">${p.targetDate || "—"}</span>`}</td>
@@ -1173,7 +1258,7 @@ function renderTeam(){
     const assignedCount = projects.filter(p=>p.assignedTo===name).length;
     const safeName = name.replace(/'/g,"\\'");
     const tr = document.createElement("tr");
-    const nameCell = `<span class="assignee-cell">${avatarHtml(name)}<span class="assignee-name">${name}</span>${profile.is_admin ? `<span class="role-pill is-admin" style="padding:2px 7px;font-size:9px;">${SHIELD_ICON}Admin</span>` : ""}</span>`;
+    const nameCell = `<span class="assignee-cell">${avatarHtml(name)}<span class="assignee-name">${name}</span>${profile.is_admin ? `<span class="role-pill is-admin" style="padding:2px 7px;font-size:9px;">${SHIELD_ICON}Admin</span>` : ""}</span>${badgesHtml(name, projects)}`;
     const toggleCell = isAdmin
       ? `<input type="checkbox" style="width:auto;" ${inDaily?"checked":""} onchange="toggleDailyInclude('${safeName}', this.checked)">`
       : `<span class="status-pill ${inDaily?'pill-done':'pill-assigned'}">${inDaily?"Yes":"No"}</span>`;
@@ -1328,6 +1413,137 @@ function computeSummary(){
   return {perAnalyst, totals, needHelp, total: projects.length};
 }
 
+/* ============================================================
+   OVERDUE / STALE DETECTION - purely derived from `projects`
+   already in memory. No DB reads/writes.
+   Overdue: targetDate set, targetDate < today, status not
+   "Completed & Approved". Stale (only if not overdue): status is
+   Ongoing/Review Pending, dateAssigned set, and it's been open
+   >=14 days. "Assigned" and "Completed & Approved" rows are
+   never flagged either way.
+   ============================================================ */
+function getProjectStaleness(p){
+  if(!p || !p.status || p.status === "Completed & Approved" || p.status === "Assigned") return null;
+  const today = new Date(new Date().toISOString().slice(0,10) + "T00:00:00");
+  if(p.targetDate){
+    const target = new Date(p.targetDate + "T00:00:00");
+    if(!isNaN(target.getTime()) && target < today){
+      const days = Math.round((today - target) / 86400000);
+      return {type:"overdue", label:`Overdue by ${days} day${days===1?"":"s"}`, days};
+    }
+  }
+  if((p.status === "Ongoing" || p.status === "Review Pending") && p.dateAssigned){
+    const assigned = new Date(p.dateAssigned + "T00:00:00");
+    if(!isNaN(assigned.getTime())){
+      const days = Math.round((today - assigned) / 86400000);
+      if(days >= 14){
+        return {type:"stale", label:`Stale — ${days} days open`, days};
+      }
+    }
+  }
+  return null;
+}
+function computeStaleness(projectsList){
+  const flagged = [];
+  let overdueCount = 0, staleCount = 0;
+  (projectsList || []).forEach(p=>{
+    const staleness = getProjectStaleness(p);
+    if(staleness){
+      flagged.push(Object.assign({}, p, {staleness}));
+      if(staleness.type === "overdue") overdueCount++; else staleCount++;
+    }
+  });
+  return {flagged, overdueCount, staleCount};
+}
+
+/* ============================================================
+   STREAKS + BADGES - purely derived from `projects`.
+   ============================================================ */
+function mondayOf(date){
+  const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const day = d.getDay(); // 0=Sun..6=Sat
+  const diffToMonday = (day === 0 ? -6 : 1 - day);
+  d.setDate(d.getDate() + diffToMonday);
+  d.setHours(0,0,0,0);
+  return d;
+}
+function computeStreak(analystName, projectsList){
+  const weekSet = new Set();
+  (projectsList || []).forEach(p=>{
+    if(p.assignedTo !== analystName || p.status !== "Completed & Approved" || !p.dateCompleted) return;
+    const d = new Date(p.dateCompleted + "T00:00:00");
+    if(isNaN(d.getTime())) return;
+    weekSet.add(mondayOf(d).getTime());
+  });
+  if(weekSet.size === 0) return 0;
+
+  let cursor = mondayOf(new Date());
+  if(!weekSet.has(cursor.getTime())){
+    // Current week has zero completions yet - fall back to last week
+    // once so an analyst doesn't lose their streak mid-week.
+    const lastWeek = new Date(cursor.getTime());
+    lastWeek.setDate(lastWeek.getDate() - 7);
+    if(!weekSet.has(lastWeek.getTime())) return 0;
+    cursor = lastWeek;
+  }
+
+  let streak = 0;
+  const cur = new Date(cursor.getTime());
+  for(let i=0; i<26; i++){
+    if(weekSet.has(cur.getTime())){
+      streak++;
+      cur.setDate(cur.getDate() - 7);
+    }else{
+      break;
+    }
+  }
+  return streak;
+}
+function computeBadges(analystName, projectsList){
+  const completedTotal = (projectsList || []).filter(p=>p.assignedTo===analystName && p.status==="Completed & Approved").length;
+  const streak = computeStreak(analystName, projectsList);
+  const badges = [];
+  if(completedTotal >= 1) badges.push({icon:"🎯", label:"First Completion"});
+  if(completedTotal >= 5) badges.push({icon:"⭐", label:"High Five (5+)"});
+  if(completedTotal >= 10) badges.push({icon:"🏅", label:"Perfect Ten (10+)"});
+  if(streak >= 3) badges.push({icon:"🔥", label:"On Fire (3wk streak)"});
+  if(streak >= 6) badges.push({icon:"💎", label:"Consistent (6wk streak)"});
+  return badges;
+}
+function badgesHtml(analystName, projectsList){
+  const badges = computeBadges(analystName, projectsList);
+  if(!badges.length) return "";
+  return `<span class="badge-row">${badges.map(b=>`<span class="badge-chip" title="${b.label}">${b.icon} ${b.label}</span>`).join("")}</span>`;
+}
+
+/* ============================================================
+   WEEKLY COMPLETION TREND - last N ISO weeks (oldest first).
+   ============================================================ */
+function computeWeeklyTrend(projectsList, weeks){
+  weeks = weeks || 8;
+  const nowMonday = mondayOf(new Date());
+  const buckets = [];
+  for(let i=weeks-1; i>=0; i--){
+    const ws = new Date(nowMonday.getTime());
+    ws.setDate(ws.getDate() - 7*i);
+    const we = new Date(ws.getTime());
+    we.setDate(we.getDate() + 7);
+    buckets.push({weekStart: ws, weekEnd: we, weekLabel: `${ws.getMonth()+1}/${ws.getDate()}`, total: 0, perAnalyst: {}});
+  }
+  (projectsList || []).forEach(p=>{
+    if(p.status !== "Completed & Approved" || !p.dateCompleted) return;
+    const d = new Date(p.dateCompleted + "T00:00:00");
+    if(isNaN(d.getTime())) return;
+    const bucket = buckets.find(b=> d >= b.weekStart && d < b.weekEnd);
+    if(bucket){
+      bucket.total++;
+      const name = p.assignedTo || "Unassigned";
+      bucket.perAnalyst[name] = (bucket.perAnalyst[name] || 0) + 1;
+    }
+  });
+  return buckets.map(b=>({weekLabel: b.weekLabel, total: b.total, perAnalyst: b.perAnalyst}));
+}
+
 /* Gamification: per-analyst completion progress + "Champion of
    the Week" / "Champion Overall". Purely derived from `projects`
    and `ANALYSTS` already in memory - no DB reads/writes. */
@@ -1447,6 +1663,41 @@ function renderHelpTable(){
       <td>${p.notes||""}</td>`;
     tbody.appendChild(tr);
   });
+}
+
+function renderStalenessAlert(){
+  const st = computeStaleness(projects);
+  const totalFlagged = st.overdueCount + st.staleCount;
+  const card = document.getElementById("dashAlertCard");
+  const inner = document.getElementById("dashAlertInner");
+  if(inner){
+    if(totalFlagged === 0){
+      if(card) card.classList.add("is-clear");
+      inner.innerHTML = `<div class="dash-alert-text"><span class="dash-alert-icon">✅</span><div><div class="dash-alert-label">Overdue / Stale</div><div class="dash-alert-count is-clear">All clear</div></div></div>`;
+    }else{
+      if(card) card.classList.remove("is-clear");
+      const parts = [];
+      if(st.overdueCount) parts.push(`${st.overdueCount} overdue`);
+      if(st.staleCount) parts.push(`${st.staleCount} stale`);
+      inner.innerHTML = `<div class="dash-alert-text"><span class="dash-alert-icon">⚠️</span><div><div class="dash-alert-label">Overdue / Stale</div><div class="dash-alert-count">${totalFlagged} project${totalFlagged===1?"":"s"} need attention</div></div></div><div class="dash-alert-sub">${parts.join(" · ")}</div>`;
+    }
+  }
+  const tbody = document.querySelector("#staleTable tbody");
+  const noMsg = document.getElementById("noStaleMsg");
+  if(tbody){
+    tbody.innerHTML = "";
+    if(noMsg) noMsg.style.display = st.flagged.length ? "none" : "block";
+    st.flagged
+      .slice()
+      .sort((a,b)=> (a.staleness.type === b.staleness.type) ? (b.staleness.days - a.staleness.days) : (a.staleness.type === "overdue" ? -1 : 1))
+      .forEach(p=>{
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td>${p.project||"—"}</td><td>${p.assignedTo||"—"}</td>
+          <td><span class="status-pill ${STATUS_PILL_CLASS[p.status]||''}">${p.status||"—"}</span></td>
+          <td><span class="staleness-tag type-${p.staleness.type}">${p.staleness.label}</span></td>`;
+        tbody.appendChild(tr);
+      });
+  }
 }
 
 function renderBarChart(sum){
@@ -1583,6 +1834,95 @@ function describeArc(cx,cy,rInner,rOuter,startAngle,endAngle){
   return `M ${p1.x} ${p1.y} A ${rOuter} ${rOuter} 0 ${largeArc} 1 ${p2.x} ${p2.y} L ${p3.x} ${p3.y} A ${rInner} ${rInner} 0 ${largeArc} 0 ${p4.x} ${p4.y} Z`;
 }
 
+/* Hand-rolled SVG line/area chart, same conventions as
+   renderBarChart/renderDonut: theme-aware colors, plain SVG DOM
+   manipulation, no charting library. Team-wide weekly completions
+   over the last 8 weeks, shown on the Leaderboard tab. */
+function renderTrendChart(){
+  const svg = document.getElementById("trendChart");
+  if(!svg) return;
+  const tooltip = document.getElementById("trendTooltip");
+  svg.innerHTML = "";
+  const data = computeWeeklyTrend(projects, 8);
+  const W=760,H=260, padL=36, padB=30, padT=14, padR=14;
+  const plotW = W-padL-padR, plotH = H-padT-padB;
+
+  const gridStroke = getComputedStyle(document.body).getPropertyValue("--surface-border").trim() || "#e4e3de";
+  const labelFill = getComputedStyle(document.body).getPropertyValue("--text-muted").trim() || "#8a8a86";
+  const lineColor = getComputedStyle(document.body).getPropertyValue("--accent").trim() || "#2a78d6";
+  const areaColor = getComputedStyle(document.body).getPropertyValue("--good").trim() || "#0ca35f";
+
+  const allZero = data.every(d=>d.total===0);
+  if(allZero){
+    const txt = document.createElementNS("http://www.w3.org/2000/svg","text");
+    txt.setAttribute("x",W/2); txt.setAttribute("y",H/2); txt.setAttribute("text-anchor","middle");
+    txt.setAttribute("font-size","13"); txt.setAttribute("fill",labelFill);
+    txt.textContent = "No completions yet";
+    svg.appendChild(txt);
+    return;
+  }
+
+  const maxVal = Math.max(1, ...data.map(d=>d.total));
+  const ySteps = 4;
+  for(let i=0;i<=ySteps;i++){
+    const y = padT + plotH - (plotH*i/ySteps);
+    const val = Math.round(maxVal*i/ySteps);
+    const line = document.createElementNS("http://www.w3.org/2000/svg","line");
+    line.setAttribute("x1",padL); line.setAttribute("x2",W-padR);
+    line.setAttribute("y1",y); line.setAttribute("y2",y);
+    line.setAttribute("stroke",gridStroke); line.setAttribute("stroke-width","1");
+    svg.appendChild(line);
+    const t = document.createElementNS("http://www.w3.org/2000/svg","text");
+    t.setAttribute("x",padL-8); t.setAttribute("y",y+4); t.setAttribute("text-anchor","end");
+    t.setAttribute("font-size","11"); t.setAttribute("fill",labelFill);
+    t.textContent = val;
+    svg.appendChild(t);
+  }
+
+  const stepX = data.length>1 ? plotW/(data.length-1) : 0;
+  const points = data.map((d,i)=>({
+    x: padL + stepX*i,
+    y: padT + plotH - (d.total/maxVal)*plotH,
+    d
+  }));
+
+  const areaPath = `M ${points[0].x} ${padT+plotH} ` + points.map(p=>`L ${p.x} ${p.y}`).join(" ") + ` L ${points[points.length-1].x} ${padT+plotH} Z`;
+  const area = document.createElementNS("http://www.w3.org/2000/svg","path");
+  area.setAttribute("d", areaPath);
+  area.setAttribute("fill", areaColor);
+  area.setAttribute("opacity","0.14");
+  svg.appendChild(area);
+
+  const linePath = points.map((p,i)=> (i===0?"M":"L") + ` ${p.x} ${p.y}`).join(" ");
+  const linePathEl = document.createElementNS("http://www.w3.org/2000/svg","path");
+  linePathEl.setAttribute("d", linePath);
+  linePathEl.setAttribute("fill","none");
+  linePathEl.setAttribute("stroke", lineColor);
+  linePathEl.setAttribute("stroke-width","2.5");
+  linePathEl.setAttribute("stroke-linecap","round");
+  linePathEl.setAttribute("stroke-linejoin","round");
+  svg.appendChild(linePathEl);
+
+  points.forEach(p=>{
+    const circle = document.createElementNS("http://www.w3.org/2000/svg","circle");
+    circle.setAttribute("cx",p.x); circle.setAttribute("cy",p.y); circle.setAttribute("r","4");
+    circle.setAttribute("fill", lineColor);
+    circle.addEventListener("mousemove",(e)=>{
+      tooltip.style.opacity=1;
+      tooltip.textContent = `${p.d.weekLabel}: ${p.d.total} completed`;
+      tooltip.style.left=(e.offsetX+12)+"px"; tooltip.style.top=(e.offsetY-10)+"px";
+    });
+    circle.addEventListener("mouseleave",()=>tooltip.style.opacity=0);
+    svg.appendChild(circle);
+
+    const xt = document.createElementNS("http://www.w3.org/2000/svg","text");
+    xt.setAttribute("x",p.x); xt.setAttribute("y",H-8); xt.setAttribute("text-anchor","middle");
+    xt.setAttribute("font-size","10.5"); xt.setAttribute("fill",labelFill);
+    xt.textContent = p.d.weekLabel;
+    svg.appendChild(xt);
+  });
+}
+
 /* ============================================================
    EXPORT TO XLSX (mirrors SEO_Automation_Tracker.xlsx layout)
    ============================================================ */
@@ -1660,6 +2000,7 @@ function renderLeaderboard(){
               <div class="lb-name">${r.name}${you}</div>
               <div class="progress-bar"><div class="progress-fill" style="width:${r.pct}%"></div></div>
               <div class="lb-meta">${progressText}</div>
+              ${badgesHtml(r.name, projects)}
             </div>
           </div>`;
       }).join("");
@@ -1683,6 +2024,86 @@ function renderLeaderboard(){
 }
 
 /* ============================================================
+   MY WORK - personal view scoped to currentProfile. Purely
+   derived from `projects` already in memory; reuses the same
+   staleness/streak/badge helpers as the rest of the app.
+   ============================================================ */
+function renderMyWork(){
+  const noProfileCard = document.getElementById("myWorkNoProfileCard");
+  const content = document.getElementById("myWorkContent");
+  if(!currentProfile){
+    if(noProfileCard) noProfileCard.style.display = "block";
+    if(content) content.style.display = "none";
+    return;
+  }
+  if(noProfileCard) noProfileCard.style.display = "none";
+  if(content) content.style.display = "block";
+
+  const name = currentProfile.full_name;
+  const mine = projects.filter(p=>p.assignedTo===name);
+  const counts = {"Assigned":0,"Ongoing":0,"Review Pending":0,"Completed & Approved":0};
+  mine.forEach(p=>{ if(counts.hasOwnProperty(p.status)) counts[p.status]++; });
+  const flaggedCount = computeStaleness(mine).flagged.length;
+  const total = mine.length;
+  const completed = counts["Completed & Approved"];
+  const pct = total > 0 ? Math.round(completed/total*100) : 0;
+  const streak = computeStreak(name, projects);
+  const badges = computeBadges(name, projects);
+
+  const setVal = (id,v)=>{ const el=document.getElementById(id); if(el) el.textContent = v; };
+  setVal("mwAssigned", counts["Assigned"]);
+  setVal("mwOngoing", counts["Ongoing"]);
+  setVal("mwReview", counts["Review Pending"]);
+  setVal("mwDone", counts["Completed & Approved"]);
+  setVal("mwFlagged", flaggedCount);
+
+  const pctOf = (n)=> total > 0 ? Math.round(n/total*100) : 0;
+  const setBar = (id,p)=>{ const el=document.getElementById(id); if(el) el.style.width = Math.max(0,Math.min(100,p))+"%"; };
+  setBar("mwAssignedBar", pctOf(counts["Assigned"]));
+  setBar("mwOngoingBar", pctOf(counts["Ongoing"]));
+  setBar("mwReviewBar", pctOf(counts["Review Pending"]));
+  setBar("mwDoneBar", pctOf(counts["Completed & Approved"]));
+  setBar("mwFlaggedBar", total > 0 ? pctOf(flaggedCount) : (flaggedCount>0?100:0));
+
+  const avatarEl = document.getElementById("mwAvatar");
+  if(avatarEl) avatarEl.innerHTML = avatarHtml(name);
+  setVal("mwName", name);
+  const fillEl = document.getElementById("mwProgressFill");
+  if(fillEl) fillEl.style.width = pct + "%";
+  setVal("mwProgressText", total > 0 ? `${completed} / ${total} completed · ${pct}% · ${streak}wk streak` : `No projects yet · ${streak}wk streak`);
+  const badgesEl = document.getElementById("mwStreakBadges");
+  if(badgesEl){
+    badgesEl.innerHTML = badges.length
+      ? `<span class="badge-row">${badges.map(b=>`<span class="badge-chip" title="${b.label}">${b.icon} ${b.label}</span>`).join("")}</span>`
+      : `<span class="ro-text ro-muted">No badges yet — complete a project to earn your first.</span>`;
+  }
+
+  const body = document.getElementById("myWorkBody");
+  const emptyMsg = document.getElementById("myWorkEmptyMsg");
+  if(body){
+    body.innerHTML = "";
+    if(mine.length === 0){
+      if(emptyMsg) emptyMsg.style.display = "block";
+    }else{
+      if(emptyMsg) emptyMsg.style.display = "none";
+      mine.forEach(p=>{
+        const s = getProjectStaleness(p);
+        const stalenessTag = s ? `<span class="staleness-tag type-${s.type}" title="${s.label}">${s.type==='overdue'?'⚠':'⏳'} ${s.type==='overdue'?'Overdue':'Stale'}</span>` : '';
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${p.project||"—"}</td>
+          <td><span class="status-pill ${STATUS_PILL_CLASS[p.status]||''}">${p.status||"—"}</span>${stalenessTag}</td>
+          <td>${p.priority||"—"}</td>
+          <td>${p.targetDate||"—"}</td>
+          <td>${p.dateCompleted||"—"}</td>
+        `;
+        body.appendChild(tr);
+      });
+    }
+  }
+}
+
+/* ============================================================
    MAIN RENDER
    ============================================================ */
 function renderAll(){
@@ -1692,7 +2113,10 @@ function renderAll(){
   renderBarChart(sum);
   renderDonut(sum);
   renderHelpTable();
+  renderStalenessAlert();
   renderLeaderboard();
+  renderTrendChart();
+  renderMyWork();
 }
 
 /* ============================================================
@@ -1886,6 +2310,14 @@ async function onLoggedIn(user){
     renderEverything();
     subscribeRealtime();
     showApp();
+    // Default landing tab: analysts land on "My Work" the first
+    // time they sign in; admins keep the existing Dashboard
+    // default. onLoggedIn only runs once per genuine sign-in
+    // (see the SIGNED_IN guard in initAuth() below), so this
+    // never fights a manual tab switch on later re-renders.
+    if(currentProfile && !currentProfile.is_admin){
+      switchTab('mywork');
+    }
     showToast(`Welcome, ${currentProfile ? currentProfile.full_name : user.email}`);
   }else{
     showLoadingScreen(false);

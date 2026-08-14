@@ -10,6 +10,51 @@ All notable changes to the SEO Automation & Projects Dashboard.
 - `seo-automation-dashboard-data.sample.json` — example/reference data file.
 - A registered Claude Skill for maintaining this project in future sessions.
 
+## 2026-08-14 — Overdue/stale alerts, streaks, badges, weekly trend chart, My Work view
+
+Purely additive analytics/personalization pass on top of the data-dense
+redesign — no schema changes, no new Supabase queries; everything is
+derived client-side from `projects`/`ANALYSTS`/`PROFILES`/`currentProfile`
+already loaded into memory.
+
+### Added
+- **Overdue/Stale detection** — `getProjectStaleness(p)` / `computeStaleness(projects)`.
+  A project is **Overdue** if it has a `targetDate` in the past and isn't
+  `Completed & Approved` ("Overdue by N days"); it's **Stale** (only if not
+  overdue) if it's `Ongoing`/`Review Pending`, has a `dateAssigned`, and has
+  been open 14+ days ("Stale — N days open"). `Assigned` and
+  `Completed & Approved` rows are never flagged. Surfaced as: a new
+  Dashboard alert banner (`.dash-alert-card`, wired via
+  `renderStalenessAlert()`) with an "Overdue / Stale Projects" table
+  (empty state: "Nothing overdue or stale right now — clean."), and a
+  small `.staleness-tag` badge next to the status pill on flagged rows in
+  the Project Tracker table and the new My Work table.
+- **Streaks** — `computeStreak(analystName, projects)` counts consecutive
+  weeks (Monday-based) with at least one `Completed & Approved` project,
+  walking backward from the current week (falling back to last week once
+  if the current week has zero completions yet, so a streak isn't lost
+  mid-week), capped at a 26-week lookback.
+- **Badges** — `computeBadges(analystName, projects)` derives chip badges
+  from completion totals and streak: 🎯 First Completion (1+), ⭐ High Five
+  (5+), 🏅 Perfect Ten (10+), 🔥 On Fire (3wk streak), 💎 Consistent (6wk
+  streak). Rendered as `.badge-chip` pills next to the analyst's name on
+  the Leaderboard ranked list and the Team tab.
+- **Weekly trend chart** — `computeWeeklyTrend(projects, weeks=8)` buckets
+  `Completed & Approved` projects by ISO week of `dateCompleted`. Rendered
+  by a new hand-rolled SVG line/area chart (`renderTrendChart()`, same
+  plain-DOM/gridline/tooltip conventions as `renderBarChart`/`renderDonut`)
+  in a `.card.chart-card` on the Leaderboard tab: "Completions — Last 8
+  Weeks", with a clean "No completions yet" empty state.
+- **My Work tab** — new nav button/section (`data-view="mywork"`,
+  positioned first in the nav), rendered by `renderMyWork()`: a personal
+  KPI strip (Assigned/Ongoing/Review Pending/Completed/Overdue-or-Stale),
+  a progress bar + streak + earned badges, and a compact table of the
+  signed-in user's own projects. Empty state: "No projects assigned to you
+  yet." Non-admins are automatically switched to this tab on their first
+  successful sign-in (`onLoggedIn()` calls `switchTab('mywork')` once);
+  admins keep the existing Dashboard default, and manual tab switches are
+  never overridden on subsequent re-renders.
+
 ## 2026-08-14 — Visual redesign: data-dense analytics style
 
 Full CSS/HTML visual pass across the whole app, at the product owner's
