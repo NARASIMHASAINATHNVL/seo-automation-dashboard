@@ -10,6 +10,51 @@ All notable changes to the SEO Automation & Projects Dashboard.
 - `seo-automation-dashboard-data.sample.json` — example/reference data file.
 - A registered Claude Skill for maintaining this project in future sessions.
 
+## 2026-08-14 — Visual redesign: data-dense analytics style
+
+Full CSS/HTML visual pass across the whole app, at the product owner's
+request, moving the look from a spacious/marketing-leaning style toward a
+denser BI-tool feel (Looker/Metabase/Grafana-ish) — no Supabase, data, or
+business-logic changes.
+
+### Changed
+- **KPI cards (Dashboard):** tighter padding, bold tabular-figure numbers,
+  a new thin proportion mini-bar per card (`.kpi-bar`/`.kpi-bar-fill`,
+  colored to match each card's status), and a new small trend/context line
+  (`.kpi-trend`) — Total and Completed show "▲ N new/done this wk" (derived
+  from existing `dateAssigned`/`dateCompleted` fields, Monday-based week
+  window), the other four show "N% of total" as scannable context.
+- **Charts:** the two Dashboard chart cards now carry a `chart-card` class
+  with an accent top border and a slightly wider bar-chart column
+  (`.charts-row` ratio 1.4fr→1.5fr) so they read as the page's centerpiece
+  rather than incidental widgets. Fixed several hardcoded hex colors in
+  `renderBarChart()`/`renderDonut()` (gridlines, axis labels, "No data
+  yet"/"projects" center text) to instead read `--surface-border`,
+  `--text-muted`, `--text-secondary` at render time so charts now stay
+  legible in dark mode instead of using fixed light-mode grays.
+- **Tables:** denser rows (`td` padding 7px→5px, table font 13px→12.5px),
+  tighter sticky header with a subtle bottom shadow, numeric columns
+  right-aligned (`Projects Assigned` on Team, and the trailing
+  action/button column via `th:empty`/`td[data-label=""]`), taller
+  `.table-wrap` viewport (520px→560px). Existing hairline-divider + row
+  hover + `--stripe-color` status-stripe conventions kept as the single
+  consistent row treatment (no zebra striping added).
+- **Layout density:** tightened header/nav margins and padding, `main`
+  max-width 1320px→1400px with less vertical padding, all `.card` panels
+  denser (padding/margin trimmed), section headings restyled as small
+  uppercase "panel titles" (BI-tool convention) instead of larger sentence
+  case.
+- **Nav:** kept as the existing top pill nav (all `data-view`/`tab-btn`/
+  `switchTab()` wiring untouched) but restyled from a full pill to a
+  tighter rounded-rectangle toolbar with uppercase labels, matching the
+  denser overall rhythm.
+- **Background:** simplified the multi-layer radial-gradient body
+  background (dropped one gradient layer, reduced tint intensity) for a
+  more sober, professional data-tool backdrop in both themes.
+- Brand palette (navy/blue/purple accents, status colors) left untouched
+  per the ask — this was a density/hierarchy/typography pass, not a
+  rebrand.
+
 ## 2026-08-14 — Admin-only login provisioning; self-signup removed
 
 ### Changed
