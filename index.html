@@ -56,6 +56,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
     --good:#0ca35f;
     --warning:#e08e00;
     --critical:#d0374b;
+    --gold:#c8860d;
     --navy:#1F3864;
     --navy-2:#2c4d85;
     --accent:#2a78d6;
@@ -75,6 +76,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
     --text-secondary:#a7adc4;
     --text-muted:#767d95;
     --brand-text:#8fb3e8;
+    --gold:#e0a83e;
     --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 16px -6px rgba(0,0,0,.45);
     --shadow-hover:0 2px 4px rgba(0,0,0,.35),0 10px 28px -8px rgba(0,0,0,.55);
   }
@@ -157,7 +159,8 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
   nav button.active{color:#fff;background:linear-gradient(135deg,var(--navy),var(--navy-2));box-shadow:0 4px 12px -4px rgba(31,56,100,.5);}
   main{padding:20px 32px 60px;max-width:1320px;margin:0 auto;}
   .view{display:none;}
-  .view.active{display:block;}
+  .view.active{display:block;animation:view-in .2s var(--ease);}
+  @keyframes view-in{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
 
   .kpi-row{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:22px;}
   .kpi{
@@ -184,8 +187,9 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
   .card{
     background:var(--surface-2);border:1px solid var(--surface-border);border-radius:var(--radius);
     padding:18px 20px;box-shadow:var(--shadow);margin-bottom:20px;
-    transition:box-shadow .18s var(--ease);
+    transition:box-shadow .18s var(--ease),transform .18s var(--ease);
   }
+  .card:hover{box-shadow:var(--shadow-hover);transform:translateY(-2px);}
   .card h2{font-size:15px;margin:0 0 14px 0;color:var(--brand-text);display:flex;align-items:center;gap:8px;}
   .charts-row{display:grid;grid-template-columns:1.4fr 1fr;gap:20px;}
   @media(max-width:900px){.charts-row{grid-template-columns:1fr;} .kpi-row{grid-template-columns:repeat(3,1fr);}}
@@ -406,6 +410,57 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
 
   .only-mine-toggle{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--text-secondary);white-space:nowrap;cursor:pointer;user-select:none;}
   .only-mine-toggle input{width:auto;}
+
+  /* ============ LEADERBOARD / GAMIFICATION ============ */
+  .spotlight-row{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+  @media(max-width:900px){.spotlight-row{grid-template-columns:1fr;}}
+  .spotlight-card{
+    position:relative;
+    border:1px solid color-mix(in srgb, var(--gold) 45%, var(--surface-border));
+    background:linear-gradient(150deg, color-mix(in srgb, var(--gold) 12%, var(--surface-2)), var(--surface-2) 65%);
+    box-shadow:var(--shadow), 0 0 0 1px color-mix(in srgb, var(--gold) 18%, transparent);
+  }
+  .spotlight-card:hover{box-shadow:var(--shadow-hover), 0 0 24px -8px color-mix(in srgb, var(--gold) 55%, transparent);}
+  body.dark .spotlight-card{
+    background:linear-gradient(150deg, color-mix(in srgb, var(--gold) 20%, var(--surface-2)), var(--surface-2) 70%);
+  }
+  .spotlight-card h2{color:color-mix(in srgb, var(--gold) 65%, var(--brand-text));}
+  .spotlight-body{min-height:74px;display:flex;flex-direction:column;justify-content:center;gap:8px;}
+  .spotlight-empty{margin:0;font-size:13px;color:var(--text-secondary);line-height:1.5;}
+  .spotlight-people{display:flex;align-items:center;}
+  .spotlight-people .mini-avatar{width:34px;height:34px;font-size:13px;margin-right:-8px;border:2px solid var(--surface-2);}
+  .spotlight-people .mini-avatar:last-child{margin-right:0;}
+  .spotlight-names{font-size:15px;font-weight:800;color:var(--brand-text);}
+  .spotlight-joint{font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.03em;}
+  .spotlight-count{font-size:12px;color:var(--text-secondary);font-weight:600;}
+
+  .leaderboard-row{display:flex;align-items:center;gap:12px;padding:12px 4px;border-bottom:1px solid var(--surface-border);}
+  .leaderboard-row:last-child{border-bottom:none;}
+  .lb-rank{width:30px;flex-shrink:0;text-align:center;font-weight:800;font-size:14px;color:var(--text-muted);}
+  .rank-medal{font-size:18px;}
+  .lb-info{flex:1;min-width:0;}
+  .lb-name{font-size:13.5px;font-weight:700;color:var(--text-primary);margin-bottom:5px;}
+  .you-tag{font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.02em;}
+  .lb-meta{font-size:11.5px;color:var(--text-secondary);margin-top:4px;}
+
+  .progress-bar{width:100%;height:7px;border-radius:999px;background:var(--surface-1);border:1px solid var(--surface-border);overflow:hidden;}
+  .progress-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--good),var(--blue));width:0%;transition:width .5s ease;}
+
+  .dash-champion-card{margin-bottom:20px;padding:14px 20px;}
+  .dash-champion-inner{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;}
+  .dash-champion-people{display:flex;align-items:center;gap:10px;}
+  .dash-champion-people .mini-avatar{width:30px;height:30px;font-size:12px;margin-right:-8px;border:2px solid var(--surface-2);}
+  .dash-champion-people .mini-avatar:last-child{margin-right:0;}
+  .dash-champion-text{margin-left:6px;}
+  .dash-champion-label{font-size:10.5px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.03em;}
+  .dash-champion-name{font-size:14px;font-weight:800;color:var(--brand-text);}
+  .dash-champion-count{font-size:12px;font-weight:600;color:var(--text-secondary);}
+  .dash-champion-empty{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text-secondary);}
+  .dash-champion-icon{font-size:18px;}
+  .dash-champion-link{white-space:nowrap;}
+  @media(max-width:720px){
+    .dash-champion-inner{flex-direction:column;align-items:flex-start;}
+  }
 </style>
 </head>
 <body>
@@ -484,6 +539,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
   <button class="tab-btn" data-view="projects">Project Tracker</button>
   <button class="tab-btn" data-view="daily">Daily Status Log</button>
   <button class="tab-btn" data-view="team">Team</button>
+  <button class="tab-btn" data-view="leaderboard">Leaderboard</button>
 </nav>
 
 <main>
@@ -497,6 +553,10 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
       <div class="kpi review"><div class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg></div><div class="lbl">Review Pending</div><div class="val" id="kpiReview">0</div></div>
       <div class="kpi done"><div class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg></div><div class="lbl">Completed &amp; Approved</div><div class="val" id="kpiDone">0</div></div>
       <div class="kpi help"><div class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg></div><div class="lbl">Need Help</div><div class="val" id="kpiHelp">0</div></div>
+    </div>
+
+    <div class="card dash-champion-card" id="dashChampionCard">
+      <div class="dash-champion-inner" id="dashChampionInner"></div>
     </div>
 
     <div class="charts-row">
@@ -615,6 +675,26 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
         </table>
       </div>
       <p class="hint" id="teamHint">People added here show up in the "Assigned to" dropdown on Project Tracker, in the per-analyst chart on Dashboard, and (if checked) as a column in Daily Status Log. Adding, editing, or removing a person saves immediately, same as projects.</p>
+    </div>
+  </section>
+
+  <!-- ============ LEADERBOARD VIEW ============ -->
+  <section id="leaderboard" class="view">
+    <div class="spotlight-row">
+      <div class="card spotlight-card spotlight-week" id="spotlightWeek">
+        <h2><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.9 6.26L22 9.27l-5 4.87L18.18 21 12 17.77 5.82 21 7 14.14l-5-4.87 7.1-1.01L12 2z"/></svg>Champion of the Week</h2>
+        <div class="spotlight-body" id="spotlightWeekBody"></div>
+      </div>
+      <div class="card spotlight-card spotlight-overall" id="spotlightOverall">
+        <h2><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21h16M7 3h10l-1 8a4 4 0 01-8 0L7 3z"/><path d="M7 5H4a3 3 0 003 5M17 5h3a3 3 0 01-3 5"/></svg>Champion Overall</h2>
+        <div class="spotlight-body" id="spotlightOverallBody"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6"/><rect x="12" y="8" width="3" height="10"/><rect x="17" y="5" width="3" height="13"/></svg>Analyst Progress</h2>
+      <div id="leaderboardList"></div>
+      <p class="hint" id="leaderboardEmptyMsg" style="display:none;">No analysts on the roster yet — add people in the Team tab to see progress here.</p>
     </div>
   </section>
 
@@ -760,13 +840,17 @@ let dailyLog = [];    // {date, <AnalystName>: task text, ...} one row per log_d
 /* ============================================================
    NAV
    ============================================================ */
+function switchTab(view){
+  const targetBtn = document.querySelector(`.tab-btn[data-view="${view}"]`);
+  const targetSection = document.getElementById(view);
+  if(!targetBtn || !targetSection) return;
+  document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
+  document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));
+  targetBtn.classList.add("active");
+  targetSection.classList.add("active");
+}
 document.querySelectorAll(".tab-btn").forEach(btn=>{
-  btn.addEventListener("click", ()=>{
-    document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
-    document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));
-    btn.classList.add("active");
-    document.getElementById(btn.dataset.view).classList.add("active");
-  });
+  btn.addEventListener("click", ()=> switchTab(btn.dataset.view));
 });
 
 /* ============================================================
@@ -1202,6 +1286,51 @@ function computeSummary(){
   return {perAnalyst, totals, needHelp, total: projects.length};
 }
 
+/* Gamification: per-analyst completion progress + "Champion of
+   the Week" / "Champion Overall". Purely derived from `projects`
+   and `ANALYSTS` already in memory - no DB reads/writes. */
+function computeLeaderboard(){
+  // Monday 00:00 of the current week -> next Monday 00:00 (exclusive upper bound)
+  const now = new Date();
+  const day = now.getDay(); // 0=Sun..6=Sat
+  const diffToMonday = (day === 0 ? -6 : 1 - day);
+  const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() + diffToMonday);
+  monday.setHours(0,0,0,0);
+  const nextMonday = new Date(monday);
+  nextMonday.setDate(nextMonday.getDate() + 7);
+
+  const rows = ANALYSTS.map(name=>{
+    let total = 0, completed = 0, weekCompleted = 0;
+    projects.forEach(p=>{
+      if(p.assignedTo !== name) return;
+      total++;
+      if(p.status === "Completed & Approved"){
+        completed++;
+        if(p.dateCompleted){
+          const d = new Date(p.dateCompleted + "T00:00:00");
+          if(!isNaN(d.getTime()) && d >= monday && d < nextMonday) weekCompleted++;
+        }
+      }
+    });
+    const pct = total > 0 ? Math.round((completed / total) * 100) : 0;
+    return {name, total, completed, pct, weekCompleted};
+  });
+
+  rows.sort((a,b)=> b.completed - a.completed || a.name.localeCompare(b.name));
+
+  const maxCompleted = rows.reduce((m,r)=>Math.max(m,r.completed), 0);
+  const championOverall = maxCompleted > 0
+    ? rows.filter(r=>r.completed === maxCompleted).map(r=>r.name).sort((a,b)=>a.localeCompare(b))
+    : [];
+
+  const maxWeek = rows.reduce((m,r)=>Math.max(m,r.weekCompleted), 0);
+  const championWeek = maxWeek > 0
+    ? rows.filter(r=>r.weekCompleted === maxWeek).map(r=>r.name).sort((a,b)=>a.localeCompare(b))
+    : [];
+
+  return {rows, championOverall, championWeek, maxCompleted, maxWeek};
+}
+
 function renderKPIs(sum){
   document.getElementById("kpiTotal").textContent = sum.total;
   document.getElementById("kpiAssigned").textContent = sum.totals["Assigned"];
@@ -1384,6 +1513,75 @@ function downloadWorkbook(){
 }
 
 /* ============================================================
+   LEADERBOARD (Champion of the Week / Overall + progress bars)
+   ============================================================ */
+function renderLeaderboard(){
+  const lb = computeLeaderboard();
+  const me = currentProfile ? currentProfile.full_name : null;
+
+  const weekBody = document.getElementById("spotlightWeekBody");
+  if(weekBody){
+    weekBody.innerHTML = lb.championWeek.length === 0
+      ? `<p class="spotlight-empty">No one's completed a project yet this week — first one takes the crown.</p>`
+      : `<div class="spotlight-people">${lb.championWeek.map(n=>avatarHtml(n)).join("")}</div>
+         <div class="spotlight-names">${lb.championWeek.join(", ")}${lb.championWeek.length>1?' <span class="spotlight-joint">(joint)</span>':''}</div>
+         <div class="spotlight-count">${lb.maxWeek} completed this week</div>`;
+  }
+
+  const overallBody = document.getElementById("spotlightOverallBody");
+  if(overallBody){
+    overallBody.innerHTML = lb.championOverall.length === 0
+      ? `<p class="spotlight-empty">No completed projects yet — the first one to finish takes the crown.</p>`
+      : `<div class="spotlight-people">${lb.championOverall.map(n=>avatarHtml(n)).join("")}</div>
+         <div class="spotlight-names">${lb.championOverall.join(", ")}${lb.championOverall.length>1?' <span class="spotlight-joint">(joint)</span>':''}</div>
+         <div class="spotlight-count">${lb.maxCompleted} completed all-time</div>`;
+  }
+
+  const list = document.getElementById("leaderboardList");
+  const emptyMsg = document.getElementById("leaderboardEmptyMsg");
+  if(list){
+    if(lb.rows.length === 0){
+      list.innerHTML = "";
+      if(emptyMsg) emptyMsg.style.display = "block";
+    }else{
+      if(emptyMsg) emptyMsg.style.display = "none";
+      const medals = ["🥇","🥈","🥉"];
+      list.innerHTML = lb.rows.map((r,i)=>{
+        const rankLabel = i < 3
+          ? `<span class="rank-medal rank-${i+1}">${medals[i]}</span>`
+          : `<span class="rank-num">#${i+1}</span>`;
+        const you = (me && r.name === me) ? ' <span class="you-tag">(you)</span>' : '';
+        const progressText = r.total > 0 ? `${r.completed} / ${r.total} completed · ${r.pct}%` : `No projects yet`;
+        return `<div class="leaderboard-row">
+            <div class="lb-rank">${rankLabel}</div>
+            ${avatarHtml(r.name)}
+            <div class="lb-info">
+              <div class="lb-name">${r.name}${you}</div>
+              <div class="progress-bar"><div class="progress-fill" style="width:${r.pct}%"></div></div>
+              <div class="lb-meta">${progressText}</div>
+            </div>
+          </div>`;
+      }).join("");
+    }
+  }
+
+  const dashInner = document.getElementById("dashChampionInner");
+  if(dashInner){
+    dashInner.innerHTML = lb.championWeek.length === 0
+      ? `<div class="dash-champion-empty"><span class="dash-champion-icon">🏆</span><span>No one's completed a project yet this week — first one takes the crown.</span></div>
+         <button class="btn secondary dash-champion-link" onclick="switchTab('leaderboard')">View full leaderboard →</button>`
+      : `<div class="dash-champion-people">
+           ${lb.championWeek.slice(0,3).map(n=>avatarHtml(n)).join("")}
+           <div class="dash-champion-text">
+             <div class="dash-champion-label">This week's champion${lb.championWeek.length>1?'s':''}</div>
+             <div class="dash-champion-name">${lb.championWeek.join(", ")}<span class="dash-champion-count"> · ${lb.maxWeek} completed</span></div>
+           </div>
+         </div>
+         <button class="btn secondary dash-champion-link" onclick="switchTab('leaderboard')">View full leaderboard →</button>`;
+  }
+}
+
+/* ============================================================
    MAIN RENDER
    ============================================================ */
 function renderAll(){
@@ -1393,6 +1591,7 @@ function renderAll(){
   renderBarChart(sum);
   renderDonut(sum);
   renderHelpTable();
+  renderLeaderboard();
 }
 
 /* ============================================================
