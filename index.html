@@ -285,6 +285,41 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
   @keyframes toast-in{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
   @keyframes toast-out{to{opacity:0;transform:translateY(-6px);}}
 
+  /* ============ MODAL (generic overlay + centered card pattern) ============ */
+  .modal-overlay{
+    position:fixed;inset:0;z-index:940;background:rgba(15,23,32,.55);
+    display:none;align-items:center;justify-content:center;padding:20px;
+  }
+  .modal-overlay.open{display:flex;}
+  .modal-card{
+    background:var(--surface-2);border:1px solid var(--surface-border);border-radius:var(--radius);
+    box-shadow:var(--shadow-hover);width:100%;max-width:760px;max-height:85vh;
+    display:flex;flex-direction:column;overflow:hidden;animation:auth-in .2s var(--ease);
+  }
+  .modal-card-header{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:15px 18px;border-bottom:1px solid var(--surface-border);
+  }
+  .modal-card-header h2{margin:0;font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--brand-text);}
+  .modal-close-btn{
+    background:transparent;border:none;cursor:pointer;color:var(--text-muted);padding:4px;
+    display:flex;align-items:center;justify-content:center;border-radius:6px;
+  }
+  .modal-close-btn:hover{background:var(--surface-1);color:var(--text-primary);}
+  .modal-card-body{padding:16px 18px;overflow:auto;}
+  .modal-card-footer{
+    display:flex;align-items:center;justify-content:flex-end;gap:10px;
+    padding:14px 18px;border-top:1px solid var(--surface-border);
+  }
+  .import-summary{font-size:13px;color:var(--text-secondary);margin:0 0 12px;font-weight:600;}
+  .import-preview-wrap{max-height:360px;overflow:auto;border:1px solid var(--surface-border);border-radius:var(--radius-sm);}
+  .import-preview-wrap table{font-size:12px;}
+  button.btn:disabled{opacity:.5;cursor:not-allowed;box-shadow:none;}
+  .import-tag{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;padding:3px 8px;border-radius:999px;line-height:1.4;}
+  .import-tag-ok{background:color-mix(in srgb, var(--good) 16%, transparent);color:var(--good);}
+  .import-tag-warn{background:color-mix(in srgb, var(--warning) 18%, transparent);color:var(--warning);}
+  .import-tag-error{background:color-mix(in srgb, var(--critical) 16%, transparent);color:var(--critical);}
+
   @media(max-width:720px){
     header{margin:14px 14px 0;padding:14px 16px;} main{padding:14px 14px 50px;} nav{margin:12px 14px 0;padding:6px;overflow-x:auto;}
     .kpi-row{grid-template-columns:repeat(2,1fr);}
@@ -671,6 +706,13 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
           <input type="checkbox" id="onlyMineToggle" onchange="setOnlyMine(this.checked)"> Show only my rows
         </label>
         <div class="spacer"></div>
+        <span id="importProjectsWrap" style="display:none;">
+          <button class="btn secondary" onclick="document.getElementById('importFileInput').click()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21V9m0 0l-4 4m4-4l4 4M4 5h16"/></svg>
+            Import Projects
+          </button>
+          <input type="file" id="importFileInput" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleImportFile(this)">
+        </span>
         <button class="btn secondary" onclick="downloadWorkbook()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 19h16"/></svg>
           Download Updated Excel (.xlsx)
@@ -696,6 +738,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
         </table>
       </div>
       <p class="hint">Dropdowns are locked to the same team/status/priority lists as the master Excel (the hidden "Lists" sheet), so anything entered here always falls within what the workbook expects. Use <strong>Download Updated Excel</strong> to export this table (plus a recomputed Summary tab) in the exact same column layout as "SEO_Automation_Tracker.xlsx" — ready to paste into the shared file on OneDrive.</p>
+      <p class="hint" id="importHint" style="display:none;">Format must match the columns from Download Updated Excel (List of Projects sheet).</p>
     </div>
   </section>
 
@@ -780,6 +823,39 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
 
 </div>
 <div class="toast-stack" id="toastStack"></div>
+
+<!-- ============ IMPORT PROJECTS MODAL ============ -->
+<div class="modal-overlay" id="importModalOverlay" onclick="if(event.target===this) closeImportModal()">
+  <div class="modal-card">
+    <div class="modal-card-header">
+      <h2>Import Projects</h2>
+      <button type="button" class="modal-close-btn" onclick="closeImportModal()" aria-label="Close">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-card-body">
+      <p class="import-summary" id="importSummaryLine">0 rows found</p>
+      <div class="import-preview-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th style="min-width:40px;">Row</th>
+              <th style="min-width:160px;">Project</th>
+              <th style="min-width:130px;">Assigned to</th>
+              <th style="min-width:110px;">Status</th>
+              <th style="min-width:220px;">Result</th>
+            </tr>
+          </thead>
+          <tbody id="importPreviewBody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="modal-card-footer">
+      <button class="btn secondary" onclick="closeImportModal()">Cancel</button>
+      <button class="btn" id="importConfirmBtn" onclick="confirmImport()">Import 0 valid rows</button>
+    </div>
+  </div>
+</div>
 
 <script>
 /* ============================================================
@@ -943,6 +1019,10 @@ function renderProjects(){
   body.innerHTML = "";
   const onlyMineWrap = document.getElementById("onlyMineWrap");
   if(onlyMineWrap) onlyMineWrap.style.display = currentProfile ? "" : "none";
+  const importWrap = document.getElementById("importProjectsWrap");
+  if(importWrap) importWrap.style.display = isAdminUser() ? "" : "none";
+  const importHint = document.getElementById("importHint");
+  if(importHint) importHint.style.display = isAdminUser() ? "" : "none";
   if(projects.length===0){
     body.innerHTML = `<tr class="empty-row"><td colspan="10">No projects yet — click "Add Project" above to create the first one.</td></tr>`;
     return;
@@ -1951,6 +2031,188 @@ function downloadWorkbook(){
   XLSX.utils.book_append_sheet(wb, wsDaily, "Projects Daily Status");
 
   XLSX.writeFile(wb, "SEO_Automation_Tracker_export_"+new Date().toISOString().slice(0,10)+".xlsx");
+}
+
+/* ============================================================
+   BULK IMPORT (admin) — parses an .xlsx/.xls/.csv matching the
+   Download Updated Excel layout, validates every row client-side,
+   and shows a preview modal before inserting anything.
+   ============================================================ */
+let importParsedRows = [];
+
+function importRequiredHeader(){
+  return ["Project/Automation","Assigned to","Current Status","Priority","Date Assigned","Target Completion Date","Date Completed","Help/ Assistance Required","Notes / Remarks"];
+}
+
+function formatImportDate(cell){
+  if(cell instanceof Date && !isNaN(cell)){
+    const y = cell.getFullYear(), m = String(cell.getMonth()+1).padStart(2,"0"), d = String(cell.getDate()).padStart(2,"0");
+    return { value: `${y}-${m}-${d}`, warning: null };
+  }
+  const s = (cell==null ? "" : String(cell)).trim();
+  if(!s) return { value: "", warning: null };
+  const parsed = new Date(s);
+  if(!isNaN(parsed.getTime())){
+    const y = parsed.getFullYear(), m = String(parsed.getMonth()+1).padStart(2,"0"), d = String(parsed.getDate()).padStart(2,"0");
+    return { value: `${y}-${m}-${d}`, warning: null };
+  }
+  return { value: "", warning: `Could not read date "${s}" — left blank` };
+}
+
+function validateImportRow(raw, rowNum){
+  const errors = [];
+  const warnings = [];
+  const project = (raw["Project/Automation"]||"").toString().trim();
+  if(!project) errors.push("Project name is required");
+
+  let assignedTo = (raw["Assigned to"]||"").toString().trim();
+  let assignedToId = null;
+  if(assignedTo){
+    const match = ANALYSTS.find(a=>a.toLowerCase()===assignedTo.toLowerCase());
+    if(!match){ errors.push(`Unknown assignee: "${assignedTo}" — must match an existing team member name exactly`); }
+    else { assignedTo = match; assignedToId = profileIdByName(match); }
+  }
+
+  let status = (raw["Current Status"]||"").toString().trim();
+  if(!status){ status = "Assigned"; }
+  else{
+    const match = STATUSES.find(s=>s.toLowerCase()===status.toLowerCase());
+    if(!match){ errors.push(`Invalid status: "${status}"`); }
+    else{ status = match; }
+  }
+
+  let priority = (raw["Priority"]||"").toString().trim();
+  if(priority){
+    const match = PRIORITIES.filter(p=>p).find(p=>p.toLowerCase()===priority.toLowerCase());
+    if(!match){ errors.push(`Invalid priority: "${priority}"`); }
+    else{ priority = match; }
+  }
+
+  let help = (raw["Help/ Assistance Required"]||"").toString().trim();
+  if(help){
+    const match = YESNO.filter(h=>h).find(h=>h.toLowerCase()===help.toLowerCase());
+    if(!match){ errors.push(`Invalid help value: "${help}"`); }
+    else{ help = match; }
+  }
+
+  const dateAssigned = formatImportDate(raw["Date Assigned"]);
+  const targetDate = formatImportDate(raw["Target Completion Date"]);
+  const dateCompleted = formatImportDate(raw["Date Completed"]);
+  if(dateAssigned.warning) warnings.push(dateAssigned.warning + " (Date Assigned)");
+  if(targetDate.warning) warnings.push(targetDate.warning + " (Target Date)");
+  if(dateCompleted.warning) warnings.push(dateCompleted.warning + " (Date Completed)");
+
+  const notes = (raw["Notes / Remarks"]||"").toString().trim();
+
+  return {
+    rowNum, project, assignedTo, assignedToId, status, priority, help, notes,
+    dateAssigned: dateAssigned.value, targetDate: targetDate.value, dateCompleted: dateCompleted.value,
+    errors, warnings, valid: errors.length===0
+  };
+}
+
+function handleImportFile(inputEl){
+  const file = inputEl.files && inputEl.files[0];
+  inputEl.value = "";
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = (e)=>{
+    try{
+      const data = new Uint8Array(e.target.result);
+      const wb = XLSX.read(data, { type:"array", cellDates:true });
+      const sheetName = wb.SheetNames.includes("List of Projects") ? "List of Projects" : wb.SheetNames[0];
+      const sheet = wb.Sheets[sheetName];
+      const rows = XLSX.utils.sheet_to_json(sheet, { header:1, defval:"" });
+      if(rows.length < 2){
+        showToast("That file has no data rows to import.", "danger");
+        return;
+      }
+      const header = rows[0].map(h=>(h==null?"":String(h)).trim());
+      const expected = importRequiredHeader();
+      const parsed = [];
+      for(let i=1;i<rows.length;i++){
+        const rawArr = rows[i];
+        if(!rawArr || rawArr.every(c=>c===""||c==null)) continue;
+        const raw = {};
+        header.forEach((h,idx)=>{ raw[h] = rawArr[idx]; });
+        expected.forEach((h,idx)=>{ if(!(h in raw) && rawArr[idx]!==undefined) raw[h] = rawArr[idx]; });
+        parsed.push(validateImportRow(raw, i+1));
+      }
+      importParsedRows = parsed;
+      renderImportPreview();
+      document.getElementById("importModalOverlay").classList.add("open");
+    }catch(err){
+      showToast("Could not read that file: " + (err && err.message ? err.message : err), "danger");
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function renderImportPreview(){
+  const body = document.getElementById("importPreviewBody");
+  const validCount = importParsedRows.filter(r=>r.valid).length;
+  const warnCount = importParsedRows.filter(r=>r.valid && r.warnings.length>0).length;
+  const errorCount = importParsedRows.length - validCount;
+  document.getElementById("importSummaryLine").textContent =
+    `${importParsedRows.length} row${importParsedRows.length===1?"":"s"} found — ${validCount} valid${warnCount?` (${warnCount} with warnings)`:""}, ${errorCount} with errors`;
+  const btn = document.getElementById("importConfirmBtn");
+  btn.textContent = `Import ${validCount} valid row${validCount===1?"":"s"}`;
+  btn.disabled = validCount===0;
+  if(!body) return;
+  body.innerHTML = importParsedRows.map(r=>{
+    let resultHtml;
+    if(!r.valid){
+      resultHtml = `<span class="import-tag import-tag-error">✗ ${r.errors.join("; ")}</span>`;
+    }else if(r.warnings.length){
+      resultHtml = `<span class="import-tag import-tag-warn">⚠ ${r.warnings.join("; ")}</span>`;
+    }else{
+      resultHtml = `<span class="import-tag import-tag-ok">✓ Ready</span>`;
+    }
+    return `<tr>
+      <td>${r.rowNum}</td>
+      <td>${r.project || "—"}</td>
+      <td>${r.assignedTo || "—"}</td>
+      <td>${r.status || "—"}</td>
+      <td>${resultHtml}</td>
+    </tr>`;
+  }).join("");
+}
+
+function closeImportModal(){
+  document.getElementById("importModalOverlay").classList.remove("open");
+  importParsedRows = [];
+}
+
+async function confirmImport(){
+  const validRows = importParsedRows.filter(r=>r.valid);
+  if(validRows.length===0) return;
+  const btn = document.getElementById("importConfirmBtn");
+  btn.disabled = true;
+  btn.textContent = "Importing…";
+  const insertPayload = validRows.map(r=>({
+    project: r.project,
+    assigned_to: r.assignedToId || null,
+    status: r.status || "Assigned",
+    priority: r.priority || "",
+    date_assigned: r.dateAssigned || null,
+    target_date: r.targetDate || null,
+    date_completed: r.dateCompleted || null,
+    help_needed: r.help || "",
+    notes: r.notes || "",
+    created_by: currentProfile ? currentProfile.id : null
+  }));
+  try{
+    const { data, error } = await sb.from("projects").insert(insertPayload).select();
+    if(error) throw error;
+    (data||[]).forEach(row=>projects.push(mapProjectRow(row)));
+    renderAll();
+    closeImportModal();
+    showToast(`Imported ${(data||[]).length} project${(data||[]).length===1?"":"s"}`);
+  }catch(err){
+    btn.disabled = false;
+    btn.textContent = `Import ${validRows.length} valid row${validRows.length===1?"":"s"}`;
+    showToast(friendlyWriteError(err, "project"), "danger");
+  }
 }
 
 /* ============================================================

@@ -10,6 +10,27 @@ All notable changes to the SEO Automation & Projects Dashboard.
 - `seo-automation-dashboard-data.sample.json` — example/reference data file.
 - A registered Claude Skill for maintaining this project in future sessions.
 
+## 2026-08-17 — Bulk project import (Excel/CSV)
+
+Admin-only "Import Projects" button on the Project Tracker toolbar. Parses
+an `.xlsx`/`.xls`/`.csv` file (reusing the already-inlined SheetJS library —
+no new dependency), matching the same column layout as "Download Updated
+Excel" (`List of Projects` sheet if present, else the first sheet). Every
+row is validated client-side before anything touches the database:
+- Project name required; blank status defaults to `Assigned` (matches the
+  existing single-row Add Project behavior and the DB check constraint);
+  assignee must match an existing team member name; status/priority/help
+  values must match the app's canonical lists; dates are parsed leniently
+  (Excel date cells via `cellDates:true`, or best-effort string parsing)
+  with a non-blocking warning if a date can't be read.
+- A new preview modal (`#importModalOverlay` — the app's first modal
+  component) lists every parsed row with a Ready / Warning / Error tag and
+  the reason, before a single batched `insert()` commits only the valid
+  rows. Wired via `handleImportFile`, `validateImportRow`,
+  `renderImportPreview`, `confirmImport`, `closeImportModal`.
+- The Import Projects button/hint are admin-only, toggled in
+  `renderProjects()` alongside the existing "only my rows" toggle.
+
 ## 2026-08-14 — Overdue/stale alerts, streaks, badges, weekly trend chart, My Work view
 
 Purely additive analytics/personalization pass on top of the data-dense
