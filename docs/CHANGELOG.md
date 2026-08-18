@@ -2,6 +2,15 @@
 
 All notable changes to the SEO Automation & Projects Dashboard.
 
+## 2026-08-18 — Tools Usage: chip-style "By User" counts
+
+### Changed
+- "By User" cell in Per-Tool Breakdown now renders each person as a
+  rounded chip (`.user-count-chip`) with a small solid count badge
+  (`.user-count-badge`, brand-gradient background) instead of plain
+  "Name &times; count" text — matches the app's existing pill/badge visual
+  language instead of a raw multiplication sign.
+
 ## 2026-08-18 — Tools Usage: per-user breakdown per tool
 
 ### Added

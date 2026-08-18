@@ -150,6 +150,16 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
   .header-logo svg{width:21px;height:21px;}
   header h1{margin:0 0 3px 0;font-size:17px;font-weight:800;letter-spacing:-.02em;color:var(--text-primary);}
   header p{margin:0;color:var(--text-secondary);font-size:12px;font-weight:500;}
+  .user-count-chips{display:flex;flex-wrap:wrap;gap:5px;}
+  .user-count-chip{
+    display:inline-flex;align-items:center;gap:6px;padding:3px 4px 3px 10px;border-radius:999px;
+    background:var(--surface-2);border:1px solid var(--surface-border);
+    font-size:11.5px;font-weight:600;color:var(--text-secondary);white-space:nowrap;
+  }
+  .user-count-badge{
+    display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;
+    border-radius:999px;background:var(--brand-gradient);color:#fff;font-size:10.5px;font-weight:800;
+  }
   .internal-tool-disclaimer{margin-top:2px !important;font-size:10px !important;font-weight:600 !important;color:var(--critical) !important;opacity:.8;text-transform:uppercase;letter-spacing:.02em;}
   .auth-card .internal-tool-disclaimer{text-align:center;text-transform:none;margin:10px 0 0 0 !important;font-size:11px !important;}
   .app-footer{
@@ -3223,7 +3233,9 @@ function renderToolBreakdownTable(stats){
       .map(uid=>({ name: profileNameById(uid) || "Unknown user", count: t.byUser[uid] }))
       .sort((a,b)=> b.count - a.count || a.name.localeCompare(b.name));
     const byUserText = byUserEntries.length
-      ? byUserEntries.map(u=> `${u.name} &times; ${u.count}`).join(", ")
+      ? `<div class="user-count-chips">${byUserEntries.map(u=>
+          `<span class="user-count-chip">${u.name}<span class="user-count-badge">${u.count}</span></span>`
+        ).join("")}</div>`
       : "—";
     return `<tr><td>${name}</td><td>${t.total}</td><td>${t.users.size}</td><td>${byUserText}</td><td>${last}</td><td title="${reasonAttr}">${reasonText}</td></tr>`;
   }).join("");
