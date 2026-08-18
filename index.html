@@ -711,6 +711,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
   <button class="tab-btn" data-view="daily">Daily Status Log</button>
   <button class="tab-btn" data-view="team">Team</button>
   <button class="tab-btn" data-view="leaderboard">Leaderboard</button>
+  <button class="tab-btn" data-view="toolsusage">Tools Usage</button>
 </nav>
 
 <main>
@@ -978,6 +979,56 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
     </div>
   </section>
 
+  <!-- ============ TOOLS USAGE VIEW ============ -->
+  <section id="toolsusage" class="view">
+    <div class="card" id="toolsUsageUnavailableCard" style="display:none;">
+      <h2><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>Tools Usage</h2>
+      <p class="hint" id="toolsUsageUnavailableMsg">Usage tracking isn't set up yet — check back soon.</p>
+    </div>
+
+    <div class="card">
+      <h2><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>Log a Tool Use</h2>
+      <p class="hint">Tap "Using the tool now" whenever you use one of the team's automations/tools — this feeds the stats below.</p>
+      <div id="toolUsageList"></div>
+    </div>
+
+    <div class="kpi-row" style="grid-template-columns:repeat(2,1fr);">
+      <div class="kpi total"><div class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg></div><div class="lbl">Total Uses (All-Time)</div><div class="val" id="tuKpiTotal">0</div></div>
+      <div class="kpi done"><div class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div><div class="lbl">Unique Users (All-Time)</div><div class="val" id="tuKpiUsers">0</div></div>
+    </div>
+
+    <div class="card">
+      <h2><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Per-Tool Breakdown</h2>
+      <div class="table-wrap">
+        <table id="toolBreakdownTable"><thead><tr><th>Tool</th><th>Total Uses</th><th>Unique Users</th><th>Last Used</th></tr></thead><tbody id="toolBreakdownBody"></tbody></table>
+      </div>
+      <p class="hint" id="toolBreakdownEmptyMsg" style="display:none;">No usage logged yet.</p>
+    </div>
+
+    <div class="charts-row">
+      <div class="card chart-card">
+        <h2><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>Weekly Usage — Last 8 Weeks</h2>
+        <div style="position:relative;height:260px;">
+          <canvas id="toolWeeklyChart"></canvas>
+          <p class="hint" id="toolWeeklyEmptyMsg" style="display:none;position:absolute;inset:0;align-items:center;justify-content:center;margin:0;text-align:center;padding:0 20px;">No usage logged yet.</p>
+        </div>
+      </div>
+      <div class="card chart-card">
+        <h2><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>Monthly Usage — Last 6 Months</h2>
+        <div style="position:relative;height:260px;">
+          <canvas id="toolMonthlyChart"></canvas>
+          <p class="hint" id="toolMonthlyEmptyMsg" style="display:none;position:absolute;inset:0;align-items:center;justify-content:center;margin:0;text-align:center;padding:0 20px;">No usage logged yet.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.9 6.26L22 9.27l-5 4.87L18.18 21 12 17.77 5.82 21 7 14.14l-5-4.87 7.1-1.01L12 2z"/></svg>Top Users</h2>
+      <div id="toolUsageLeaderboardList"></div>
+      <p class="hint" id="toolUsageLeaderboardEmptyMsg" style="display:none;">No usage logged yet.</p>
+    </div>
+  </section>
+
 </main>
 
 <footer class="app-footer">
@@ -1179,6 +1230,8 @@ let barChartInstance = null;
 let donutChartInstance = null;
 let trendChartInstance = null;
 let funnelChartInstance = null;
+let toolWeeklyChartInstance = null;
+let toolMonthlyChartInstance = null;
 let trendWeeks = 8; // adjustable via the Leaderboard tab's trend-range buttons
 
 /* Doughnut center-text plugin: draws "<total>" + "projects" in the
@@ -1214,6 +1267,16 @@ if(typeof Chart !== "undefined"){
    ============================================================ */
 let projects = [];   // {id, project, assignedTo(name), status, priority, dateAssigned, targetDate, dateCompleted, help, notes}
 let dailyLog = [];    // {date, <AnalystName>: task text, ...} one row per log_date
+
+/* ============================================================
+   TOOLS USAGE - raw rows from `tool_usage_events` (may not exist
+   yet - see loadToolUsageEvents()). toolUsageAvailable flips to
+   false whenever that table read/write fails for any reason, so
+   the UI can show a friendly "not set up yet" message instead of
+   a console error or broken chart.
+   ============================================================ */
+let toolUsageEvents = [];        // {id, tool_name, user_id, used_at}
+let toolUsageAvailable = true;
 
 /* ============================================================
    NAV
@@ -2789,6 +2852,280 @@ function renderLeaderboard(){
 }
 
 /* ============================================================
+   TOOLS USAGE — logs every time someone clicks "Using the tool
+   now" against a tool_usage_events row (tool_name, user_id,
+   used_at). The backing table may not exist yet (migration is
+   queued separately) — every read/write below is wrapped so a
+   missing table degrades to a friendly inline message instead of
+   a console error or broken UI. Tool catalog is derived from the
+   `project` names already loaded from the `projects` table (kept
+   live via the existing realtime subscription) rather than a
+   second distinct-query round trip.
+   ============================================================ */
+function isMissingTableError(err){
+  const msg = (err && err.message) || "";
+  const code = err && err.code;
+  return code === "42P01" || /relation .* does not exist/i.test(msg) || /could not find the table/i.test(msg) || /schema cache/i.test(msg);
+}
+function friendlyToolUsageError(err){
+  if(isMissingTableError(err)) return "Usage tracking isn't set up yet — check back soon.";
+  const msg = (err && err.message) || "";
+  if(/row-level security|permission denied|policy|RLS/i.test(msg)) return "You don't have permission to log tool usage right now.";
+  return `Failed to log usage: ${msg || "unknown error"}`;
+}
+function toolUsageStatusMessage(){
+  return toolUsageAvailable ? "No usage logged yet." : "Usage tracking isn't set up yet — check back soon.";
+}
+function toolCatalog(){
+  const names = new Set();
+  projects.forEach(p=>{ if(p.project && p.project.trim()) names.add(p.project.trim()); });
+  return Array.from(names).sort((a,b)=>a.localeCompare(b));
+}
+async function loadToolUsageEvents(){
+  try{
+    const { data, error } = await sb.from("tool_usage_events").select("*").order("used_at", { ascending: false });
+    if(error) throw error;
+    toolUsageEvents = data || [];
+    toolUsageAvailable = true;
+  }catch(err){
+    toolUsageEvents = [];
+    toolUsageAvailable = false;
+  }
+}
+function computeToolUsageStats(){
+  const catalog = toolCatalog();
+  const perTool = {};
+  catalog.forEach(name=>{ perTool[name] = { total:0, users:new Set(), last:null }; });
+  const allUsers = new Set();
+  toolUsageEvents.forEach(e=>{
+    const name = e.tool_name;
+    if(!perTool[name]) perTool[name] = { total:0, users:new Set(), last:null };
+    perTool[name].total++;
+    if(e.user_id){ perTool[name].users.add(e.user_id); allUsers.add(e.user_id); }
+    if(!perTool[name].last || new Date(e.used_at) > new Date(perTool[name].last)) perTool[name].last = e.used_at;
+  });
+  return { totalUses: toolUsageEvents.length, uniqueUsers: allUsers.size, perTool, catalog };
+}
+function computeToolWeeklyTrend(weeks){
+  weeks = weeks || 8;
+  const nowMonday = mondayOf(new Date());
+  const buckets = [];
+  for(let i=weeks-1; i>=0; i--){
+    const ws = new Date(nowMonday.getTime());
+    ws.setDate(ws.getDate() - 7*i);
+    const we = new Date(ws.getTime());
+    we.setDate(we.getDate() + 7);
+    buckets.push({ weekLabel: `${ws.getMonth()+1}/${ws.getDate()}`, weekStart: ws, weekEnd: we, total: 0 });
+  }
+  toolUsageEvents.forEach(e=>{
+    const d = new Date(e.used_at);
+    if(isNaN(d.getTime())) return;
+    const bucket = buckets.find(b=> d >= b.weekStart && d < b.weekEnd);
+    if(bucket) bucket.total++;
+  });
+  return buckets.map(b=>({ weekLabel: b.weekLabel, total: b.total }));
+}
+function computeToolMonthlyTrend(months){
+  months = months || 6;
+  const now = new Date();
+  const buckets = [];
+  for(let i=months-1; i>=0; i--){
+    const ms = new Date(now.getFullYear(), now.getMonth()-i, 1);
+    const me = new Date(now.getFullYear(), now.getMonth()-i+1, 1);
+    buckets.push({ label: ms.toLocaleDateString(undefined,{month:"short",year:"2-digit"}), start: ms, end: me, total: 0 });
+  }
+  toolUsageEvents.forEach(e=>{
+    const d = new Date(e.used_at);
+    if(isNaN(d.getTime())) return;
+    const bucket = buckets.find(b=> d >= b.start && d < b.end);
+    if(bucket) bucket.total++;
+  });
+  return buckets.map(b=>({ label: b.label, total: b.total }));
+}
+function computeToolUsageLeaderboard(){
+  const counts = {};
+  toolUsageEvents.forEach(e=>{
+    if(!e.user_id) return;
+    counts[e.user_id] = (counts[e.user_id] || 0) + 1;
+  });
+  const rows = Object.keys(counts).map(uid=>({ id: uid, name: profileNameById(uid) || "Unknown user", count: counts[uid] }));
+  rows.sort((a,b)=> b.count - a.count || a.name.localeCompare(b.name));
+  return rows;
+}
+async function logToolUsage(toolName){
+  if(!currentProfile){
+    showToast("Sign in to log tool usage.", "danger");
+    return;
+  }
+  try{
+    const { data, error } = await sb.from("tool_usage_events").insert({ tool_name: toolName, user_id: currentProfile.id }).select().single();
+    if(error) throw error;
+    toolUsageEvents.unshift(data);
+    toolUsageAvailable = true;
+    renderToolsUsage();
+    showToast(`Logged your use of ${toolName}`);
+  }catch(err){
+    if(isMissingTableError(err)) toolUsageAvailable = false;
+    renderToolsUsage();
+    showToast(friendlyToolUsageError(err), "danger");
+  }
+}
+function renderToolUsageList(stats){
+  const banner = document.getElementById("toolsUsageUnavailableCard");
+  if(banner) banner.style.display = toolUsageAvailable ? "none" : "block";
+  const wrap = document.getElementById("toolUsageList");
+  if(!wrap) return;
+  if(stats.catalog.length === 0){
+    wrap.innerHTML = `<p class="hint">No automations/tools found yet — add projects in Project Tracker first.</p>`;
+    return;
+  }
+  wrap.innerHTML = stats.catalog.map(name=>{
+    const t = stats.perTool[name] || { total: 0 };
+    const countLabel = toolUsageAvailable ? `${t.total} use${t.total===1?"":"s"} logged` : "Usage tracking isn't set up yet";
+    const safe = name.replace(/\\/g,"\\\\").replace(/'/g,"\\'");
+    return `<div class="leaderboard-row">
+        <div class="lb-info">
+          <div class="lb-name">${name}</div>
+          <div class="lb-meta">${countLabel}</div>
+        </div>
+        <button class="btn" onclick="logToolUsage('${safe}')">Using the tool now</button>
+      </div>`;
+  }).join("");
+}
+function renderToolUsageKpis(stats){
+  const totalEl = document.getElementById("tuKpiTotal");
+  const usersEl = document.getElementById("tuKpiUsers");
+  if(totalEl) totalEl.textContent = toolUsageAvailable ? stats.totalUses : "—";
+  if(usersEl) usersEl.textContent = toolUsageAvailable ? stats.uniqueUsers : "—";
+}
+function renderToolBreakdownTable(stats){
+  const body = document.getElementById("toolBreakdownBody");
+  const table = document.getElementById("toolBreakdownTable");
+  const emptyMsg = document.getElementById("toolBreakdownEmptyMsg");
+  if(!body) return;
+  const rows = stats.catalog.filter(name=> stats.perTool[name] && stats.perTool[name].total > 0);
+  if(!toolUsageAvailable || rows.length === 0){
+    body.innerHTML = "";
+    if(table) table.style.display = "none";
+    if(emptyMsg){ emptyMsg.style.display = "block"; emptyMsg.textContent = toolUsageStatusMessage(); }
+    return;
+  }
+  if(table) table.style.display = "";
+  if(emptyMsg) emptyMsg.style.display = "none";
+  const sorted = rows.slice().sort((a,b)=> stats.perTool[b].total - stats.perTool[a].total || a.localeCompare(b));
+  body.innerHTML = sorted.map(name=>{
+    const t = stats.perTool[name];
+    const last = t.last ? new Date(t.last).toLocaleString() : "—";
+    return `<tr><td>${name}</td><td>${t.total}</td><td>${t.users.size}</td><td>${last}</td></tr>`;
+  }).join("");
+}
+/* Weekly/monthly tool-usage charts — same Chart.js line/area
+   setup and CSS-var-driven theming as renderTrendChart() on the
+   Leaderboard tab, including the absolute-positioned empty-state
+   message overlaying a hidden canvas. */
+function renderToolUsageTrendChart(canvasId, emptyMsgId, data, instanceKey, unitLabel){
+  const canvas = document.getElementById(canvasId);
+  if(!canvas) return;
+  const gridStroke = getComputedStyle(document.body).getPropertyValue("--surface-border").trim() || "#e3e5f2";
+  const labelFill = getComputedStyle(document.body).getPropertyValue("--text-muted").trim() || "#8688a3";
+  const lineColor = getComputedStyle(document.body).getPropertyValue("--accent").trim() || "#4f46e5";
+  const areaColor = getComputedStyle(document.body).getPropertyValue("--good").trim() || "#0d8a5f";
+
+  if(instanceKey === "weekly" && toolWeeklyChartInstance){ toolWeeklyChartInstance.destroy(); toolWeeklyChartInstance = null; }
+  if(instanceKey === "monthly" && toolMonthlyChartInstance){ toolMonthlyChartInstance.destroy(); toolMonthlyChartInstance = null; }
+
+  const emptyMsg = document.getElementById(emptyMsgId);
+  const allZero = !toolUsageAvailable || data.every(d=>d.total===0);
+  if(allZero){
+    canvas.getContext("2d").clearRect(0,0,canvas.width,canvas.height);
+    canvas.style.visibility = "hidden";
+    if(emptyMsg){ emptyMsg.style.display = "flex"; emptyMsg.textContent = toolUsageStatusMessage(); }
+    return;
+  }
+  canvas.style.visibility = "visible";
+  if(emptyMsg) emptyMsg.style.display = "none";
+
+  const chart = new Chart(canvas.getContext("2d"), {
+    type: "line",
+    data: {
+      labels: data.map(d=>d.weekLabel || d.label),
+      datasets: [{
+        label: unitLabel,
+        data: data.map(d=>d.total),
+        borderColor: lineColor,
+        backgroundColor: ctxObj => {
+          const c = ctxObj.chart;
+          const ctx = c.ctx;
+          const gradient = ctx.createLinearGradient(0,0,0,c.height || 260);
+          const hex = /^#[0-9a-fA-F]{6}$/.test(areaColor) ? areaColor : "#0d8a5f";
+          gradient.addColorStop(0, hex + "52");
+          gradient.addColorStop(1, hex + "05");
+          return gradient;
+        },
+        borderWidth: 2.5,
+        pointRadius: 4,
+        pointHoverRadius: 6,
+        pointBackgroundColor: lineColor,
+        pointBorderColor: "#fff",
+        pointBorderWidth: 1.5,
+        tension: 0.35,
+        fill: true
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: { duration: 700, easing: "easeOutQuart" },
+      scales: {
+        x: { grid: { display: false }, ticks: { color: labelFill, font: { family: "Inter", size: 10.5 } } },
+        y: { beginAtZero: true, ticks: { color: labelFill, font: { family: "Inter", size: 11 }, precision: 0 }, grid: { color: gridStroke, drawTicks: false } }
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: "#1a1a2e", titleFont: { family: "Inter", weight: 700 }, bodyFont: { family: "Inter" }, padding: 10, cornerRadius: 8,
+          callbacks: { label(ctx){ return ` ${ctx.parsed.y} ${unitLabel.toLowerCase()}`; } }
+        }
+      }
+    }
+  });
+  if(instanceKey === "weekly") toolWeeklyChartInstance = chart; else toolMonthlyChartInstance = chart;
+}
+function renderToolUsageLeaderboard(){
+  const list = document.getElementById("toolUsageLeaderboardList");
+  const emptyMsg = document.getElementById("toolUsageLeaderboardEmptyMsg");
+  if(!list) return;
+  const rows = computeToolUsageLeaderboard();
+  if(!toolUsageAvailable || rows.length === 0){
+    list.innerHTML = "";
+    if(emptyMsg){ emptyMsg.style.display = "block"; emptyMsg.textContent = toolUsageStatusMessage(); }
+    return;
+  }
+  if(emptyMsg) emptyMsg.style.display = "none";
+  const medals = ["🥇","🥈","🥉"];
+  list.innerHTML = rows.map((r,i)=>{
+    const rankLabel = i < 3 ? `<span class="rank-medal">${medals[i]}</span>` : `<span class="rank-num">#${i+1}</span>`;
+    return `<div class="leaderboard-row">
+        <div class="lb-rank">${rankLabel}</div>
+        ${avatarHtml(r.name)}
+        <div class="lb-info">
+          <div class="lb-name">${r.name}</div>
+          <div class="lb-meta">${r.count} use${r.count===1?"":"s"} logged</div>
+        </div>
+      </div>`;
+  }).join("");
+}
+function renderToolsUsage(){
+  const stats = computeToolUsageStats();
+  renderToolUsageList(stats);
+  renderToolUsageKpis(stats);
+  renderToolBreakdownTable(stats);
+  renderToolUsageTrendChart("toolWeeklyChart", "toolWeeklyEmptyMsg", computeToolWeeklyTrend(8), "weekly", "Uses");
+  renderToolUsageTrendChart("toolMonthlyChart", "toolMonthlyEmptyMsg", computeToolMonthlyTrend(6), "monthly", "Uses");
+  renderToolUsageLeaderboard();
+}
+
+/* ============================================================
    MY WORK - personal view scoped to currentProfile. Purely
    derived from `projects` already in memory; reuses the same
    staleness/streak/badge helpers as the rest of the app.
@@ -2890,6 +3227,7 @@ function renderAll(){
   renderLeaderboard();
   renderTrendChart();
   renderMyWork();
+  renderToolsUsage();
 }
 
 /* ============================================================
@@ -3044,6 +3382,7 @@ async function loadAllData(){
   applyProfiles();
   projects = (projectsRes.data || []).map(mapProjectRow);
   dailyLog = buildDailyLogFromRows(dailyRes.data || []);
+  await loadToolUsageEvents(); // best-effort — see loadToolUsageEvents() for the "table doesn't exist yet" fallback
   return true;
 }
 function renderEverything(){

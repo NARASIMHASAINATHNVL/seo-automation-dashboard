@@ -2,6 +2,57 @@
 
 All notable changes to the SEO Automation & Projects Dashboard.
 
+## 2026-08-18 — Tools Usage tab (UI-complete, inert until `tool_usage_events` migration lands)
+
+### Added
+- New **Tools Usage** nav tab (`data-view="toolsusage"`, after Leaderboard)
+  built entirely against the `tool_usage_events` table shape from the
+  queued migration (`id`, `tool_name`, `user_id` -> `profiles.id`,
+  `used_at`), even though that table does not exist in the database yet.
+  - **Log a Tool Use** — one row per tool with a live use-count and a
+    "Using the tool now" button (`logToolUsage()`). Tool catalog is the
+    distinct set of `project` names already loaded from `projects`
+    (`toolCatalog()`) rather than a second `select distinct` round trip,
+    since `projects` is already in memory and kept in sync via the
+    existing realtime subscription.
+  - Clicking the button inserts `{tool_name, user_id: currentProfile.id}`
+    into `tool_usage_events` (same "resolve current profile id from
+    `currentProfile`" pattern used by `addProjectRow()`/comments), shows
+    `showToast("Logged your use of <tool>")` on success, or a friendly
+    error toast on failure.
+  - **Aggregate stats**: total uses + unique users (all-time) KPI cards,
+    a per-tool breakdown table (total uses / unique users / last used),
+    an 8-week and a 6-month usage trend chart (`renderToolUsageTrendChart()`,
+    reusing the exact Chart.js line/area config, CSS-var theming, and
+    empty-state overlay pattern from `renderTrendChart()`), and a
+    per-person leaderboard (`renderToolUsageLeaderboard()`), styled the
+    same as the existing Leaderboard tab rows.
+  - All new CSS reuses existing custom properties only (`--surface-1/2`,
+    `--surface-border`, `--text-primary/secondary/muted`, `--good`,
+    `--accent`, etc.) via existing classes (`.card`, `.chart-card`,
+    `.kpi-row`/`.kpi`, `.leaderboard-row`, `.table-wrap`, `.hint`) — no new
+    hardcoded colors were introduced.
+- **Graceful "table not set up yet" handling** — every
+  `sb.from('tool_usage_events')` call (`loadToolUsageEvents()`,
+  `logToolUsage()`) is wrapped in try/catch. Any read/write failure
+  (missing-table `42P01`, "relation does not exist", PostgREST schema-cache
+  misses, RLS denials, etc. — see `isMissingTableError()` /
+  `friendlyToolUsageError()`) sets `toolUsageAvailable = false` and every
+  stats section falls back to a shared friendly message via
+  `toolUsageStatusMessage()`: "Usage tracking isn't set up yet — check back
+  soon." when the table is missing, or "No usage logged yet." when the
+  table works but is empty — mirroring the existing `renderDonut()` "No
+  data yet" empty-state convention. The rest of the tab (tool list, nav,
+  other tabs) renders normally regardless.
+
+### Known limitation
+- **This feature is UI-complete but functionally inert until the
+  `tool_usage_events` table migration (queued separately, not part of this
+  change) is applied to the database.** Until then, every section of the
+  Tools Usage tab will show the "Usage tracking isn't set up yet — check
+  back soon." message and the "Using the tool now" button will show a
+  matching error toast instead of logging anything.
+
 ## 2026-08-18 — Footer credit
 
 ### Added
