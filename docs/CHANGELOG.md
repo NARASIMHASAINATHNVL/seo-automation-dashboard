@@ -2,6 +2,44 @@
 
 All notable changes to the SEO Automation & Projects Dashboard.
 
+## 2026-08-18 — Analyst Profile modal (Team + Leaderboard)
+
+### Added
+- **Analyst Profile modal** — click any analyst's name (Team tab roster
+  table, and Leaderboard tab per-analyst progress rows) to open a modal
+  with everything already computed about that one person in one place.
+  Triggered via `openAnalystProfile(profileId)`, closed via
+  `closeAnalystProfileModal()`. Purely derived from `projects`/`PROFILES`
+  already in memory — no new Supabase columns/tables, no new reads/writes.
+  - **Header** — name, admin role pill (`profile.is_admin`, reusing
+    `.role-pill.is-admin` + `SHIELD_ICON`), and a large avatar circle
+    (`.ap-avatar-lg`) built the same way as the header user chip
+    (`initialsOf()` + the navy/accent-2 gradient).
+  - **Stats row** (`.kpi-row` / `.kpi`, same classes as Dashboard/My Work)
+    — total projects, completed count, in-progress count (Ongoing +
+    Review Pending), overdue/stale count (`computeStaleness()` on the
+    analyst's own projects), average days-to-complete
+    (`computeTimeToCompletion().perAnalyst[name]` — not reimplemented),
+    and current streak (`computeStreak()`).
+  - **Badges earned** (`computeBadges()`), rendered as the same
+    `.badge-row`/`.badge-chip` chips used on Leaderboard/My Work, with the
+    same "no badges yet" empty copy as My Work.
+  - **Assigned projects table** — project name, status
+    (`.status-pill`/`STATUS_PILL_CLASS`), target date, date completed —
+    same columns/markup convention as the My Work table. Empty state
+    ("No projects assigned yet.") when the analyst has zero projects.
+  - **Close behavior** matches the existing Import Projects / Change
+    Password modals exactly: overlay click (`onclick="if(event.target===
+    this) closeAnalystProfileModal()"`) and an X button
+    (`.modal-close-btn`). Escape-to-close is new — no other modal in this
+    file previously handled the Escape key, so a single shared
+    `document.addEventListener("keydown", ...)` was added that closes the
+    Analyst Profile modal (only) when it's open and Escape is pressed.
+  - New CSS (`.ap-header`, `.ap-avatar-lg`, `.ap-header-name`,
+    `.ap-section-title`) reuses only existing custom properties
+    (`--navy`, `--accent-2`, `--text-primary/secondary`, `--shadow-sm`) —
+    no new hardcoded colors, no renamed variables.
+
 ## 2026-08-18 — Tools Usage tab (UI-complete, inert until `tool_usage_events` migration lands)
 
 ### Added

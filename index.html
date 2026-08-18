@@ -587,6 +587,16 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
   .badge-row{display:inline-flex;flex-wrap:wrap;gap:4px;margin-top:3px;}
   .badge-chip{display:inline-flex;align-items:center;gap:3px;font-size:9.5px;font-weight:700;padding:2px 7px;border-radius:999px;background:var(--surface-1);border:1px solid var(--surface-border);color:var(--text-secondary);white-space:nowrap;}
 
+  /* ============ ANALYST PROFILE MODAL — 2026-08-18 ============ */
+  .ap-header{display:flex;align-items:center;gap:14px;margin-bottom:16px;}
+  .ap-avatar-lg{
+    width:52px;height:52px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(135deg,var(--navy),var(--accent-2));color:#fff;font-size:18px;font-weight:700;box-shadow:var(--shadow-sm);
+  }
+  .ap-header-name{display:flex;align-items:center;gap:8px;font-size:16px;font-weight:800;color:var(--text-primary);flex-wrap:wrap;}
+  .ap-section-title{font-size:11px;font-weight:800;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.05em;margin:16px 0 8px;}
+  .ap-section-title:first-of-type{margin-top:0;}
+
   /* ============ MY WORK ============ */
   .kpi-row.kpi-row-5{grid-template-columns:repeat(5,1fr);}
 
@@ -1097,6 +1107,19 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
         <button type="submit" class="btn" id="changePasswordSaveBtn">Save</button>
       </div>
     </form>
+  </div>
+</div>
+
+<!-- ============ ANALYST PROFILE MODAL (Team roster + Leaderboard "click a name") ============ -->
+<div class="modal-overlay" id="analystProfileModalOverlay" onclick="if(event.target===this) closeAnalystProfileModal()">
+  <div class="modal-card" style="max-width:640px;">
+    <div class="modal-card-header">
+      <h2>Analyst Profile</h2>
+      <button type="button" class="modal-close-btn" onclick="closeAnalystProfileModal()" aria-label="Close">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-card-body" id="analystProfileBody"></div>
   </div>
 </div>
 
@@ -1636,7 +1659,7 @@ function renderTeam(){
     const assignedCount = projects.filter(p=>p.assignedTo===name).length;
     const safeName = name.replace(/'/g,"\\'");
     const tr = document.createElement("tr");
-    const nameCell = `<span class="assignee-cell">${avatarHtml(name)}<span class="assignee-name">${name}</span>${profile.is_admin ? `<span class="role-pill is-admin" style="padding:2px 7px;font-size:9px;">${SHIELD_ICON}Admin</span>` : ""}</span>${badgesHtml(name, projects)}`;
+    const nameCell = `<span class="assignee-cell" style="cursor:pointer;" onclick="openAnalystProfile('${profile.id}')" title="View ${name}'s profile">${avatarHtml(name)}<span class="assignee-name">${name}</span>${profile.is_admin ? `<span class="role-pill is-admin" style="padding:2px 7px;font-size:9px;">${SHIELD_ICON}Admin</span>` : ""}</span>${badgesHtml(name, projects)}`;
     const toggleCell = isAdmin
       ? `<input type="checkbox" style="width:auto;" ${inDaily?"checked":""} onchange="toggleDailyInclude('${safeName}', this.checked)">`
       : `<span class="status-pill ${inDaily?'pill-done':'pill-assigned'}">${inDaily?"Yes":"No"}</span>`;
@@ -2180,6 +2203,94 @@ function badgesHtml(analystName, projectsList){
   if(!badges.length) return "";
   return `<span class="badge-row">${badges.map(b=>`<span class="badge-chip" title="${b.label}">${b.icon} ${b.label}</span>`).join("")}</span>`;
 }
+
+/* ============================================================
+   ANALYST PROFILE MODAL — single-analyst rollup of everything
+   already computed elsewhere in the file (staleness, streak,
+   badges, time-to-completion). Purely derived from `projects` /
+   `PROFILES` already in memory - no new DB reads/writes, no new
+   columns/tables. Opened from the Team roster (name cell) and
+   the Leaderboard progress rows via openAnalystProfile(profileId).
+   ============================================================ */
+function openAnalystProfile(profileId){
+  const profile = PROFILES.find(p=>p.id===profileId);
+  if(!profile) return;
+  const name = profile.full_name;
+  const mine = projects.filter(p=>p.assignedTo===name);
+
+  const counts = {"Assigned":0,"Ongoing":0,"Review Pending":0,"Completed & Approved":0};
+  mine.forEach(p=>{ if(counts.hasOwnProperty(p.status)) counts[p.status]++; });
+  const inProgress = counts["Ongoing"] + counts["Review Pending"];
+  const flaggedCount = computeStaleness(mine).flagged.length;
+  const streak = computeStreak(name, projects);
+  const badges = computeBadges(name, projects);
+  const ttc = computeTimeToCompletion();
+  const avgDaysLabel = ttc.perAnalyst[name] ? `${ttc.perAnalyst[name].avgDays}d` : "—";
+
+  const headerHtml = `
+    <div class="ap-header">
+      <span class="ap-avatar-lg">${initialsOf(name)}</span>
+      <div>
+        <div class="ap-header-name">${name}${profile.is_admin ? `<span class="role-pill is-admin">${SHIELD_ICON}Admin</span>` : ""}</div>
+      </div>
+    </div>`;
+
+  const statsHtml = `
+    <div class="kpi-row">
+      <div class="kpi total"><div class="lbl">Total</div><div class="val">${mine.length}</div></div>
+      <div class="kpi done"><div class="lbl">Completed</div><div class="val">${counts["Completed & Approved"]}</div></div>
+      <div class="kpi ongoing"><div class="lbl">In Progress</div><div class="val">${inProgress}</div></div>
+      <div class="kpi help"><div class="lbl">Overdue / Stale</div><div class="val">${flaggedCount}</div></div>
+      <div class="kpi"><div class="lbl">Avg. Days</div><div class="val">${avgDaysLabel}</div></div>
+      <div class="kpi"><div class="lbl">Streak</div><div class="val">${streak}wk</div></div>
+    </div>`;
+
+  const badgesInnerHtml = badges.length
+    ? `<span class="badge-row">${badges.map(b=>`<span class="badge-chip" title="${b.label}">${b.icon} ${b.label}</span>`).join("")}</span>`
+    : `<span class="ro-text ro-muted">No badges yet — complete a project to earn the first one.</span>`;
+
+  let projectsHtml;
+  if(mine.length === 0){
+    projectsHtml = `<div class="hint">No projects assigned yet.</div>`;
+  }else{
+    const rows = mine.map(p=>`
+      <tr>
+        <td>${p.project||"—"}</td>
+        <td><span class="status-pill ${STATUS_PILL_CLASS[p.status]||''}">${p.status||"—"}</span></td>
+        <td>${p.targetDate||"—"}</td>
+        <td>${p.dateCompleted||"—"}</td>
+      </tr>`).join("");
+    projectsHtml = `
+      <div class="table-wrap" style="max-height:260px;">
+        <table>
+          <thead><tr><th>Project / Automation</th><th>Status</th><th>Target Date</th><th>Date Completed</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>`;
+  }
+
+  const body = document.getElementById("analystProfileBody");
+  if(!body) return;
+  body.innerHTML = `
+    ${headerHtml}
+    ${statsHtml}
+    <div class="ap-section-title">Badges</div>
+    ${badgesInnerHtml}
+    <div class="ap-section-title">Assigned Projects</div>
+    ${projectsHtml}
+  `;
+
+  document.getElementById("analystProfileModalOverlay").classList.add("open");
+}
+function closeAnalystProfileModal(){
+  const overlay = document.getElementById("analystProfileModalOverlay");
+  if(overlay) overlay.classList.remove("open");
+}
+document.addEventListener("keydown", function(e){
+  if(e.key !== "Escape") return;
+  const overlay = document.getElementById("analystProfileModalOverlay");
+  if(overlay && overlay.classList.contains("open")) closeAnalystProfileModal();
+});
 
 /* ============================================================
    WEEKLY COMPLETION TREND - last N ISO weeks (oldest first).
@@ -2825,7 +2936,8 @@ function renderLeaderboard(){
           : `<span class="rank-num">#${i+1}</span>`;
         const you = (me && r.name === me) ? ' <span class="you-tag">(you)</span>' : '';
         const progressText = r.total > 0 ? `${r.completed} / ${r.total} completed · ${r.pct}%` : `No projects yet`;
-        return `<div class="leaderboard-row">
+        const rProfileId = profileIdByName(r.name);
+        return `<div class="leaderboard-row" ${rProfileId ? `style="cursor:pointer;" onclick="openAnalystProfile('${rProfileId}')" title="View ${r.name}'s profile"` : ''}>
             <div class="lb-rank">${rankLabel}</div>
             ${avatarHtml(r.name)}
             <div class="lb-info">
