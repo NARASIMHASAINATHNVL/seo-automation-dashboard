@@ -10,6 +10,60 @@ All notable changes to the SEO Automation & Projects Dashboard.
 - `seo-automation-dashboard-data.sample.json` — example/reference data file.
 - A registered Claude Skill for maintaining this project in future sessions.
 
+## 2026-08-18 — Deep design-system rewrite + Chart.js migration
+
+Third visual pass after two rounds of tightening didn't move the needle
+enough — this one is a genuine step-change rather than incremental polish.
+No business logic, Supabase calls, element ids, `data-view` wiring, or CSS
+custom property *names* changed; only presentation.
+
+### Added
+- Google Fonts `Inter` (weights 400–900) now actually drives the whole
+  UI's typographic hierarchy: 400 body copy, 600–700 headings/labels,
+  800–900 for KPI numbers and brand marks (font link tag already existed
+  from a prior pass; bumped to include weight 900 and applied consistently).
+- New additive CSS custom properties (existing ones like `--shadow`,
+  `--brand-text`, `--good` etc. were **not** renamed or removed):
+  `--brand-gradient` (rich purple-to-violet gradient, light + dark
+  variants) and a layered shadow scale `--shadow-sm` / `--shadow-md` /
+  `--shadow-lg`, applied to the header logo, nav active-pill, buttons,
+  auth card, and the import modal for more depth than the previous flat
+  `--shadow`/`--shadow-hover` pair.
+- KPI cards: numbers bumped to font-weight 900, icon badges now sit in a
+  soft `color-mix()` tinted rounded-square (15% of the status color)
+  instead of a flat neutral swatch, with a small hover scale-up on the icon.
+
+### Changed
+- **All three dashboard charts (`renderBarChart`, `renderDonut`,
+  `renderTrendChart`) migrated from hand-rolled SVG DOM manipulation to
+  Chart.js 4.4.0** (loaded via `<script src="…/chart.umd.min.js">` in
+  `<head>`, before the Supabase/app script at the bottom of `<body>`).
+  Function names/signatures and call sites (`renderAll()`) are unchanged.
+  - `#barChart` → stacked bar chart, one dataset per status
+    (`STATUSES`/`STATUS_HEX`), animated entry.
+  - `#donutChart` → doughnut chart with a custom `centerText` Chart.js
+    plugin drawing the total + "projects" label in the hole (replaces the
+    manual center `<text>` elements).
+  - `#trendChart` → line/area chart with a canvas gradient fill, driven by
+    the unchanged `computeWeeklyTrend()`.
+  - The `<svg>` elements for all three charts became `<canvas>` elements
+    with the **same ids**. The old manual SVG tooltip divs
+    (`#barTooltip`/`#donutTooltip`/`#trendTooltip`) were removed — nothing
+    else referenced them — since Chart.js ships its own tooltips.
+  - Each chart keeps a module-level instance variable
+    (`barChartInstance`/`donutChartInstance`/`trendChartInstance`) that is
+    destroyed before every re-render, and still reads grid/tick/label
+    colors from `getComputedStyle(document.body)` custom properties at
+    render time so both light and dark theme stay correct — mirroring how
+    the old SVG code sourced its colors.
+  - Empty states preserved: donut/trend charts skip creating a Chart
+    instance (and clear the canvas) when there's no data yet, same as the
+    old "No data yet" / "No completions yet" behavior.
+- Nav active-pill, header logo, primary buttons, and the auth-tab active
+  state now use `var(--brand-gradient)` instead of a repeated inline
+  `linear-gradient(135deg, var(--navy), var(--navy-2))` literal — same
+  visual family, single source of truth.
+
 ## 2026-08-17 — Bulk project import (Excel/CSV)
 
 Admin-only "Import Projects" button on the Project Tracker toolbar. Parses
