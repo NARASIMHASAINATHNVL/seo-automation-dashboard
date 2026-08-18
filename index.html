@@ -1014,7 +1014,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
     <div class="card">
       <h2><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Per-Tool Breakdown</h2>
       <div class="table-wrap">
-        <table id="toolBreakdownTable"><thead><tr><th>Tool</th><th>Total Uses</th><th>Unique Users</th><th>Last Used</th></tr></thead><tbody id="toolBreakdownBody"></tbody></table>
+        <table id="toolBreakdownTable"><thead><tr><th>Tool</th><th>Total Uses</th><th>Unique Users</th><th>Last Used</th><th>Last Reason</th></tr></thead><tbody id="toolBreakdownBody"></tbody></table>
       </div>
       <p class="hint" id="toolBreakdownEmptyMsg" style="display:none;">No usage logged yet.</p>
     </div>
@@ -1040,6 +1040,13 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
       <h2><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.9 6.26L22 9.27l-5 4.87L18.18 21 12 17.77 5.82 21 7 14.14l-5-4.87 7.1-1.01L12 2z"/></svg>Top Users</h2>
       <div id="toolUsageLeaderboardList"></div>
       <p class="hint" id="toolUsageLeaderboardEmptyMsg" style="display:none;">No usage logged yet.</p>
+    </div>
+
+    <div class="card">
+      <h2><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>Recent Activity</h2>
+      <p class="hint">Last 10 logged tool uses, with the reason each person gave.</p>
+      <div id="toolUsageRecentActivityList"></div>
+      <p class="hint" id="toolUsageRecentActivityEmptyMsg" style="display:none;">No usage logged yet.</p>
     </div>
   </section>
 
@@ -1105,6 +1112,29 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
       <div class="modal-card-footer">
         <button type="button" class="btn secondary" onclick="closeChangePasswordModal()">Cancel</button>
         <button type="submit" class="btn" id="changePasswordSaveBtn">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ============ TOOL USAGE REASON MODAL (asks "why" before logging a tool use) ============ -->
+<div class="modal-overlay" id="toolUsageReasonModalOverlay" onclick="if(event.target===this) closeToolUsageReasonModal()">
+  <div class="modal-card" style="max-width:400px;">
+    <div class="modal-card-header">
+      <h2>What are you using this for?</h2>
+      <button type="button" class="modal-close-btn" onclick="closeToolUsageReasonModal()" aria-label="Close">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <form id="toolUsageReasonForm" onsubmit="handleToolUsageReasonSubmit(event)">
+      <div class="modal-card-body">
+        <p class="hint" style="margin:0 0 10px;">Tool: <strong id="toolUsageReasonToolName"></strong></p>
+        <label>Reason<input type="text" id="toolUsageReasonInput" placeholder="e.g. Bulk meta description refresh for HL pages" minlength="3" required></label>
+        <p class="hint" id="toolUsageReasonHint" style="margin-top:8px;">Give a short reason (at least 3 characters) — this helps us see how the team is using each tool.</p>
+      </div>
+      <div class="modal-card-footer">
+        <button type="button" class="btn secondary" onclick="closeToolUsageReasonModal()">Cancel</button>
+        <button type="submit" class="btn" id="toolUsageReasonSubmitBtn">Submit</button>
       </div>
     </form>
   </div>
@@ -1302,7 +1332,7 @@ let dailyLog = [];    // {date, <AnalystName>: task text, ...} one row per log_d
    the UI can show a friendly "not set up yet" message instead of
    a console error or broken chart.
    ============================================================ */
-let toolUsageEvents = [];        // {id, tool_name, user_id, used_at}
+let toolUsageEvents = [];        // {id, tool_name, user_id, used_at, reason}
 let toolUsageAvailable = true;
 
 /* ============================================================
@@ -2290,6 +2320,8 @@ document.addEventListener("keydown", function(e){
   if(e.key !== "Escape") return;
   const overlay = document.getElementById("analystProfileModalOverlay");
   if(overlay && overlay.classList.contains("open")) closeAnalystProfileModal();
+  const toolUsageOverlay = document.getElementById("toolUsageReasonModalOverlay");
+  if(toolUsageOverlay && toolUsageOverlay.classList.contains("open")) closeToolUsageReasonModal();
 });
 
 /* ============================================================
@@ -2970,10 +3002,14 @@ function renderLeaderboard(){
 /* ============================================================
    TOOLS USAGE — logs every time someone clicks "Using the tool
    now" against a tool_usage_events row (tool_name, user_id,
-   used_at). The backing table may not exist yet (migration is
-   queued separately) — every read/write below is wrapped so a
-   missing table degrades to a friendly inline message instead of
-   a console error or broken UI. Tool catalog is derived from the
+   used_at, reason). Clicking the button opens a short modal
+   (openToolUsageReasonModal / closeToolUsageReasonModal /
+   handleToolUsageReasonSubmit, defined below) asking why the
+   tool is being used; the insert only fires on submit. The
+   backing table may not exist yet (migration is queued
+   separately) — every read/write below is wrapped so a missing
+   table degrades to a friendly inline message instead of a
+   console error or broken UI. Tool catalog is derived from the
    `project` names already loaded from the `projects` table (kept
    live via the existing realtime subscription) rather than a
    second distinct-query round trip.
@@ -3011,14 +3047,17 @@ async function loadToolUsageEvents(){
 function computeToolUsageStats(){
   const catalog = toolCatalog();
   const perTool = {};
-  catalog.forEach(name=>{ perTool[name] = { total:0, users:new Set(), last:null }; });
+  catalog.forEach(name=>{ perTool[name] = { total:0, users:new Set(), last:null, lastReason:null }; });
   const allUsers = new Set();
   toolUsageEvents.forEach(e=>{
     const name = e.tool_name;
-    if(!perTool[name]) perTool[name] = { total:0, users:new Set(), last:null };
+    if(!perTool[name]) perTool[name] = { total:0, users:new Set(), last:null, lastReason:null };
     perTool[name].total++;
     if(e.user_id){ perTool[name].users.add(e.user_id); allUsers.add(e.user_id); }
-    if(!perTool[name].last || new Date(e.used_at) > new Date(perTool[name].last)) perTool[name].last = e.used_at;
+    if(!perTool[name].last || new Date(e.used_at) > new Date(perTool[name].last)){
+      perTool[name].last = e.used_at;
+      perTool[name].lastReason = e.reason || null;
+    }
   });
   return { totalUses: toolUsageEvents.length, uniqueUsers: allUsers.size, perTool, catalog };
 }
@@ -3068,16 +3107,58 @@ function computeToolUsageLeaderboard(){
   rows.sort((a,b)=> b.count - a.count || a.name.localeCompare(b.name));
   return rows;
 }
-async function logToolUsage(toolName){
+/* ------------------------------------------------------------
+   "Using the tool now" no longer inserts directly — it opens a
+   small modal (same markup/CSS pattern as the Change Password
+   modal) asking why the tool is being used. Only submit actually
+   logs; cancel / overlay-click / Escape close it with no insert.
+   ------------------------------------------------------------ */
+let pendingToolUsageName = null;
+function openToolUsageReasonModal(toolName){
+  if(!currentProfile){
+    showToast("Sign in to log tool usage.", "danger");
+    return;
+  }
+  pendingToolUsageName = toolName;
+  document.getElementById("toolUsageReasonToolName").textContent = toolName;
+  document.getElementById("toolUsageReasonInput").value = "";
+  document.getElementById("toolUsageReasonModalOverlay").classList.add("open");
+  document.getElementById("toolUsageReasonInput").focus();
+}
+function closeToolUsageReasonModal(){
+  document.getElementById("toolUsageReasonModalOverlay").classList.remove("open");
+  pendingToolUsageName = null;
+}
+async function handleToolUsageReasonSubmit(evt){
+  evt.preventDefault();
+  const toolName = pendingToolUsageName;
+  const reason = document.getElementById("toolUsageReasonInput").value.trim();
+  if(!toolName){
+    closeToolUsageReasonModal();
+    return;
+  }
+  if(reason.length < 3){
+    showToast("Give a short reason (at least 3 characters).", "danger");
+    return;
+  }
+  const btn = document.getElementById("toolUsageReasonSubmitBtn");
+  btn.disabled = true;
+  btn.textContent = "Logging…";
+  await logToolUsage(toolName, reason);
+  btn.disabled = false;
+  btn.textContent = "Submit";
+}
+async function logToolUsage(toolName, reason){
   if(!currentProfile){
     showToast("Sign in to log tool usage.", "danger");
     return;
   }
   try{
-    const { data, error } = await sb.from("tool_usage_events").insert({ tool_name: toolName, user_id: currentProfile.id }).select().single();
+    const { data, error } = await sb.from("tool_usage_events").insert({ tool_name: toolName, user_id: currentProfile.id, reason: reason }).select().single();
     if(error) throw error;
     toolUsageEvents.unshift(data);
     toolUsageAvailable = true;
+    closeToolUsageReasonModal();
     renderToolsUsage();
     showToast(`Logged your use of ${toolName}`);
   }catch(err){
@@ -3104,7 +3185,7 @@ function renderToolUsageList(stats){
           <div class="lb-name">${name}</div>
           <div class="lb-meta">${countLabel}</div>
         </div>
-        <button class="btn" onclick="logToolUsage('${safe}')">Using the tool now</button>
+        <button class="btn" onclick="openToolUsageReasonModal('${safe}')">Using the tool now</button>
       </div>`;
   }).join("");
 }
@@ -3132,7 +3213,9 @@ function renderToolBreakdownTable(stats){
   body.innerHTML = sorted.map(name=>{
     const t = stats.perTool[name];
     const last = t.last ? new Date(t.last).toLocaleString() : "—";
-    return `<tr><td>${name}</td><td>${t.total}</td><td>${t.users.size}</td><td>${last}</td></tr>`;
+    const reasonText = t.lastReason ? t.lastReason : "—";
+    const reasonAttr = reasonText.replace(/"/g,"&quot;");
+    return `<tr><td>${name}</td><td>${t.total}</td><td>${t.users.size}</td><td>${last}</td><td title="${reasonAttr}">${reasonText}</td></tr>`;
   }).join("");
 }
 /* Weekly/monthly tool-usage charts — same Chart.js line/area
@@ -3231,6 +3314,30 @@ function renderToolUsageLeaderboard(){
       </div>`;
   }).join("");
 }
+function renderToolUsageRecentActivity(){
+  const list = document.getElementById("toolUsageRecentActivityList");
+  const emptyMsg = document.getElementById("toolUsageRecentActivityEmptyMsg");
+  if(!list) return;
+  const rows = toolUsageEvents.slice(0, 10);
+  if(!toolUsageAvailable || rows.length === 0){
+    list.innerHTML = "";
+    if(emptyMsg){ emptyMsg.style.display = "block"; emptyMsg.textContent = toolUsageStatusMessage(); }
+    return;
+  }
+  if(emptyMsg) emptyMsg.style.display = "none";
+  list.innerHTML = rows.map(e=>{
+    const when = e.used_at ? new Date(e.used_at).toLocaleString() : "—";
+    const userName = profileNameById(e.user_id) || "Unknown user";
+    const reasonText = e.reason ? e.reason : "No reason given";
+    return `<div class="leaderboard-row">
+        ${avatarHtml(userName)}
+        <div class="lb-info">
+          <div class="lb-name">${e.tool_name || "—"} <span class="lb-meta">· ${userName}</span></div>
+          <div class="lb-meta">${reasonText} · ${when}</div>
+        </div>
+      </div>`;
+  }).join("");
+}
 function renderToolsUsage(){
   const stats = computeToolUsageStats();
   renderToolUsageList(stats);
@@ -3239,6 +3346,7 @@ function renderToolsUsage(){
   renderToolUsageTrendChart("toolWeeklyChart", "toolWeeklyEmptyMsg", computeToolWeeklyTrend(8), "weekly", "Uses");
   renderToolUsageTrendChart("toolMonthlyChart", "toolMonthlyEmptyMsg", computeToolMonthlyTrend(6), "monthly", "Uses");
   renderToolUsageLeaderboard();
+  renderToolUsageRecentActivity();
 }
 
 /* ============================================================

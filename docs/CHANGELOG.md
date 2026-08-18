@@ -2,6 +2,61 @@
 
 All notable changes to the SEO Automation & Projects Dashboard.
 
+## 2026-08-18 — Tools Usage: capture a reason per logged use
+
+### Changed
+- **`tool_usage_events` planned schema** now includes a `reason` column
+  alongside `id`, `tool_name`, `user_id`, `used_at` (final column list:
+  `id, tool_name, user_id, used_at, reason`). The table itself is still not
+  created (migration remains queued separately) — this only updates every
+  JS reference to the row shape: the `toolUsageEvents` type comment, the
+  `computeToolUsageStats()` per-tool aggregation (now also tracks
+  `lastReason`), and the insert payload in `logToolUsage()`.
+- **"Using the tool now" no longer inserts immediately.** Clicking it now
+  calls `openToolUsageReasonModal(toolName)`, which opens a small modal
+  (`#toolUsageReasonModalOverlay`, built from the exact same
+  `.modal-overlay` / `.modal-card` / `.modal-card-header` /
+  `.modal-card-body` / `.modal-card-footer` markup and CSS as the existing
+  Change Password modal) asking "What are you using this for?" with a
+  required text input (min 3 characters). Submitting
+  (`handleToolUsageReasonSubmit()`) validates the reason client-side, then
+  calls `logToolUsage(toolName, reason)`, which inserts
+  `{tool_name, user_id, reason}`, closes the modal, and shows the existing
+  `showToast()` confirmation on success.
+  - **Cancel / overlay-click / Escape** close the modal with no insert,
+    matching the existing modal close patterns in this file exactly:
+    Cancel button calls `closeToolUsageReasonModal()` (same as
+    `closeChangePasswordModal()`), the overlay's
+    `onclick="if(event.target===this) closeToolUsageReasonModal()"` matches
+    every other modal overlay, and Escape was wired into the single shared
+    `document.addEventListener("keydown", ...)` listener that previously
+    only handled the Analyst Profile modal — extended rather than
+    duplicated.
+  - **Failure handling unchanged**: if the insert fails (most likely
+    because `tool_usage_events` doesn't exist yet), `logToolUsage()` still
+    goes through `isMissingTableError()` / `friendlyToolUsageError()` and
+    shows a clear error toast. The modal is deliberately left open on
+    failure (not closed) so the analyst doesn't lose what they typed and
+    can retry once the table exists.
+
+### Added
+- **Reason surfaced in the stats section**:
+  - Per-Tool Breakdown table (`renderToolBreakdownTable()`) gained a
+    "Last Reason" column showing the reason given on the most recent use
+    of each tool (`stats.perTool[name].lastReason`), with the full text
+    also available via a `title` tooltip attribute.
+  - New **Recent Activity** card at the bottom of the Tools Usage tab
+    (`renderToolUsageRecentActivity()` / `#toolUsageRecentActivityList`)
+    listing the last 10 logged uses across all tools — tool name, user
+    (via `profileNameById()` + `avatarHtml()`, same as the Top Users
+    leaderboard), reason, and timestamp — styled with the same
+    `.leaderboard-row` / `.lb-info` / `.lb-name` / `.lb-meta` classes used
+    elsewhere on this tab. Shows the same "isn't set up yet" / "No usage
+    logged yet." empty state as the rest of the tab when the table is
+    missing or empty.
+- No new CSS custom properties or hardcoded colors — the new modal and
+  Recent Activity card reuse only existing classes/variables.
+
 ## 2026-08-18 — Analyst Profile modal (Team + Leaderboard)
 
 ### Added
