@@ -2,6 +2,14 @@
 
 All notable changes to the SEO Automation & Projects Dashboard.
 
+## 2026-08-18 — Footer credit
+
+### Added
+- App footer (`.app-footer`, below the main content, above the toast stack):
+  "Developed by Sainath Nuvvula · For suggestions and feedback, reach out at
+  +91-9535745456 or narasimha.sainath@bankbazaar.com" with working `tel:`
+  and `mailto:` links.
+
 ## 2026-08-18 — BankBazaar branding + internal-tool disclaimer
 
 ### Added
