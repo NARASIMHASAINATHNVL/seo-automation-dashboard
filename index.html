@@ -198,8 +198,12 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
     transition:background .18s var(--ease),color .18s var(--ease),transform .18s var(--ease);
   }
   nav button:hover{color:var(--text-primary);background:color-mix(in srgb, var(--surface-1) 80%, transparent);}
-  nav button.active{color:#fff;background:transparent;}
-  nav button.active:hover{color:#fff;background:transparent;}
+  nav button.active{
+    color:#fff;background:var(--brand-gradient);
+    box-shadow:0 4px 14px -4px color-mix(in srgb, var(--navy) 70%, transparent);
+  }
+  nav button.active:hover{color:#fff;background:var(--brand-gradient);}
+  .nav-indicator{display:none;}
   main{padding:16px 32px 48px;max-width:1400px;margin:0 auto;}
   .view{display:none;}
   .view.active{display:block;animation:view-in .2s var(--ease);}
