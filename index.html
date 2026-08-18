@@ -14,7 +14,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="color-scheme" content="light">
 <title>SEO Automation & Projects Dashboard</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%231F3864'/%3E%3Cpath d='M6 16l4-5 3 3 5-7' stroke='white' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="icon" href="https://www.bankbazaar.com/images/favicon.ico" type="image/x-icon">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -150,6 +150,8 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
   .header-logo svg{width:21px;height:21px;}
   header h1{margin:0 0 3px 0;font-size:17px;font-weight:800;letter-spacing:-.02em;color:var(--text-primary);}
   header p{margin:0;color:var(--text-secondary);font-size:12px;font-weight:500;}
+  .internal-tool-disclaimer{margin-top:2px !important;font-size:10px !important;font-weight:600 !important;color:var(--critical) !important;opacity:.8;text-transform:uppercase;letter-spacing:.02em;}
+  .auth-card .internal-tool-disclaimer{text-align:center;text-transform:none;margin:10px 0 0 0 !important;font-size:11px !important;}
   .header-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
   .badge{
     display:inline-flex;align-items:center;gap:6px;padding:7px 13px;border-radius:999px;
@@ -640,13 +642,14 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
   <div class="auth-card">
     <div class="auth-brand">
       <div class="header-logo">
-        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 16l4-5 3 3 5-7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <img src="https://www.bankbazaar.com/images/favicon.ico" alt="BankBazaar" style="width:22px;height:22px;object-fit:contain;">
       </div>
       <div>
         <h1>SEO Automation &amp; Projects Dashboard</h1>
         <p>Sign in with your username</p>
       </div>
     </div>
+    <p class="internal-tool-disclaimer">BankBazaar internal tool &middot; for authorized team members only &middot; do not share credentials or access outside the organization.</p>
     <div class="auth-error" id="authError" style="display:none;"></div>
     <div class="auth-notice" id="authNotice" style="display:none;"></div>
     <div class="auth-forms">
@@ -670,11 +673,12 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
 <header>
   <div class="header-left">
     <div class="header-logo">
-      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 16l4-5 3 3 5-7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <img src="https://www.bankbazaar.com/images/favicon.ico" alt="BankBazaar" style="width:22px;height:22px;object-fit:contain;">
     </div>
     <div>
       <h1>SEO Automation &amp; Projects Dashboard</h1>
       <p>BankBazaar SEO Team &middot; shared tracker &middot; keep this tab open and edit live</p>
+      <p class="internal-tool-disclaimer">Internal BankBazaar tool &mdash; for authorized team members only. Do not share access or data outside the organization.</p>
     </div>
   </div>
   <div class="header-actions">

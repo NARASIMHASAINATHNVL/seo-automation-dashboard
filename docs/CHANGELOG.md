@@ -2,6 +2,18 @@
 
 All notable changes to the SEO Automation & Projects Dashboard.
 
+## 2026-08-18 — BankBazaar branding + internal-tool disclaimer
+
+### Added
+- Favicon now points to the official BankBazaar favicon
+  (`https://www.bankbazaar.com/images/favicon.ico`) instead of a generated
+  inline SVG icon.
+- Header logo badge (auth screen and main app header) now shows the
+  BankBazaar mark instead of the generic checkmark icon.
+- Added an "Internal BankBazaar tool — for authorized team members only.
+  Do not share access or data outside the organization." disclaimer line,
+  shown on both the login screen and the main app header.
+
 ## 2026-08-18 — Self-service password change, Time Taken column, status row tints
 
 ### Added
