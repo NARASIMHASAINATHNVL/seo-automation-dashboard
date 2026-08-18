@@ -274,6 +274,17 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
   .pill-done{background:var(--good);}
   .help-yes{color:var(--critical);font-weight:bold;}
 
+  /* Project Tracker row tints - "not started" (status Assigned) vs
+     everything else (Ongoing / Review Pending / Completed & Approved).
+     Background lives on the <tr> (same convention as .row-readonly
+     above) and is built with color-mix() against existing CSS vars,
+     so it themes correctly in both light and dark without new hex. */
+  tr.row-not-started{background:color-mix(in srgb, var(--neutral) 10%, transparent);}
+  tr.row-not-started:hover td{background:color-mix(in srgb, var(--neutral) 18%, transparent);}
+  tr.row-in-progress{background:color-mix(in srgb, var(--blue) 8%, transparent);}
+  tr.row-in-progress:hover td{background:color-mix(in srgb, var(--blue) 15%, transparent);}
+  .time-taken-val{font-variant-numeric:tabular-nums;font-weight:600;color:var(--text-secondary);}
+
   .toolbar{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;align-items:center;}
   button.btn{
     display:inline-flex;align-items:center;gap:7px;
@@ -672,6 +683,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
       <span class="user-avatar" id="userAvatar">?</span>
       <span class="user-name" id="userName">—</span>
       <span class="role-pill" id="roleBadge" title="Your permission level"></span>
+      <button class="btn secondary" onclick="openChangePasswordModal()" title="Change your password">Change Password</button>
       <button class="btn secondary sign-out-btn" onclick="handleSignOut()" title="Sign out">Sign out</button>
     </div>
     <button class="theme-toggle" id="themeToggle" title="Toggle light / dark" aria-label="Toggle light and dark theme" onclick="toggleTheme()">
@@ -859,6 +871,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
               <th style="min-width:120px;">Date Assigned</th>
               <th style="min-width:120px;">Target Date</th>
               <th style="min-width:120px;">Date Completed</th>
+              <th style="min-width:100px;">Time Taken</th>
               <th style="min-width:80px;">Help Needed</th>
               <th style="min-width:160px;">Notes / Remarks</th>
               <th></th>
@@ -989,6 +1002,29 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
       <button class="btn secondary" onclick="closeImportModal()">Cancel</button>
       <button class="btn" id="importConfirmBtn" onclick="confirmImport()">Import 0 valid rows</button>
     </div>
+  </div>
+</div>
+
+<!-- ============ CHANGE PASSWORD MODAL (self-service, any logged-in user) ============ -->
+<div class="modal-overlay" id="changePasswordModalOverlay" onclick="if(event.target===this) closeChangePasswordModal()">
+  <div class="modal-card" style="max-width:400px;">
+    <div class="modal-card-header">
+      <h2>Change Password</h2>
+      <button type="button" class="modal-close-btn" onclick="closeChangePasswordModal()" aria-label="Close">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <form id="changePasswordForm" onsubmit="handleChangePassword(event)">
+      <div class="modal-card-body">
+        <label>New password<input type="password" id="newPasswordInput" placeholder="At least 8 characters" autocomplete="new-password" required></label>
+        <label style="margin-top:10px;display:block;">Confirm new password<input type="password" id="confirmPasswordInput" placeholder="Re-enter new password" autocomplete="new-password" required></label>
+        <p class="hint" id="changePasswordHint" style="margin-top:8px;">Must be at least 8 characters. Both fields must match.</p>
+      </div>
+      <div class="modal-card-footer">
+        <button type="button" class="btn secondary" onclick="closeChangePasswordModal()">Cancel</button>
+        <button type="submit" class="btn" id="changePasswordSaveBtn">Save</button>
+      </div>
+    </form>
   </div>
 </div>
 
@@ -1198,7 +1234,7 @@ function renderProjects(){
   const printWrap = document.getElementById("printReportWrap");
   if(printWrap) printWrap.style.display = isAdminUser() ? "" : "none";
   if(projects.length===0){
-    body.innerHTML = `<tr class="empty-row"><td colspan="10">No projects yet — click "Add Project" above to create the first one.</td></tr>`;
+    body.innerHTML = `<tr class="empty-row"><td colspan="11">No projects yet — click "Add Project" above to create the first one.</td></tr>`;
     return;
   }
   const term = projectSearchTerm.trim().toLowerCase();
@@ -1211,9 +1247,9 @@ function renderProjects(){
   }
   if(entries.length===0){
     if(onlyMineFilter){
-      body.innerHTML = `<tr class="empty-row"><td colspan="10">No projects assigned to you yet — nice and clear! Ask an admin to assign one your way, or use "Add Project" above (it'll be assigned to you automatically).</td></tr>`;
+      body.innerHTML = `<tr class="empty-row"><td colspan="11">No projects assigned to you yet — nice and clear! Ask an admin to assign one your way, or use "Add Project" above (it'll be assigned to you automatically).</td></tr>`;
     }else{
-      body.innerHTML = `<tr class="empty-row"><td colspan="10">No projects match your filter.</td></tr>`;
+      body.innerHTML = `<tr class="empty-row"><td colspan="11">No projects match your filter.</td></tr>`;
     }
     return;
   }
@@ -1224,7 +1260,8 @@ function renderProjects(){
     const editable = canEditProject(p);
     const tr = document.createElement("tr");
     tr.id = "proj-row-" + id;
-    tr.className = "status-stripe" + (editable ? "" : " row-readonly");
+    const rowStatusClass = p.status === "Assigned" ? "row-not-started" : "row-in-progress";
+    tr.className = "status-stripe " + rowStatusClass + (editable ? "" : " row-readonly");
     tr.style.setProperty("--stripe-color", STATUS_HEX[p.status] || "transparent");
     const assigneeCell = isAdmin
       ? selectHtml('assignedTo',["",...ANALYSTS],p.assignedTo,id,'assignedTo')
@@ -1239,6 +1276,7 @@ function renderProjects(){
       <td data-label="Date Assigned">${editable ? `<input type="date" value="${p.dateAssigned}" onchange="updateProject('${id}','dateAssigned',this.value)">` : `<span class="ro-text">${p.dateAssigned || "—"}</span>`}</td>
       <td data-label="Target Date">${editable ? `<input type="date" value="${p.targetDate}" onchange="updateProject('${id}','targetDate',this.value)">` : `<span class="ro-text">${p.targetDate || "—"}</span>`}<br>${predictedBadgeHtml(p, ttc)}</td>
       <td data-label="Date Completed">${editable ? `<input type="date" value="${p.dateCompleted}" onchange="updateProject('${id}','dateCompleted',this.value)">` : `<span class="ro-text">${p.dateCompleted || "—"}</span>`}</td>
+      <td data-label="Time Taken">${timeTakenHtml(p)}</td>
       <td data-label="Help Needed">${editable ? selectHtml('help',YESNO,p.help,id,'help') : `<span class="ro-text ${p.help==='Yes'?'help-yes':''}">${p.help || "—"}</span>`}</td>
       <td data-label="Notes">${editable ? `<input type="text" value="${p.notes}" onchange="updateProject('${id}','notes',this.value)">` : `<span class="ro-text">${p.notes || "—"}</span>`}</td>
       <td data-label="">${editable ? `<button class="btn danger" onclick="deleteProject('${id}')">Delete</button>` : viewOnlyTag()}</td>
@@ -1756,6 +1794,27 @@ function renderNeedsAttention(containerId, scopeProfileId){
   `).join("");
 }
 
+/* Days between date_assigned -> date_completed for a single project,
+   only when status is "Completed & Approved" and both dates are valid
+   (returns null otherwise). Single source of truth for this calc -
+   shared by computeTimeToCompletion() below (aggregate stats) and
+   timeTakenHtml() (Project Tracker "Time Taken" column). */
+function projectDaysTaken(p){
+  if(p.status !== "Completed & Approved" || !p.dateAssigned || !p.dateCompleted) return null;
+  const a = new Date(p.dateAssigned + "T00:00:00");
+  const c = new Date(p.dateCompleted + "T00:00:00");
+  if(isNaN(a.getTime()) || isNaN(c.getTime())) return null;
+  const days = Math.round((c - a) / 86400000);
+  if(days < 0) return null;
+  return days;
+}
+/* Renders the "Time Taken" cell for a Project Tracker row - blank
+   dash if the project isn't completed yet or dates are missing. */
+function timeTakenHtml(p){
+  const days = projectDaysTaken(p);
+  if(days === null) return `<span class="ro-text">—</span>`;
+  return `<span class="time-taken-val">${days}d</span>`;
+}
 /* Average days from date_assigned -> date_completed, for
    "Completed & Approved" projects that have both dates set.
    Overall + per analyst. Purely descriptive, no DB writes. */
@@ -1763,12 +1822,8 @@ function computeTimeToCompletion(){
   const perAnalyst = {}; // name -> {sum, count}
   let overallSum = 0, overallCount = 0;
   projects.forEach(p=>{
-    if(p.status !== "Completed & Approved" || !p.dateAssigned || !p.dateCompleted) return;
-    const a = new Date(p.dateAssigned + "T00:00:00");
-    const c = new Date(p.dateCompleted + "T00:00:00");
-    if(isNaN(a.getTime()) || isNaN(c.getTime())) return;
-    const days = Math.round((c - a) / 86400000);
-    if(days < 0) return;
+    const days = projectDaysTaken(p);
+    if(days === null) return;
     overallSum += days; overallCount++;
     if(p.assignedTo){
       const bucket = perAnalyst[p.assignedTo] || {sum:0, count:0};
@@ -2874,6 +2929,51 @@ async function handleSignin(evt){
 async function handleSignOut(){
   await sb.auth.signOut();
   // onAuthStateChange fires SIGNED_OUT and takes it from here.
+}
+
+/* ============================================================
+   SELF-SERVICE PASSWORD CHANGE
+   Any logged-in user (analyst or admin) can change their OWN
+   password here via sb.auth.updateUser() - a normal client-side
+   Supabase Auth call, no service-role / edge function needed.
+   Separate and unrelated to the admin-only "Reset password"
+   button on the Team tab (admin-manage-users edge function).
+   ============================================================ */
+function openChangePasswordModal(){
+  document.getElementById("newPasswordInput").value = "";
+  document.getElementById("confirmPasswordInput").value = "";
+  document.getElementById("changePasswordModalOverlay").classList.add("open");
+  document.getElementById("newPasswordInput").focus();
+}
+function closeChangePasswordModal(){
+  document.getElementById("changePasswordModalOverlay").classList.remove("open");
+}
+async function handleChangePassword(evt){
+  evt.preventDefault();
+  const newPassword = document.getElementById("newPasswordInput").value;
+  const confirmPassword = document.getElementById("confirmPasswordInput").value;
+  if(newPassword.length < 8){
+    showToast("Password must be at least 8 characters.", "danger");
+    return;
+  }
+  if(newPassword !== confirmPassword){
+    showToast("Passwords do not match.", "danger");
+    return;
+  }
+  const btn = document.getElementById("changePasswordSaveBtn");
+  btn.disabled = true;
+  btn.textContent = "Saving…";
+  try{
+    const { error } = await sb.auth.updateUser({ password: newPassword });
+    if(error) throw error;
+    closeChangePasswordModal();
+    showToast("Password updated");
+  }catch(err){
+    showToast((err && err.message) ? err.message : "Could not update password.", "danger");
+  }finally{
+    btn.disabled = false;
+    btn.textContent = "Save";
+  }
 }
 function showAuthScreen(){
   document.getElementById("authScreen").style.display = "flex";

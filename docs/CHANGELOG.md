@@ -2,6 +2,33 @@
 
 All notable changes to the SEO Automation & Projects Dashboard.
 
+## 2026-08-18 — Self-service password change, Time Taken column, status row tints
+
+### Added
+- **Self-service password change** — a "Change Password" button next to
+  "Sign out" in the header opens a small modal (`openChangePasswordModal()`
+  / `closeChangePasswordModal()` / `handleChangePassword()`) with new
+  password + confirm password fields. Validates 8+ chars and that the two
+  fields match, then calls `sb.auth.updateUser({ password })` directly —
+  works for any logged-in user (analyst or admin) with no admin/service-role
+  access required. Shows a toast on success ("Password updated") or surfaces
+  the real Supabase error on failure. Entirely separate from the existing
+  admin-only "Reset password" button on the Team tab
+  (`admin-manage-users` edge function) — that flow is untouched.
+- **Project Tracker "Time Taken" column** (`timeTakenHtml()`) — shows days
+  between Date Assigned and Date Completed for "Completed & Approved"
+  projects with both dates set, "—" otherwise. The day-diff calculation
+  was extracted out of `computeTimeToCompletion()` into a new shared
+  helper, `projectDaysTaken()`, so both the per-row column and the
+  existing aggregate stats use the exact same logic (no duplication).
+- **Status-based row tinting on Project Tracker** — each row gets
+  `.row-not-started` (status "Assigned") or `.row-in-progress` (Ongoing /
+  Review Pending / Completed & Approved) via `color-mix()` against the
+  existing `--neutral` / `--blue` CSS vars, so "not started" work is
+  clearly distinct from "in progress/done" work in both light and dark
+  theme. No new hardcoded colors; existing `--good`/`--warning`/
+  `--critical`/`--surface-*` vars untouched.
+
 ## [Unreleased]
 
 ### Added
