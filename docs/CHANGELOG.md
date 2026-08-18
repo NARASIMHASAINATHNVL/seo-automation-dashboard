@@ -10,6 +10,58 @@ All notable changes to the SEO Automation & Projects Dashboard.
 - `seo-automation-dashboard-data.sample.json` — example/reference data file.
 - A registered Claude Skill for maintaining this project in future sessions.
 
+## 2026-08-18 — Overdue banners, smart inbox, workload/pipeline analytics, predicted dates, print export
+
+All client-side, computed from data already fetched from Supabase — no
+schema changes (the DB migration for a proper audit-log table is still
+pending, so the "pipeline snapshot" chart below is explicitly labeled as a
+current-state snapshot, not historical cycle time).
+
+### Added
+- **Overdue banner** (`renderOverdueBanners()`) — a red/critical banner
+  pinned at the top of My Work and Dashboard, listing the signed-in user's
+  own overdue/stale projects (reuses `getProjectStaleness`/
+  `computeStaleness`, not reimplemented), each entry clickable
+  (`jumpToProject()`) to scroll straight to that row in Project Tracker
+  with a brief highlight flash. Admins see a team-wide version on the
+  Dashboard tab instead of just their own; the banner renders nothing at
+  all when there's nothing overdue.
+- **"Needs Your Attention" smart inbox** (`computeNeedsAttention()` /
+  `renderNeedsAttention()`) — merges overdue/stale projects, projects with
+  Help Needed set, and (admin/team-wide scope only) unassigned projects
+  into one de-duplicated, urgency-sorted list. Shown on the Dashboard
+  (team-wide for admins, personal for analysts) and as a personal slice on
+  My Work.
+- **Time-to-completion analytics** (`computeTimeToCompletion()` /
+  `renderTimeToCompletion()`) — average days from Date Assigned to Date
+  Completed for "Completed & Approved" projects with both dates set,
+  shown overall and per analyst in a new Dashboard card.
+- **Analyst workload heatmap** (`renderWorkloadHeatmap()`) — a compact
+  analyst-by-status grid next to the existing "Projects per Analyst by
+  Status" bar chart, cell intensity driven by `color-mix()` against the
+  existing `STATUS_COLOR` CSS-variable references (no new hardcoded
+  colors).
+- **Pipeline snapshot funnel** (`renderFunnelChart()`) — a new Chart.js
+  horizontal bar chart on the Dashboard showing current project counts
+  per stage (Assigned → Ongoing → Review Pending → Completed & Approved),
+  explicitly labeled as a current-state snapshot rather than historical
+  cycle time.
+- **Predicted completion date** (`estimateCompletionDate()` /
+  `predictedBadgeHtml()`) — for Ongoing/Review Pending projects, a muted
+  dashed "≈ Est. <date>" badge under Target Date in both Project Tracker
+  and My Work, computed as Date Assigned + the assigned analyst's own
+  historical average days-to-complete, falling back to Target Date
+  (clearly marked "(target)") when that analyst has no completion history
+  yet.
+- **Adjustable trend range** — 4/8/12-week preset buttons above the
+  Leaderboard "Completions" chart, re-calling the existing
+  `computeWeeklyTrend(projects, weeks)` (already parameterized) via a new
+  `trendWeeks` module variable and `setTrendRange()`.
+- **Print Report** — an admin-only "Print Report" button next to
+  "Download Updated Excel" that switches to the Dashboard tab and calls
+  `window.print()`; a new `@media print` block hides nav/toolbar/buttons
+  and lays out cards cleanly. No new PDF library added.
+
 ## 2026-08-18 — Deep design-system rewrite + Chart.js migration
 
 Third visual pass after two rounds of tightening didn't move the needle

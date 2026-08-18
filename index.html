@@ -565,6 +565,62 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
 
   /* ============ MY WORK ============ */
   .kpi-row.kpi-row-5{grid-template-columns:repeat(5,1fr);}
+
+  /* ============ OVERDUE BANNER (personal / team) — 2026-08-18 ============ */
+  .overdue-banner{display:flex;align-items:flex-start;gap:12px;margin-bottom:16px;padding:13px 18px;border-radius:var(--radius-sm);border:1px solid color-mix(in srgb, var(--critical) 50%, var(--surface-border));background:linear-gradient(150deg, color-mix(in srgb, var(--critical) 14%, var(--surface-2)), var(--surface-2) 65%);box-shadow:var(--shadow-sm);}
+  .overdue-banner-icon{font-size:19px;flex-shrink:0;line-height:1.3;}
+  .overdue-banner-body{flex:1;min-width:0;}
+  .overdue-banner-title{font-size:12.5px;font-weight:800;color:var(--critical);text-transform:uppercase;letter-spacing:.03em;margin-bottom:6px;}
+  .overdue-banner-list{display:flex;flex-wrap:wrap;gap:6px;}
+  .overdue-banner-item{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;padding:4px 10px;border-radius:999px;background:color-mix(in srgb, var(--critical) 12%, var(--surface-2));border:1px solid color-mix(in srgb, var(--critical) 30%, var(--surface-border));color:var(--text-primary);cursor:pointer;white-space:nowrap;transition:background .15s var(--ease);}
+  .overdue-banner-item:hover{background:color-mix(in srgb, var(--critical) 22%, var(--surface-2));}
+  .overdue-banner-item .obi-days{color:var(--critical);font-weight:800;}
+  .overdue-banner-more{font-size:11.5px;color:var(--text-muted);font-weight:600;align-self:center;}
+  @keyframes row-flash{0%,100%{background:transparent;}50%{background:color-mix(in srgb, var(--critical) 20%, transparent);}}
+  tr.row-flash{animation:row-flash .9s ease-in-out 2;}
+
+  /* ============ NEEDS ATTENTION INBOX ============ */
+  .attn-row{display:flex;align-items:center;gap:10px;padding:9px 4px;border-bottom:1px solid var(--surface-border);cursor:pointer;transition:background .12s var(--ease);}
+  .attn-row:last-child{border-bottom:none;}
+  .attn-row:hover{background:var(--surface-1);}
+  .attn-project{flex:1;min-width:0;font-size:12.5px;font-weight:700;color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .attn-assignee{font-size:11.5px;color:var(--text-secondary);white-space:nowrap;}
+  .attn-reasons{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end;}
+  .attn-tag{font-size:9px;font-weight:800;padding:2px 6px;border-radius:999px;text-transform:uppercase;letter-spacing:.02em;white-space:nowrap;background:color-mix(in srgb, var(--warning) 18%, transparent);color:var(--warning);}
+  .attn-tag.tag-overdue{background:color-mix(in srgb, var(--critical) 18%, transparent);color:var(--critical);}
+  .attn-tag.tag-unassigned{background:color-mix(in srgb, var(--neutral) 22%, transparent);color:var(--neutral);}
+
+  /* ============ WORKLOAD HEATMAP ============ */
+  .heatmap-table{width:100%;border-collapse:collapse;font-size:11.5px;}
+  .heatmap-table th{text-align:center;font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.02em;padding:6px 4px;}
+  .heatmap-table th:first-child{text-align:left;}
+  .heatmap-table td{text-align:center;padding:7px 4px;font-weight:700;color:var(--text-primary);border:1px solid var(--surface-border);}
+  .heatmap-table td:first-child{text-align:left;font-weight:600;color:var(--text-secondary);white-space:nowrap;}
+
+  /* ============ TIME TO COMPLETION ============ */
+  .ttc-overall{display:flex;align-items:baseline;gap:8px;margin-bottom:10px;}
+  .ttc-overall-val{font-size:26px;font-weight:900;color:var(--brand-text);}
+  .ttc-overall-lbl{font-size:11px;color:var(--text-muted);font-weight:600;}
+  .ttc-row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:5px 2px;font-size:12px;border-bottom:1px solid var(--surface-border);}
+  .ttc-row:last-child{border-bottom:none;}
+  .ttc-name{color:var(--text-secondary);font-weight:600;}
+  .ttc-val{color:var(--text-primary);font-weight:800;}
+
+  /* ============ PREDICTED COMPLETION BADGE ============ */
+  .predicted-badge{display:inline-flex;align-items:center;gap:3px;font-size:9.5px;font-weight:700;color:var(--text-muted);border:1px dashed var(--surface-border);border-radius:999px;padding:2px 7px;margin-top:4px;white-space:nowrap;}
+
+  /* ============ TREND RANGE CONTROLS ============ */
+  .trend-range-controls{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;}
+  .trend-range-btn{font-size:11px;font-weight:700;padding:5px 11px;border-radius:999px;border:1px solid var(--surface-border);background:var(--surface-1);color:var(--text-secondary);cursor:pointer;transition:background .15s var(--ease),color .15s var(--ease);}
+  .trend-range-btn.active{background:var(--brand-gradient);color:#fff;border-color:transparent;}
+
+  /* ============ PRINT REPORT (2026-08-18) ============ */
+  @media print{
+    header,nav,.sync-bar,button.btn,.theme-toggle,.toast-stack,.trend-range-controls,.toolbar,.search-box,.only-mine-toggle{display:none !important;}
+    body{background:#fff !important;}
+    main{padding:0 10px;max-width:100%;}
+    .card{box-shadow:none;border:1px solid #ccc;break-inside:avoid;margin-bottom:12px;}
+  }
 </style>
 </head>
 <body>
@@ -643,6 +699,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
       <p class="hint">Sign in with an account linked to a team profile to see your personal work summary here.</p>
     </div>
     <div id="myWorkContent">
+      <div class="overdue-banner" id="myWorkOverdueBanner" style="display:none;"></div>
       <div class="kpi-row kpi-row-5">
         <div class="kpi assigned"><div class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div><div class="lbl">Assigned</div><div class="val" id="mwAssigned">0</div><div class="kpi-bar"><div class="kpi-bar-fill" id="mwAssignedBar"></div></div></div>
         <div class="kpi ongoing"><div class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div><div class="lbl">Ongoing</div><div class="val" id="mwOngoing">0</div><div class="kpi-bar"><div class="kpi-bar-fill" id="mwOngoingBar"></div></div></div>
@@ -664,6 +721,11 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
         </div>
       </div>
 
+      <div class="card" id="myWorkNeedsAttentionCard">
+        <h2><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>Needs Your Attention</h2>
+        <div id="myWorkNeedsAttentionList"></div>
+      </div>
+
       <div class="card">
         <h2><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>My Projects</h2>
         <div class="table-wrap">
@@ -679,6 +741,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
 
   <!-- ============ DASHBOARD VIEW ============ -->
   <section id="dashboard" class="view active">
+    <div class="overdue-banner" id="dashOverdueBanner" style="display:none;"></div>
     <div class="kpi-row">
       <div class="kpi total"><div class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></div><div class="lbl">Total Projects</div><div class="val" id="kpiTotal">0</div><div class="kpi-bar"><div class="kpi-bar-fill" id="kpiTotalBar"></div></div><div class="kpi-trend" id="kpiTotalTrend"></div></div>
       <div class="kpi assigned"><div class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div><div class="lbl">Assigned</div><div class="val" id="kpiAssigned">0</div><div class="kpi-bar"><div class="kpi-bar-fill" id="kpiAssignedBar"></div></div><div class="kpi-trend" id="kpiAssignedTrend"></div></div>
@@ -696,6 +759,12 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
       <div class="dash-alert-inner" id="dashAlertInner"></div>
     </div>
 
+    <!-- Needs Your Attention — merges overdue/stale + help-needed + (admin) unassigned. -->
+    <div class="card" id="needsAttentionCard">
+      <h2><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>Needs Your Attention</h2>
+      <div id="dashNeedsAttentionList"></div>
+    </div>
+
     <div class="charts-row">
       <div class="card chart-card">
         <h2><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6"/><rect x="12" y="8" width="3" height="10"/><rect x="17" y="5" width="3" height="13"/></svg>Projects per Analyst by Status</h2>
@@ -711,6 +780,25 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
         </div>
         <div class="legend" id="donutLegend"></div>
       </div>
+    </div>
+
+    <div class="charts-row">
+      <div class="card chart-card">
+        <h2><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Analyst Workload Heatmap</h2>
+        <div id="workloadHeatmap" style="overflow-x:auto;"></div>
+      </div>
+      <div class="card chart-card">
+        <h2><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>Avg Time to Completion</h2>
+        <div id="ttcStats"></div>
+      </div>
+    </div>
+
+    <div class="card chart-card">
+      <h2><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6"/><rect x="12" y="8" width="3" height="10"/><rect x="17" y="5" width="3" height="13"/></svg>Pipeline Snapshot (current stage counts)</h2>
+      <div style="position:relative;height:260px;">
+        <canvas id="funnelChart"></canvas>
+      </div>
+      <p class="hint">Snapshot of how many projects currently sit in each stage right now — not a historical cycle-time measurement (there's no status-change audit trail yet).</p>
     </div>
 
     <div class="card">
@@ -753,6 +841,12 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 19h16"/></svg>
           Download Updated Excel (.xlsx)
         </button>
+        <span id="printReportWrap" style="display:none;">
+          <button class="btn secondary" onclick="printReport()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6z"/></svg>
+            Print Report
+          </button>
+        </span>
       </div>
       <div class="table-wrap">
         <table id="projectsTable">
@@ -841,7 +935,12 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
     </div>
 
     <div class="card chart-card">
-      <h2><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>Completions — Last 8 Weeks</h2>
+      <h2><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>Completions — <span id="trendRangeLabel">Last 8 Weeks</span></h2>
+      <div class="trend-range-controls">
+        <button type="button" class="trend-range-btn" data-weeks="4" onclick="setTrendRange(4)">4 wks</button>
+        <button type="button" class="trend-range-btn active" data-weeks="8" onclick="setTrendRange(8)">8 wks</button>
+        <button type="button" class="trend-range-btn" data-weeks="12" onclick="setTrendRange(12)">12 wks</button>
+      </div>
       <div style="position:relative;height:260px;">
         <canvas id="trendChart"></canvas>
         <p class="hint" id="trendEmptyMsg" style="display:none;position:absolute;inset:0;align-items:center;justify-content:center;margin:0;text-align:center;padding:0 20px;">No completions yet — this fills in as the team finishes projects.</p>
@@ -1026,6 +1125,8 @@ const STATUS_PILL_CLASS = {
 let barChartInstance = null;
 let donutChartInstance = null;
 let trendChartInstance = null;
+let funnelChartInstance = null;
+let trendWeeks = 8; // adjustable via the Leaderboard tab's trend-range buttons
 
 /* Doughnut center-text plugin: draws "<total>" + "projects" in the
    hole. Registered once, globally, and only actually draws anything
@@ -1094,6 +1195,8 @@ function renderProjects(){
   if(importWrap) importWrap.style.display = isAdminUser() ? "" : "none";
   const importHint = document.getElementById("importHint");
   if(importHint) importHint.style.display = isAdminUser() ? "" : "none";
+  const printWrap = document.getElementById("printReportWrap");
+  if(printWrap) printWrap.style.display = isAdminUser() ? "" : "none";
   if(projects.length===0){
     body.innerHTML = `<tr class="empty-row"><td colspan="10">No projects yet — click "Add Project" above to create the first one.</td></tr>`;
     return;
@@ -1115,10 +1218,12 @@ function renderProjects(){
     return;
   }
   const isAdmin = isAdminUser();
+  const ttc = computeTimeToCompletion();
   entries.forEach((p)=>{
     const id = p.id;
     const editable = canEditProject(p);
     const tr = document.createElement("tr");
+    tr.id = "proj-row-" + id;
     tr.className = "status-stripe" + (editable ? "" : " row-readonly");
     tr.style.setProperty("--stripe-color", STATUS_HEX[p.status] || "transparent");
     const assigneeCell = isAdmin
@@ -1132,7 +1237,7 @@ function renderProjects(){
       <td data-label="Status">${editable ? selectHtml('status',["",...STATUSES],p.status,id,'status') : `<span class="status-pill ${STATUS_PILL_CLASS[p.status]||''}">${p.status||"—"}</span>`}${stalenessTag}</td>
       <td data-label="Priority">${editable ? selectHtml('priority',PRIORITIES,p.priority,id,'priority') : `<span class="ro-text">${p.priority || "—"}</span>`}</td>
       <td data-label="Date Assigned">${editable ? `<input type="date" value="${p.dateAssigned}" onchange="updateProject('${id}','dateAssigned',this.value)">` : `<span class="ro-text">${p.dateAssigned || "—"}</span>`}</td>
-      <td data-label="Target Date">${editable ? `<input type="date" value="${p.targetDate}" onchange="updateProject('${id}','targetDate',this.value)">` : `<span class="ro-text">${p.targetDate || "—"}</span>`}</td>
+      <td data-label="Target Date">${editable ? `<input type="date" value="${p.targetDate}" onchange="updateProject('${id}','targetDate',this.value)">` : `<span class="ro-text">${p.targetDate || "—"}</span>`}<br>${predictedBadgeHtml(p, ttc)}</td>
       <td data-label="Date Completed">${editable ? `<input type="date" value="${p.dateCompleted}" onchange="updateProject('${id}','dateCompleted',this.value)">` : `<span class="ro-text">${p.dateCompleted || "—"}</span>`}</td>
       <td data-label="Help Needed">${editable ? selectHtml('help',YESNO,p.help,id,'help') : `<span class="ro-text ${p.help==='Yes'?'help-yes':''}">${p.help || "—"}</span>`}</td>
       <td data-label="Notes">${editable ? `<input type="text" value="${p.notes}" onchange="updateProject('${id}','notes',this.value)">` : `<span class="ro-text">${p.notes || "—"}</span>`}</td>
@@ -1544,6 +1649,276 @@ async function promptResetPassword(profileId, fullName){
     return;
   }
   showToast(`Password updated for ${fullName}.`);
+}
+
+/* ============================================================
+   OVERDUE BANNER, NEEDS-ATTENTION INBOX, TIME-TO-COMPLETION,
+   WORKLOAD HEATMAP, PIPELINE FUNNEL, PREDICTED COMPLETION.
+   All purely derived from `projects`/`ANALYSTS` already in
+   memory (getProjectStaleness/computeStaleness reused below,
+   not reinvented) — no new DB reads/writes, no new columns.
+   ============================================================ */
+
+/* Jump from anywhere to a specific row in the Project Tracker
+   table: switches tab, scrolls the row into view, flashes it. */
+function jumpToProject(id){
+  switchTab("projects");
+  setTimeout(()=>{
+    const row = document.getElementById("proj-row-" + id);
+    if(row){
+      row.scrollIntoView({behavior:"smooth", block:"center"});
+      row.classList.add("row-flash");
+      setTimeout(()=>row.classList.remove("row-flash"), 1900);
+    }
+  }, 60);
+}
+
+/* Shared markup for both overdue banners (My Work personal /
+   Dashboard personal-or-team-wide) - takes a computeStaleness()
+   .flagged-shaped list. */
+function overdueBannerHtml(list){
+  const shown = list.slice(0, 6);
+  const items = shown.map(p=>
+    `<span class="overdue-banner-item" onclick="jumpToProject('${p.id}')" title="${p.staleness.label}">${p.project||"Untitled"} <span class="obi-days">${p.staleness.type==='overdue' ? '· '+p.staleness.days+'d overdue' : '· '+p.staleness.days+'d open'}</span></span>`
+  ).join("");
+  const more = list.length > shown.length ? `<span class="overdue-banner-more">+${list.length - shown.length} more</span>` : "";
+  return `<span class="overdue-banner-icon">⚠️</span><div class="overdue-banner-body"><div class="overdue-banner-title">${list.length} project${list.length===1?"":"s"} overdue or stale</div><div class="overdue-banner-list">${items}${more}</div></div>`;
+}
+/* My Work banner is always personal (current user's own rows).
+   Dashboard banner is personal for analysts, team-wide for
+   admins - hidden entirely when there's nothing to flag. */
+function renderOverdueBanners(){
+  const stAll = computeStaleness(projects);
+  const mine = currentProfile ? stAll.flagged.filter(p=>p.assignedToId===currentProfile.id) : [];
+  const mineSorted = mine.slice().sort((a,b)=>b.staleness.days - a.staleness.days);
+
+  const mwBanner = document.getElementById("myWorkOverdueBanner");
+  if(mwBanner){
+    if(mineSorted.length){ mwBanner.style.display = "flex"; mwBanner.innerHTML = overdueBannerHtml(mineSorted); }
+    else{ mwBanner.style.display = "none"; mwBanner.innerHTML = ""; }
+  }
+
+  const dashBanner = document.getElementById("dashOverdueBanner");
+  if(dashBanner){
+    const list = isAdminUser()
+      ? stAll.flagged.slice().sort((a,b)=>b.staleness.days - a.staleness.days)
+      : mineSorted;
+    if(list.length){ dashBanner.style.display = "flex"; dashBanner.innerHTML = overdueBannerHtml(list); }
+    else{ dashBanner.style.display = "none"; dashBanner.innerHTML = ""; }
+  }
+}
+
+/* Smart inbox: merges overdue/stale + help-needed + (team-wide
+   scope only) unassigned projects into one de-duplicated,
+   urgency-sorted list. Pass a profile id to scope to one analyst
+   (My Work / non-admin Dashboard), or a falsy value for the
+   team-wide admin view. */
+function computeNeedsAttention(scopeProfileId){
+  const byId = new Map();
+  const bump = (p, reason, tagClass, urgency)=>{
+    let entry = byId.get(p.id);
+    if(!entry){ entry = {p, reasons: [], urgency: 0}; byId.set(p.id, entry); }
+    entry.reasons.push({text: reason, cls: tagClass});
+    if(urgency > entry.urgency) entry.urgency = urgency;
+  };
+  computeStaleness(projects).flagged.forEach(p=>{
+    if(scopeProfileId && p.assignedToId !== scopeProfileId) return;
+    if(p.staleness.type === "overdue") bump(p, `Overdue ${p.staleness.days}d`, "tag-overdue", 200 + p.staleness.days);
+    else bump(p, `Stale ${p.staleness.days}d`, "", 100 + p.staleness.days);
+  });
+  projects.forEach(p=>{
+    if(p.help !== "Yes") return;
+    if(scopeProfileId && p.assignedToId !== scopeProfileId) return;
+    bump(p, "Needs help", "", 80);
+  });
+  if(!scopeProfileId){
+    projects.forEach(p=>{
+      if(p.assignedTo || p.status === "Completed & Approved") return;
+      bump(p, "Unassigned", "tag-unassigned", 60);
+    });
+  }
+  return Array.from(byId.values()).sort((a,b)=>b.urgency - a.urgency);
+}
+function renderNeedsAttention(containerId, scopeProfileId){
+  const container = document.getElementById(containerId);
+  if(!container) return;
+  const items = computeNeedsAttention(scopeProfileId).slice(0, 15);
+  if(items.length === 0){
+    container.innerHTML = `<div class="hint">Nothing needs attention right now — clean.</div>`;
+    return;
+  }
+  container.innerHTML = items.map(({p, reasons})=>`
+    <div class="attn-row" onclick="jumpToProject('${p.id}')">
+      <span class="attn-project" title="${p.project||''}">${p.project||"Untitled"}</span>
+      <span class="attn-assignee">${p.assignedTo||"Unassigned"}</span>
+      <span class="attn-reasons">${reasons.map(r=>`<span class="attn-tag ${r.cls}">${r.text}</span>`).join("")}</span>
+    </div>
+  `).join("");
+}
+
+/* Average days from date_assigned -> date_completed, for
+   "Completed & Approved" projects that have both dates set.
+   Overall + per analyst. Purely descriptive, no DB writes. */
+function computeTimeToCompletion(){
+  const perAnalyst = {}; // name -> {sum, count}
+  let overallSum = 0, overallCount = 0;
+  projects.forEach(p=>{
+    if(p.status !== "Completed & Approved" || !p.dateAssigned || !p.dateCompleted) return;
+    const a = new Date(p.dateAssigned + "T00:00:00");
+    const c = new Date(p.dateCompleted + "T00:00:00");
+    if(isNaN(a.getTime()) || isNaN(c.getTime())) return;
+    const days = Math.round((c - a) / 86400000);
+    if(days < 0) return;
+    overallSum += days; overallCount++;
+    if(p.assignedTo){
+      const bucket = perAnalyst[p.assignedTo] || {sum:0, count:0};
+      bucket.sum += days; bucket.count++;
+      perAnalyst[p.assignedTo] = bucket;
+    }
+  });
+  const perAnalystAvg = {};
+  Object.keys(perAnalyst).forEach(name=>{
+    perAnalystAvg[name] = {avgDays: Math.round(perAnalyst[name].sum / perAnalyst[name].count), count: perAnalyst[name].count};
+  });
+  return {
+    overallAvg: overallCount ? Math.round(overallSum / overallCount) : null,
+    overallCount,
+    perAnalyst: perAnalystAvg
+  };
+}
+function renderTimeToCompletion(){
+  const container = document.getElementById("ttcStats");
+  if(!container) return;
+  const ttc = computeTimeToCompletion();
+  if(ttc.overallCount === 0){
+    container.innerHTML = `<div class="hint">No completed projects with both dates set yet — this fills in as work wraps up.</div>`;
+    return;
+  }
+  const rows = ANALYSTS
+    .filter(a=>ttc.perAnalyst[a])
+    .sort((a,b)=>ttc.perAnalyst[a].avgDays - ttc.perAnalyst[b].avgDays)
+    .map(a=>`<div class="ttc-row"><span class="ttc-name">${a}</span><span class="ttc-val">${ttc.perAnalyst[a].avgDays}d avg (${ttc.perAnalyst[a].count})</span></div>`)
+    .join("");
+  container.innerHTML = `<div class="ttc-overall"><span class="ttc-overall-val">${ttc.overallAvg}d</span><span class="ttc-overall-lbl">avg time to complete · ${ttc.overallCount} project${ttc.overallCount===1?"":"s"}</span></div>${rows}`;
+}
+
+/* Workload heatmap: rows = analysts, cols = STATUSES, cell
+   intensity scaled against the single busiest cell in the whole
+   grid (not per-row) so the color scale is comparable across
+   analysts. Reuses STATUS_COLOR (CSS var references) via
+   color-mix() - no new hardcoded colors. */
+function renderWorkloadHeatmap(sum){
+  const container = document.getElementById("workloadHeatmap");
+  if(!container) return;
+  if(ANALYSTS.length === 0){
+    container.innerHTML = `<div class="hint">No analysts on the roster yet.</div>`;
+    return;
+  }
+  let maxCount = 0;
+  ANALYSTS.forEach(a=>STATUSES.forEach(st=>{
+    const n = (sum.perAnalyst[a] && sum.perAnalyst[a][st]) || 0;
+    if(n > maxCount) maxCount = n;
+  }));
+  const head = `<tr><th>Analyst</th>${STATUSES.map(st=>`<th>${st}</th>`).join("")}</tr>`;
+  const body = ANALYSTS.map(a=>{
+    const cells = STATUSES.map(st=>{
+      const n = (sum.perAnalyst[a] && sum.perAnalyst[a][st]) || 0;
+      const pct = maxCount > 0 ? Math.round((n / maxCount) * 65) : 0;
+      const bg = n > 0 ? `color-mix(in srgb, ${STATUS_COLOR[st]} ${pct}%, var(--surface-2))` : "var(--surface-2)";
+      return `<td style="background:${bg};">${n || ""}</td>`;
+    }).join("");
+    return `<tr><td>${a}</td>${cells}</tr>`;
+  }).join("");
+  container.innerHTML = `<table class="heatmap-table">${head}${body}</table>`;
+}
+
+/* Pipeline snapshot (Chart.js horizontal bar) — current counts
+   per stage right now. Explicitly NOT a historical cycle-time
+   chart: there's no audit trail of status transitions yet, so
+   this only shows where projects currently sit. */
+function renderFunnelChart(sum){
+  const canvas = document.getElementById("funnelChart");
+  if(!canvas) return;
+  const gridStroke = getComputedStyle(document.body).getPropertyValue("--surface-border").trim() || "#e3e5f2";
+  const axisFill = getComputedStyle(document.body).getPropertyValue("--text-secondary").trim() || "#51536f";
+  if(funnelChartInstance) funnelChartInstance.destroy();
+  funnelChartInstance = new Chart(canvas.getContext("2d"), {
+    type: "bar",
+    data: {
+      labels: STATUSES,
+      datasets: [{
+        data: STATUSES.map(st=>sum.totals[st]),
+        backgroundColor: STATUSES.map(st=>STATUS_HEX[st]),
+        borderRadius: 4,
+        maxBarThickness: 34
+      }]
+    },
+    options: {
+      indexAxis: "y",
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: { duration: 650, easing: "easeOutQuart" },
+      scales: {
+        x: { beginAtZero:true, ticks:{ color: axisFill, font:{family:"Inter", size:11}, precision:0 }, grid:{ color: gridStroke, drawTicks:false } },
+        y: { grid:{ display:false }, ticks:{ color: axisFill, font:{family:"Inter", size:11.5, weight:600} } }
+      },
+      plugins: {
+        legend: { display:false },
+        tooltip: {
+          backgroundColor: "#1a1a2e", titleFont:{family:"Inter",weight:700}, bodyFont:{family:"Inter"}, padding:10, cornerRadius:8,
+          callbacks: { label(ctx){ return ` ${ctx.parsed.x} project${ctx.parsed.x===1?"":"s"}`; } }
+        }
+      }
+    }
+  });
+}
+
+/* Predicted completion date for an in-flight project: date
+   assigned + the assigned analyst's own historical average
+   days-to-complete (computeTimeToCompletion above). Falls back
+   to the target date, clearly marked as a fallback, when there's
+   no completion history yet for that analyst. */
+function estimateCompletionDate(p, ttc){
+  if(p.status !== "Ongoing" && p.status !== "Review Pending") return null;
+  const history = p.assignedTo ? ttc.perAnalyst[p.assignedTo] : null;
+  if(history && p.dateAssigned){
+    const assigned = new Date(p.dateAssigned + "T00:00:00");
+    if(!isNaN(assigned.getTime())){
+      const est = new Date(assigned.getTime() + history.avgDays * 86400000);
+      return { date: est.toISOString().slice(0,10), fallback:false };
+    }
+  }
+  if(p.targetDate) return { date: p.targetDate, fallback:true };
+  return null;
+}
+function predictedBadgeHtml(p, ttc){
+  const est = estimateCompletionDate(p, ttc);
+  if(!est) return "";
+  const who = p.assignedTo || "this analyst";
+  const title = est.fallback ? `No completion history yet for ${who} — showing target date instead` : `Estimate based on ${who}'s average completion time`;
+  return `<span class="predicted-badge" title="${title}">≈ Est. ${est.date}${est.fallback ? " (target)" : ""}</span>`;
+}
+
+/* Print Report: switches to the Dashboard (KPIs + charts) tab,
+   then hands off to the browser's native print dialog. The
+   @media print rules (see <style>) hide nav/chrome/buttons and
+   lay the cards out cleanly - no new PDF library needed. */
+function printReport(){
+  switchTab("dashboard");
+  setTimeout(()=>window.print(), 150);
+}
+
+/* Leaderboard trend-chart date-range control (feature: custom
+   date-range filters). computeWeeklyTrend already accepts a
+   week count, so this just re-renders with a different one. */
+function setTrendRange(weeks){
+  trendWeeks = weeks;
+  document.querySelectorAll(".trend-range-btn").forEach(b=>{
+    b.classList.toggle("active", parseInt(b.dataset.weeks, 10) === weeks);
+  });
+  const label = document.getElementById("trendRangeLabel");
+  if(label) label.textContent = `Last ${weeks} Weeks`;
+  renderTrendChart();
 }
 
 /* ============================================================
@@ -1979,7 +2354,7 @@ function renderDonut(sum){
 function renderTrendChart(){
   const canvas = document.getElementById("trendChart");
   if(!canvas) return;
-  const data = computeWeeklyTrend(projects, 8);
+  const data = computeWeeklyTrend(projects, trendWeeks);
 
   const gridStroke = getComputedStyle(document.body).getPropertyValue("--surface-border").trim() || "#e3e5f2";
   const labelFill = getComputedStyle(document.body).getPropertyValue("--text-muted").trim() || "#8688a3";
@@ -2396,6 +2771,8 @@ function renderMyWork(){
       : `<span class="ro-text ro-muted">No badges yet — complete a project to earn your first.</span>`;
   }
 
+  renderNeedsAttention("myWorkNeedsAttentionList", currentProfile.id);
+
   const body = document.getElementById("myWorkBody");
   const emptyMsg = document.getElementById("myWorkEmptyMsg");
   if(body){
@@ -2404,6 +2781,7 @@ function renderMyWork(){
       if(emptyMsg) emptyMsg.style.display = "block";
     }else{
       if(emptyMsg) emptyMsg.style.display = "none";
+      const ttc = computeTimeToCompletion();
       mine.forEach(p=>{
         const s = getProjectStaleness(p);
         const stalenessTag = s ? `<span class="staleness-tag type-${s.type}" title="${s.label}">${s.type==='overdue'?'⚠':'⏳'} ${s.type==='overdue'?'Overdue':'Stale'}</span>` : '';
@@ -2412,7 +2790,7 @@ function renderMyWork(){
           <td>${p.project||"—"}</td>
           <td><span class="status-pill ${STATUS_PILL_CLASS[p.status]||''}">${p.status||"—"}</span>${stalenessTag}</td>
           <td>${p.priority||"—"}</td>
-          <td>${p.targetDate||"—"}</td>
+          <td>${p.targetDate||"—"}<br>${predictedBadgeHtml(p, ttc)}</td>
           <td>${p.dateCompleted||"—"}</td>
         `;
         body.appendChild(tr);
@@ -2430,8 +2808,13 @@ function renderAll(){
   renderKPIs(sum);
   renderBarChart(sum);
   renderDonut(sum);
+  renderWorkloadHeatmap(sum);
+  renderTimeToCompletion();
+  renderFunnelChart(sum);
   renderHelpTable();
   renderStalenessAlert();
+  renderOverdueBanners();
+  renderNeedsAttention("dashNeedsAttentionList", isAdminUser() ? null : (currentProfile ? currentProfile.id : "__none__"));
   renderLeaderboard();
   renderTrendChart();
   renderMyWork();
