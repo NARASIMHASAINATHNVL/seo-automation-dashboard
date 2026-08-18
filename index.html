@@ -844,6 +844,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
       <h2><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>Completions — Last 8 Weeks</h2>
       <div style="position:relative;height:260px;">
         <canvas id="trendChart"></canvas>
+        <p class="hint" id="trendEmptyMsg" style="display:none;position:absolute;inset:0;align-items:center;justify-content:center;margin:0;text-align:center;padding:0 20px;">No completions yet — this fills in as the team finishes projects.</p>
       </div>
     </div>
 
@@ -1987,12 +1988,17 @@ function renderTrendChart(){
 
   if(trendChartInstance) trendChartInstance.destroy();
 
+  const emptyMsg = document.getElementById("trendEmptyMsg");
   const allZero = data.every(d=>d.total===0);
   if(allZero){
     trendChartInstance = null;
     canvas.getContext("2d").clearRect(0,0,canvas.width,canvas.height);
+    canvas.style.visibility = "hidden";
+    if(emptyMsg) emptyMsg.style.display = "flex";
     return;
   }
+  canvas.style.visibility = "visible";
+  if(emptyMsg) emptyMsg.style.display = "none";
 
   trendChartInstance = new Chart(canvas.getContext("2d"), {
     type: "line",
