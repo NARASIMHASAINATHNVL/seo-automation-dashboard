@@ -2,6 +2,16 @@
 
 All notable changes to the SEO Automation & Projects Dashboard.
 
+## 2026-08-18 — Tools Usage: per-user breakdown per tool
+
+### Added
+- Per-Tool Breakdown table now has a "By User" column showing each
+  person's usage count for that tool (e.g. "Lochan &times; 10, Bhagya &times; 3"),
+  sorted by count descending. `computeToolUsageStats()` now tracks
+  `byUser` (userId -> count) per tool alongside the existing unique-user
+  Set; `renderToolBreakdownTable()` formats and renders it via the
+  existing `profileNameById()` helper.
+
 ## 2026-08-18 — Tools Usage: capture a reason per logged use
 
 ### Changed

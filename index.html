@@ -1014,7 +1014,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
     <div class="card">
       <h2><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Per-Tool Breakdown</h2>
       <div class="table-wrap">
-        <table id="toolBreakdownTable"><thead><tr><th>Tool</th><th>Total Uses</th><th>Unique Users</th><th>Last Used</th><th>Last Reason</th></tr></thead><tbody id="toolBreakdownBody"></tbody></table>
+        <table id="toolBreakdownTable"><thead><tr><th>Tool</th><th>Total Uses</th><th>Unique Users</th><th>By User</th><th>Last Used</th><th>Last Reason</th></tr></thead><tbody id="toolBreakdownBody"></tbody></table>
       </div>
       <p class="hint" id="toolBreakdownEmptyMsg" style="display:none;">No usage logged yet.</p>
     </div>
@@ -3047,13 +3047,17 @@ async function loadToolUsageEvents(){
 function computeToolUsageStats(){
   const catalog = toolCatalog();
   const perTool = {};
-  catalog.forEach(name=>{ perTool[name] = { total:0, users:new Set(), last:null, lastReason:null }; });
+  catalog.forEach(name=>{ perTool[name] = { total:0, users:new Set(), byUser:{}, last:null, lastReason:null }; });
   const allUsers = new Set();
   toolUsageEvents.forEach(e=>{
     const name = e.tool_name;
-    if(!perTool[name]) perTool[name] = { total:0, users:new Set(), last:null, lastReason:null };
+    if(!perTool[name]) perTool[name] = { total:0, users:new Set(), byUser:{}, last:null, lastReason:null };
     perTool[name].total++;
-    if(e.user_id){ perTool[name].users.add(e.user_id); allUsers.add(e.user_id); }
+    if(e.user_id){
+      perTool[name].users.add(e.user_id);
+      allUsers.add(e.user_id);
+      perTool[name].byUser[e.user_id] = (perTool[name].byUser[e.user_id] || 0) + 1;
+    }
     if(!perTool[name].last || new Date(e.used_at) > new Date(perTool[name].last)){
       perTool[name].last = e.used_at;
       perTool[name].lastReason = e.reason || null;
@@ -3215,7 +3219,13 @@ function renderToolBreakdownTable(stats){
     const last = t.last ? new Date(t.last).toLocaleString() : "—";
     const reasonText = t.lastReason ? t.lastReason : "—";
     const reasonAttr = reasonText.replace(/"/g,"&quot;");
-    return `<tr><td>${name}</td><td>${t.total}</td><td>${t.users.size}</td><td>${last}</td><td title="${reasonAttr}">${reasonText}</td></tr>`;
+    const byUserEntries = Object.keys(t.byUser)
+      .map(uid=>({ name: profileNameById(uid) || "Unknown user", count: t.byUser[uid] }))
+      .sort((a,b)=> b.count - a.count || a.name.localeCompare(b.name));
+    const byUserText = byUserEntries.length
+      ? byUserEntries.map(u=> `${u.name} &times; ${u.count}`).join(", ")
+      : "—";
+    return `<tr><td>${name}</td><td>${t.total}</td><td>${t.users.size}</td><td>${byUserText}</td><td>${last}</td><td title="${reasonAttr}">${reasonText}</td></tr>`;
   }).join("");
 }
 /* Weekly/monthly tool-usage charts — same Chart.js line/area
