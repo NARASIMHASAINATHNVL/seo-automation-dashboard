@@ -2,6 +2,56 @@
 
 All notable changes to the SEO Automation & Projects Dashboard.
 
+## 2026-08-20 — Persistent left project sidebar + pick-request workflow
+
+### Added
+- New collapsible `<aside id="projectSidebar">` visible on every tab,
+  listing every project from the already-loaded `projects` array with a
+  status-colored dot (reusing the exact `STATUS_HEX` map from Project
+  Tracker — no new colors invented) and either the assignee's name
+  (`avatarHtml()` + name, same as elsewhere) or an "Unassigned" label.
+  Collapsible via a toggle button in the sidebar header; collapsed/expanded
+  state persists per-browser in `localStorage`
+  (`seo-automation-dashboard-sidebar-collapsed`), same pattern as the
+  existing theme toggle.
+- Non-admin users see a "Pick this project" button on unassigned rows.
+  `requestPickProject()` attempts
+  `sb.from('projects').update({ pick_requested_by, pick_status:'pending' }).eq('id', projectId).is('assigned_to', null)`
+  wrapped in try/catch: success shows a toast and flips the row to a
+  disabled "Pending approval" button; failure (including "column doesn't
+  exist yet") shows a friendly toast via `friendlyPickError()` /
+  `isMissingColumnError()` and never throws or breaks the rest of the
+  sidebar — same defensive pattern as `renderToolsUsage()`.
+- Admins (`isAdminUser()`) see, on any row with `pickStatus === 'pending'`,
+  who requested it (`profileNameById(p.pickRequestedBy)`) plus Approve
+  (`approvePickRequest()` — sets `assigned_to`/`pick_status:'approved'`)
+  and Reject (`rejectPickRequest()` — sets `pick_status:'rejected'`,
+  clears `pick_requested_by`) buttons.
+- `mapProjectRow()` now also maps `pickRequestedBy`/`pickStatus`,
+  defaulting missing/undefined values to `null`/`"none"` so the sidebar
+  renders correctly whether or not the migration below has landed.
+- `renderProjectSidebar()` is called from the existing `renderAll()`, so
+  it stays in sync with the same realtime `projects` subscription
+  (`subscribeRealtime()`) already driving Project Tracker — no second
+  competing subscription was added.
+- Layout: `<nav>` and `<main>` are now wrapped in `.app-shell` (flex row)
+  / `.app-shell-main`, with `#projectSidebar` as a sibling flex item to
+  their left. `<header>` and `<footer>` are unchanged, full-width, outside
+  this wrapper. On narrow viewports the existing `@media(max-width:720px)`
+  breakpoint (same one `header`/`main`/`nav` already use) now also stacks
+  `.app-shell` into a column and caps the sidebar to a `max-height:280px`
+  scrollable strip above the nav, instead of a fixed-width side column.
+
+### Known limitation (by design)
+- **`pick_requested_by` (uuid, references `profiles(id)`, nullable) and
+  `pick_status` (text, nullable — values `'pending' | 'approved' |
+  'rejected'`) do not exist on the `projects` table yet.** The migration
+  is queued separately. Until it lands, the sidebar's project list renders
+  correctly (status dots, names, "Unassigned" labels), but the actual Pick
+  / Approve / Reject button clicks will just show a "Project picking isn't
+  set up yet — check back soon" toast instead of persisting anything —
+  UI-complete, backend-inert.
+
 ## 2026-08-20 — Tools Usage: day x hour usage heatmap
 
 ### Added

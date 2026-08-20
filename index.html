@@ -215,6 +215,60 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
   nav button.active:hover{color:#fff;background:var(--brand-gradient);}
   .nav-indicator{display:none;}
   main{padding:16px 32px 48px;max-width:1400px;margin:0 auto;}
+
+  /* ============ PROJECT SIDEBAR (persistent left panel, additive to top nav) ============ */
+  .app-shell{display:flex;align-items:flex-start;}
+  .app-shell-main{flex:1 1 auto;min-width:0;}
+  #projectSidebar{
+    flex:0 0 272px;width:272px;margin:16px 0 0 24px;
+    background:var(--surface-glass);backdrop-filter:blur(14px);
+    border:1px solid var(--surface-border);border-radius:var(--radius);
+    box-shadow:var(--shadow);display:flex;flex-direction:column;
+    max-height:calc(100vh - 120px);overflow:hidden;position:sticky;top:16px;
+    transition:width .2s var(--ease),flex-basis .2s var(--ease),background .3s ease,border-color .3s ease;
+  }
+  #projectSidebar.collapsed{flex:0 0 52px;width:52px;}
+  #projectSidebar.collapsed .sidebar-title-text,
+  #projectSidebar.collapsed .sidebar-body{display:none;}
+  #projectSidebar.collapsed .sidebar-toggle-btn svg{transform:rotate(180deg);}
+  .sidebar-header{
+    display:flex;align-items:center;justify-content:space-between;gap:8px;
+    padding:14px 14px 10px;border-bottom:1px solid var(--surface-border);flex-shrink:0;
+  }
+  .sidebar-title{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:800;color:var(--brand-text);text-transform:uppercase;letter-spacing:.05em;white-space:nowrap;}
+  .sidebar-count{font-size:10.5px;font-weight:700;color:var(--text-muted);}
+  .sidebar-toggle-btn{
+    width:28px;height:28px;border-radius:8px;padding:0;flex-shrink:0;
+    display:inline-flex;align-items:center;justify-content:center;
+    background:var(--surface-2);border:1px solid var(--surface-border);color:var(--text-primary);
+    cursor:pointer;box-shadow:none;
+  }
+  .sidebar-toggle-btn svg{width:14px;height:14px;transition:transform .2s var(--ease);}
+  .sidebar-toggle-btn:hover{background:var(--surface-1);}
+  .sidebar-body{padding:10px 12px 14px;overflow-y:auto;flex:1 1 auto;}
+  .sidebar-list{display:flex;flex-direction:column;gap:8px;}
+  .sidebar-project-row{
+    border:1px solid var(--surface-border);border-radius:var(--radius-sm);
+    padding:9px 10px;background:var(--surface-2);
+  }
+  .sidebar-project-top{display:flex;align-items:center;gap:7px;margin-bottom:6px;}
+  .sidebar-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+  .sidebar-project-name{font-size:12.5px;font-weight:700;color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .sidebar-project-bottom{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;}
+  .sidebar-assignee{display:inline-flex;align-items:center;gap:6px;min-width:0;}
+  .sidebar-assignee .assignee-name{font-size:11.5px;color:var(--text-secondary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .sidebar-unassigned{font-size:10.5px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.02em;}
+  .sidebar-project-bottom .btn{padding:5px 10px !important;font-size:10.5px !important;}
+  .sidebar-pick-pending{display:flex;flex-direction:column;gap:6px;width:100%;}
+  .sidebar-requester{font-size:10.5px;font-weight:600;color:var(--text-muted);}
+  .sidebar-pick-actions{display:flex;gap:6px;}
+  .sidebar-pick-actions .btn{flex:1;}
+  @media(max-width:720px){
+    .app-shell{flex-direction:column;}
+    #projectSidebar{width:auto;margin:12px 14px 0;max-height:280px;flex:0 0 auto;position:static;}
+    #projectSidebar.collapsed{max-height:none;}
+  }
+
   .view{display:none;}
   .view.active{display:block;animation:view-in .2s var(--ease);}
   @keyframes view-in{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
@@ -735,6 +789,20 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
   </div>
 </header>
 
+<div class="app-shell">
+<aside id="projectSidebar" class="project-sidebar">
+  <div class="sidebar-header">
+    <span class="sidebar-title sidebar-title-text">Projects <span class="sidebar-count" id="projectSidebarCount"></span></span>
+    <button class="sidebar-toggle-btn" id="sidebarToggleBtn" onclick="toggleProjectSidebar()" title="Collapse or expand the project list" aria-label="Toggle project sidebar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+  </div>
+  <div class="sidebar-body" id="projectSidebarBody">
+    <div class="sidebar-list" id="projectSidebarList"></div>
+  </div>
+</aside>
+<div class="app-shell-main">
+
 <nav>
   <span class="nav-indicator" id="navIndicator"></span>
   <button class="tab-btn" data-view="mywork">My Work</button>
@@ -1078,6 +1146,9 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
   </section>
 
 </main>
+
+</div><!-- /.app-shell-main -->
+</div><!-- /.app-shell -->
 
 <footer class="app-footer">
   <p>Developed by <strong>Sainath Nuvvula</strong> &middot; For suggestions and feedback, reach out at
@@ -1468,7 +1539,13 @@ function mapProjectRow(row){
     targetDate: row.target_date || "",
     dateCompleted: row.date_completed || "",
     help: row.help_needed || "",
-    notes: row.notes || ""
+    notes: row.notes || "",
+    // pick_requested_by / pick_status: queued migration, columns don't exist
+    // in the DB yet. `row.pick_*` will simply be undefined until then, so
+    // these defensively coerce to "no request in flight" rather than
+    // throwing/showing broken UI (see PROJECT SIDEBAR section below).
+    pickRequestedBy: row.pick_requested_by || null,
+    pickStatus: row.pick_status || "none"
   };
 }
 async function updateProject(id, field, value){
@@ -1530,6 +1607,149 @@ async function deleteProject(id){
   }catch(err){
     showToast(friendlyWriteError(err, "project"), "danger");
   }
+}
+
+/* ============================================================
+   PROJECT SIDEBAR — persistent left panel (every tab) listing
+   every project + status, plus a "pick this project" workflow for
+   unassigned rows. Reuses STATUS_HEX / avatarHtml / profileNameById
+   / isAdminUser / showToast conventions already established above.
+
+   The pick-request workflow depends on two columns that do NOT
+   exist on `projects` yet (a migration is queued separately):
+     - pick_requested_by  uuid, references profiles(id), nullable
+     - pick_status        text, nullable — expected values once the
+                           migration lands: 'pending' | 'approved' | 'rejected'
+   Until that migration runs, every write below fails gracefully
+   (see isMissingColumnError/friendlyPickError) and the read side
+   (mapProjectRow) already defaults pickRequestedBy/pickStatus to
+   null/"none" — this whole feature degrades to "everything renders,
+   pick/approve/reject show a not-set-up-yet toast" rather than a
+   broken UI, same pattern as the Tools Usage tab.
+   ============================================================ */
+const SIDEBAR_COLLAPSED_KEY = "seo-automation-dashboard-sidebar-collapsed";
+function applySidebarCollapsed(collapsed){
+  const aside = document.getElementById("projectSidebar");
+  if(aside) aside.classList.toggle("collapsed", collapsed);
+  const btn = document.getElementById("sidebarToggleBtn");
+  if(btn) btn.setAttribute("aria-expanded", String(!collapsed));
+  try{ localStorage.setItem(SIDEBAR_COLLAPSED_KEY, collapsed ? "1" : "0"); }catch(e){ /* ignore */ }
+}
+function toggleProjectSidebar(){
+  const aside = document.getElementById("projectSidebar");
+  applySidebarCollapsed(aside ? !aside.classList.contains("collapsed") : false);
+}
+(function initSidebarCollapsed(){
+  let saved = null;
+  try{ saved = localStorage.getItem(SIDEBAR_COLLAPSED_KEY); }catch(e){ /* ignore */ }
+  applySidebarCollapsed(saved === "1");
+})();
+function isMissingColumnError(err){
+  const msg = (err && err.message) || "";
+  const code = err && err.code;
+  return code === "42703" || code === "PGRST204" ||
+    /column .* does not exist/i.test(msg) || /could not find the .*column/i.test(msg) || /schema cache/i.test(msg);
+}
+function friendlyPickError(err){
+  if(isMissingColumnError(err)) return "Project picking isn't set up yet — check back soon.";
+  const msg = (err && err.message) || "";
+  if(/row-level security|permission denied|policy|RLS/i.test(msg)) return "You don't have permission to do that.";
+  return `Failed: ${msg || "unknown error"}`;
+}
+async function requestPickProject(projectId){
+  if(!currentProfile){ showToast("Sign in to pick a project.", "danger"); return; }
+  try{
+    const { error } = await sb.from("projects")
+      .update({ pick_requested_by: currentProfile.id, pick_status: "pending" })
+      .eq("id", projectId).is("assigned_to", null);
+    if(error) throw error;
+    const p = projects.find(x=>x.id===projectId);
+    if(p){ p.pickRequestedBy = currentProfile.id; p.pickStatus = "pending"; }
+    renderProjectSidebar();
+    showToast("Requested — waiting on admin approval");
+  }catch(err){
+    showToast(friendlyPickError(err), "danger");
+    renderProjectSidebar();
+  }
+}
+async function approvePickRequest(projectId){
+  if(!isAdminUser()) return;
+  const p = projects.find(x=>x.id===projectId);
+  if(!p) return;
+  try{
+    const { error } = await sb.from("projects")
+      .update({ assigned_to: p.pickRequestedBy, pick_status: "approved" })
+      .eq("id", projectId);
+    if(error) throw error;
+    p.assignedToId = p.pickRequestedBy;
+    p.assignedTo = profileNameById(p.pickRequestedBy) || "";
+    p.pickStatus = "approved";
+    renderAll();
+    showToast("Pick request approved");
+  }catch(err){
+    showToast(friendlyPickError(err), "danger");
+    renderProjectSidebar();
+  }
+}
+async function rejectPickRequest(projectId){
+  if(!isAdminUser()) return;
+  const p = projects.find(x=>x.id===projectId);
+  if(!p) return;
+  try{
+    const { error } = await sb.from("projects")
+      .update({ pick_status: "rejected", pick_requested_by: null })
+      .eq("id", projectId);
+    if(error) throw error;
+    p.pickStatus = "rejected";
+    p.pickRequestedBy = null;
+    renderAll();
+    showToast("Pick request rejected", "danger");
+  }catch(err){
+    showToast(friendlyPickError(err), "danger");
+    renderProjectSidebar();
+  }
+}
+function renderProjectSidebar(){
+  const list = document.getElementById("projectSidebarList");
+  if(!list) return;
+  const countEl = document.getElementById("projectSidebarCount");
+  if(countEl) countEl.textContent = projects.length ? String(projects.length) : "";
+  if(projects.length === 0){
+    list.innerHTML = `<p class="hint" style="margin:0;">No projects yet.</p>`;
+    return;
+  }
+  const isAdmin = isAdminUser();
+  const sorted = projects.slice().sort((a,b)=> (a.project||"").localeCompare(b.project||""));
+  list.innerHTML = sorted.map(p=>{
+    const statusColor = STATUS_HEX[p.status] || "#8a8a86";
+    const pickStatus = p.pickStatus || "none";
+    const safeName = (p.project || "Untitled").replace(/"/g,"&quot;");
+    let bottomHtml;
+    if(p.assignedTo){
+      bottomHtml = `<span class="sidebar-assignee">${avatarHtml(p.assignedTo)}<span class="assignee-name">${p.assignedTo}</span></span>`;
+    }else if(isAdmin && pickStatus === "pending"){
+      const requesterName = profileNameById(p.pickRequestedBy) || "Someone";
+      bottomHtml = `<div class="sidebar-pick-pending">
+          <span class="sidebar-requester">${requesterName} requested this</span>
+          <div class="sidebar-pick-actions">
+            <button class="btn" onclick="approvePickRequest('${p.id}')">Approve</button>
+            <button class="btn secondary" onclick="rejectPickRequest('${p.id}')">Reject</button>
+          </div>
+        </div>`;
+    }else if(!isAdmin && pickStatus === "pending"){
+      bottomHtml = `<span class="sidebar-unassigned">Unassigned</span><button class="btn secondary" disabled>Pending approval</button>`;
+    }else{
+      bottomHtml = `<span class="sidebar-unassigned">Unassigned</span>` +
+        (!isAdmin ? `<button class="btn secondary" onclick="requestPickProject('${p.id}')">Pick this project</button>` : "");
+    }
+    return `<div class="sidebar-project-row">
+        <div class="sidebar-project-top">
+          <span class="sidebar-dot" style="background:${statusColor}"></span>
+          <span class="sidebar-project-name" title="${safeName}">${p.project || "Untitled"}</span>
+        </div>
+        <div class="sidebar-project-bottom">${bottomHtml}</div>
+      </div>`;
+  }).join("");
 }
 
 /* ============================================================
@@ -3539,6 +3759,7 @@ function renderMyWork(){
    ============================================================ */
 function renderAll(){
   renderProjects();
+  renderProjectSidebar();
   const sum = computeSummary();
   renderKPIs(sum);
   renderBarChart(sum);
