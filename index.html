@@ -214,7 +214,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
   }
   nav button.active:hover{color:#fff;background:var(--brand-gradient);}
   .nav-indicator{display:none;}
-  main{padding:16px 32px 48px;max-width:1400px;margin:0 auto;}
+  main{padding:16px 32px 48px;max-width:1600px;margin:0 auto;}
 
   /* ============ PROJECT SIDEBAR (persistent left panel, additive to top nav) ============ */
   .app-shell{display:flex;align-items:flex-start;}
@@ -273,7 +273,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
   .view.active{display:block;animation:view-in .2s var(--ease);}
   @keyframes view-in{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
 
-  .kpi-row{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:18px;}
+  .kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,220px));gap:10px;margin-bottom:18px;}
   .kpi{
     background:var(--surface-2);border:1px solid var(--surface-border);border-radius:var(--radius-sm);
     padding:12px 13px 11px;box-shadow:var(--shadow);text-align:left;border-top:3px solid var(--neutral);
@@ -312,7 +312,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
   .card.chart-card{border-top:3px solid var(--accent);padding-top:14px;}
   .card.chart-card h2{font-size:13px;}
   .charts-row{display:grid;grid-template-columns:1.5fr 1fr;gap:16px;margin-bottom:16px;}
-  @media(max-width:900px){.charts-row{grid-template-columns:1fr;} .kpi-row{grid-template-columns:repeat(3,1fr);}}
+  @media(max-width:1200px){.charts-row{grid-template-columns:1fr;}}
 
   .heatmap-scroll{overflow-x:auto;padding-bottom:4px;}
   .heatmap-grid{display:grid;grid-template-columns:38px repeat(24,minmax(20px,1fr));gap:3px;min-width:680px;}
@@ -455,7 +455,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
 
   @media(max-width:720px){
     header{margin:14px 14px 0;padding:14px 16px;} main{padding:14px 14px 50px;} nav{margin:12px 14px 0;padding:6px;overflow-x:auto;}
-    .kpi-row{grid-template-columns:repeat(2,1fr);}
+    .kpi-row{grid-template-columns:repeat(auto-fit,minmax(130px,1fr));}
     .sync-bar{margin:12px 14px 0;max-width:calc(100% - 28px);padding:8px 10px 8px 14px !important;}
     .table-wrap{border:none;overflow:visible;}
     table{min-width:0;}
@@ -590,7 +590,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
 
   /* ============ LEADERBOARD / GAMIFICATION ============ */
   .spotlight-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
-  @media(max-width:900px){.spotlight-row{grid-template-columns:1fr;}}
+  @media(max-width:1200px){.spotlight-row{grid-template-columns:1fr;}}
   .spotlight-card{
     position:relative;
     border:1px solid color-mix(in srgb, var(--gold) 45%, var(--surface-border));
@@ -670,7 +670,9 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
   .ap-section-title:first-of-type{margin-top:0;}
 
   /* ============ MY WORK ============ */
-  .kpi-row.kpi-row-5{grid-template-columns:repeat(5,1fr);}
+  /* kpi-row-5 intentionally has no fixed column override — it inherits the
+     responsive auto-fit sizing from .kpi-row so it wraps consistently with
+     every other KPI row instead of forcing 5 fixed columns at all widths. */
 
   /* ============ OVERDUE BANNER (personal / team) — 2026-08-18 ============ */
   .overdue-banner{display:flex;align-items:flex-start;gap:12px;margin-bottom:16px;padding:13px 18px;border-radius:var(--radius-sm);border:1px solid color-mix(in srgb, var(--critical) 50%, var(--surface-border));background:linear-gradient(150deg, color-mix(in srgb, var(--critical) 14%, var(--surface-2)), var(--surface-2) 65%);box-shadow:var(--shadow-sm);}
@@ -892,7 +894,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
     <div class="charts-row">
       <div class="card chart-card">
         <h2><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6"/><rect x="12" y="8" width="3" height="10"/><rect x="17" y="5" width="3" height="13"/></svg>Projects per Analyst by Status</h2>
-        <div style="position:relative;height:340px;">
+        <div style="position:relative;height:300px;">
           <canvas id="barChart"></canvas>
         </div>
         <div class="legend" id="barLegend"></div>
@@ -1092,7 +1094,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
       <div id="toolUsageList"></div>
     </div>
 
-    <div class="kpi-row" style="grid-template-columns:repeat(2,1fr);">
+    <div class="kpi-row">
       <div class="kpi total"><div class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg></div><div class="lbl">Total Uses (All-Time)</div><div class="val" id="tuKpiTotal">0</div></div>
       <div class="kpi done"><div class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div><div class="lbl">Unique Users (All-Time)</div><div class="val" id="tuKpiUsers">0</div></div>
     </div>

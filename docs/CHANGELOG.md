@@ -2,6 +2,57 @@
 
 All notable changes to the SEO Automation & Projects Dashboard.
 
+## 2026-08-20 — Responsive layout & widget sizing pass
+
+CSS/layout-only pass fixing complaints that the UI "isn't responsive" and
+that widgets look inconsistently tiny/huge, following the previous pass
+that added the persistent left `#projectSidebar` (which reduced the
+horizontal space available to `<main>` on every tab).
+
+### Changed
+- `.kpi-row` (used for every KPI card row across Dashboard, My Work,
+  Project Tracker, Tools Usage, Leaderboard) switched from a rigid
+  `grid-template-columns:repeat(6,1fr)` to
+  `repeat(auto-fit,minmax(150px,220px))`. Cards now size themselves
+  consistently (never squished, never stretched) and the row simply wraps
+  as available width shrinks — no more separate 900px/720px step-down
+  overrides needed for the base case.
+- Removed the `.kpi-row.kpi-row-5` (My Work) fixed `repeat(5,1fr)` override.
+  Because two-class selectors are more specific than the single-class
+  `.kpi-row` rule, this override was silently winning over *both* existing
+  responsive breakpoints (900px and 720px), so the My Work KPI row never
+  actually shrank below 5 fixed columns on narrow screens even though it
+  looked like it should. It now inherits the same auto-fit sizing as every
+  other KPI row.
+- Removed the inline `style="grid-template-columns:repeat(2,1fr);"` on the
+  Tools Usage KPI row. With only 2 KPIs stretched across the full row width
+  behind the new sidebar-narrowed `<main>`, these cards rendered
+  dramatically oversized next to the compact 6-up Dashboard KPI cards —
+  the clearest instance of the "some widgets are very big" complaint. Now
+  uses the shared `.kpi-row` auto-fit sizing like every other tab.
+- `.charts-row` and `.spotlight-row` (Leaderboard) single-column collapse
+  breakpoint raised from `max-width:900px` to `max-width:1200px`. The
+  272px-wide sidebar (plus its 24px margin) eats roughly 300px of viewport
+  width on every tab now, so the old 900px trigger left two-column chart
+  rows cramped into an effective ~600px of content width before they had a
+  chance to stack.
+- Dashboard "Projects per Analyst by Status" bar chart container height
+  changed from `340px` to `300px` to match its side-by-side neighbor
+  ("Overall Status Split" donut, already `300px`) inside the same
+  `.charts-row`. Previously the two cards in the same row had visibly
+  different heights.
+- `main{max-width:...}` increased from `1400px` to `1600px` so wide
+  monitors regain roughly the ~300px of usable content width now claimed
+  by the sidebar, instead of `margin:0 auto` centering an unnecessarily
+  narrow column inside `.app-shell-main`.
+
+### Reviewed, no change needed
+- `#projectSidebar` width (272px) and its `<720px` stacking behavior
+  (`.app-shell{flex-direction:column}`) — both already sensible; project
+  names use `text-overflow:ellipsis` so no awkward wrapping.
+- `.kpi` card padding — already a single shared class reused by every tab,
+  so Dashboard/My Work/Tools Usage KPI cards were already consistent.
+
 ## 2026-08-20 — Persistent left project sidebar + pick-request workflow
 
 ### Added
