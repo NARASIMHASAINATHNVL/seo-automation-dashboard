@@ -2,6 +2,38 @@
 
 All notable changes to the SEO Automation & Projects Dashboard.
 
+## 2026-08-20 — Tools Usage: day x hour usage heatmap
+
+### Added
+- New "Usage Heatmap — Day & Hour" card on the Tools Usage tab, placed
+  right after the Weekly/Monthly Usage `charts-row`. Shows a 7x24 grid
+  (rows = day of week, columns = hour of day) of how many tool uses were
+  logged in each day/hour bucket, so the team can spot when tools actually
+  get used.
+- `computeToolUsageHeatmap()` buckets every `tool_usage_events.used_at`
+  timestamp by local day-of-week and hour-of-day into a `grid[7][24]`
+  array and returns `{ grid, maxCount }`. Rows run **Mon..Sun** (row 0 =
+  Monday) via `(date.getDay() + 6) % 7`, matching the week-start
+  convention `mondayOf()` already uses for the weekly trend chart, rather
+  than JS's native Sun-first `Date#getDay()` ordering.
+- `renderToolUsageHeatmap()` renders the grid as plain CSS-grid `<div>`
+  cells (no new charting library) into `#toolUsageHeatmap`. Row labels are
+  Mon/Tue/.../Sun; column labels are shown only at 12am/6am/12pm/6pm to
+  avoid clutter. Each cell has a native `title` tooltip with the exact
+  day, hour, and count. Cell color scales from `var(--surface-2)` (zero
+  uses) up through `color-mix(in srgb, var(--accent) <pct>%, var(--surface-2))`
+  where `pct` scales with `count/maxCount` (floored at 14% so any nonzero
+  cell stays visibly distinct from empty ones) — reuses existing CSS vars
+  only, no new hardcoded colors. Empty state (table not set up, or zero
+  usage logged) hides the grid and shows the same `.hint`-style message
+  used elsewhere on this tab, via the existing `toolUsageAvailable` flag
+  and `toolUsageStatusMessage()` helper.
+- Wired into `renderToolsUsage()` alongside the existing render calls.
+- New CSS: `.heatmap-scroll`, `.heatmap-grid`, `.heatmap-corner`,
+  `.heatmap-hour-label`, `.heatmap-row-label`, `.heatmap-cell` — added
+  next to the existing `.charts-row` rules, reusing only existing CSS
+  custom properties.
+
 ## 2026-08-18 — Tools Usage: chip-style "By User" counts
 
 ### Changed

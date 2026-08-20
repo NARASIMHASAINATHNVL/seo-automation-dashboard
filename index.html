@@ -260,6 +260,14 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
   .charts-row{display:grid;grid-template-columns:1.5fr 1fr;gap:16px;margin-bottom:16px;}
   @media(max-width:900px){.charts-row{grid-template-columns:1fr;} .kpi-row{grid-template-columns:repeat(3,1fr);}}
 
+  .heatmap-scroll{overflow-x:auto;padding-bottom:4px;}
+  .heatmap-grid{display:grid;grid-template-columns:38px repeat(24,minmax(20px,1fr));gap:3px;min-width:680px;}
+  .heatmap-corner{}
+  .heatmap-hour-label{font-size:9.5px;font-weight:700;color:var(--text-muted);text-align:center;align-self:end;padding-bottom:2px;}
+  .heatmap-row-label{font-size:11px;font-weight:700;color:var(--text-secondary);display:flex;align-items:center;}
+  .heatmap-cell{aspect-ratio:1;border-radius:4px;min-height:16px;border:1px solid var(--surface-border);cursor:default;transition:transform .1s var(--ease);}
+  .heatmap-cell:hover{transform:scale(1.15);}
+
   .legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:10px;font-size:12px;color:var(--text-secondary);}
   .legend span{display:inline-flex;align-items:center;gap:6px;}
   .swatch{width:10px;height:10px;border-radius:2px;display:inline-block;}
@@ -1044,6 +1052,15 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
           <p class="hint" id="toolMonthlyEmptyMsg" style="display:none;position:absolute;inset:0;align-items:center;justify-content:center;margin:0;text-align:center;padding:0 20px;">No usage logged yet.</p>
         </div>
       </div>
+    </div>
+
+    <div class="card">
+      <h2><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18M8 4v18"/></svg>Usage Heatmap — Day &amp; Hour</h2>
+      <p class="hint">When the team actually uses the tools, by day of week and hour of day.</p>
+      <div class="heatmap-scroll">
+        <div class="heatmap-grid" id="toolUsageHeatmap"></div>
+      </div>
+      <p class="hint" id="toolUsageHeatmapEmptyMsg" style="display:none;">No usage logged yet.</p>
     </div>
 
     <div class="card">
@@ -3121,6 +3138,24 @@ function computeToolUsageLeaderboard(){
   rows.sort((a,b)=> b.count - a.count || a.name.localeCompare(b.name));
   return rows;
 }
+/* Day-of-week x hour-of-day usage heatmap. Rows run Mon..Sun to
+   match the week-start convention used by mondayOf()/the weekly
+   trend chart elsewhere on this tab, rather than JS's native
+   Sun-first Date#getDay() ordering. Bucketing uses the browser's
+   local time zone, same as the weekly/monthly trend buckets. */
+function computeToolUsageHeatmap(){
+  const grid = Array.from({ length: 7 }, () => new Array(24).fill(0));
+  toolUsageEvents.forEach(e=>{
+    const d = new Date(e.used_at);
+    if(isNaN(d.getTime())) return;
+    const row = (d.getDay() + 6) % 7; // getDay(): 0=Sun..6=Sat -> row: 0=Mon..6=Sun
+    const hour = d.getHours();
+    grid[row][hour]++;
+  });
+  let maxCount = 0;
+  grid.forEach(row=> row.forEach(count=>{ if(count > maxCount) maxCount = count; }));
+  return { grid, maxCount };
+}
 /* ------------------------------------------------------------
    "Using the tool now" no longer inserts directly — it opens a
    small modal (same markup/CSS pattern as the Change Password
@@ -3312,6 +3347,50 @@ function renderToolUsageTrendChart(canvasId, emptyMsgId, data, instanceKey, unit
   });
   if(instanceKey === "weekly") toolWeeklyChartInstance = chart; else toolMonthlyChartInstance = chart;
 }
+/* Day/hour heatmap — plain CSS grid of divs (no Chart.js), color
+   intensity via color-mix() blends of --accent against --surface-2
+   so it stays on-theme in both light and dark mode without any new
+   hardcoded colors. */
+const TOOL_HEATMAP_DAY_LABELS = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+const TOOL_HEATMAP_HOUR_MARKERS = { 0: "12am", 6: "6am", 12: "12pm", 18: "6pm" };
+function toolHeatmapHourLabel(h){
+  if(h === 0) return "12am";
+  if(h === 12) return "12pm";
+  return h < 12 ? `${h}am` : `${h - 12}pm`;
+}
+function renderToolUsageHeatmap(){
+  const wrap = document.getElementById("toolUsageHeatmap");
+  const emptyMsg = document.getElementById("toolUsageHeatmapEmptyMsg");
+  if(!wrap) return;
+  const { grid, maxCount } = computeToolUsageHeatmap();
+  if(!toolUsageAvailable || maxCount === 0){
+    wrap.innerHTML = "";
+    wrap.style.display = "none";
+    if(emptyMsg){ emptyMsg.style.display = "block"; emptyMsg.textContent = toolUsageStatusMessage(); }
+    return;
+  }
+  wrap.style.display = "";
+  if(emptyMsg) emptyMsg.style.display = "none";
+
+  let html = `<div class="heatmap-corner"></div>`;
+  for(let h=0; h<24; h++){
+    html += `<div class="heatmap-hour-label">${TOOL_HEATMAP_HOUR_MARKERS[h] || ""}</div>`;
+  }
+  TOOL_HEATMAP_DAY_LABELS.forEach((dayLabel, row)=>{
+    html += `<div class="heatmap-row-label">${dayLabel}</div>`;
+    for(let h=0; h<24; h++){
+      const count = grid[row][h];
+      let bg = "var(--surface-2)";
+      if(count > 0){
+        const pct = Math.max(14, Math.round((count / maxCount) * 100));
+        bg = `color-mix(in srgb, var(--accent) ${pct}%, var(--surface-2))`;
+      }
+      const title = `${dayLabel} ${toolHeatmapHourLabel(h)}: ${count} use${count===1?"":"s"}`;
+      html += `<div class="heatmap-cell" style="background:${bg};" title="${title}"></div>`;
+    }
+  });
+  wrap.innerHTML = html;
+}
 function renderToolUsageLeaderboard(){
   const list = document.getElementById("toolUsageLeaderboardList");
   const emptyMsg = document.getElementById("toolUsageLeaderboardEmptyMsg");
@@ -3367,6 +3446,7 @@ function renderToolsUsage(){
   renderToolBreakdownTable(stats);
   renderToolUsageTrendChart("toolWeeklyChart", "toolWeeklyEmptyMsg", computeToolWeeklyTrend(8), "weekly", "Uses");
   renderToolUsageTrendChart("toolMonthlyChart", "toolMonthlyEmptyMsg", computeToolMonthlyTrend(6), "monthly", "Uses");
+  renderToolUsageHeatmap();
   renderToolUsageLeaderboard();
   renderToolUsageRecentActivity();
 }
