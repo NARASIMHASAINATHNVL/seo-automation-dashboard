@@ -2,6 +2,47 @@
 
 All notable changes to the SEO Automation & Projects Dashboard.
 
+## 2026-08-21 — Clickable Dashboard KPI cards with project drill-down
+
+The six Dashboard KPI cards (Total Projects, Assigned, Ongoing, Review
+Pending, Completed & Approved, Need Help) were purely decorative counters
+— clicking them did nothing, so there was no quick way to see *which*
+projects made up a given number without going to the Project Tracker and
+filtering manually. Each card is now clickable and opens a modal listing
+the exact matching projects.
+
+### Added
+- `kpiDrilldownModalOverlay` modal (new HTML block after the Analyst
+  Profile modal): same overlay + `.modal-card` pattern as
+  `analystProfileModalOverlay` / Tool Usage Reason modal, `max-width:640px`
+  responsive card, closes on backdrop click, close button, and Escape
+  (wired into the existing shared `keydown` listener).
+- `KPI_DRILLDOWN_CONFIG` + `openKpiDrilldown(kind)` /
+  `closeKpiDrilldownModal()`: `kind` is one of `total`/`assigned`/
+  `ongoing`/`review`/`done`/`help`. Each filter mirrors `computeSummary()`
+  exactly, so the count on the card and the list in the modal always
+  agree — `assigned`/`ongoing`/`review`/`done` only include projects whose
+  `assignedTo` is a current `ANALYSTS` entry and whose `status` matches;
+  `help` includes every project with `help === "Yes"` regardless of
+  status/assignee; `total` is every project. Zero-match buckets still
+  open, showing a friendly "No projects in this bucket right now." empty
+  state instead of being disabled. Rows show project name, assignee
+  (`avatarHtml()`), status pill (`STATUS_PILL_CLASS`), and target date;
+  clicking a row closes the modal and calls the existing `jumpToProject(id)`
+  to scroll/flash that row in the Project Tracker.
+- `.kpi-clickable` (cursor:pointer) and `.kpi-drilldown-row` (cursor:pointer
+  + `:hover{background:var(--surface-1)}`, matching the existing
+  `.attn-row:hover` affordance) CSS rules.
+
+### Changed
+- The six Dashboard KPI `<div class="kpi ...">` cards (Total/Assigned/
+  Ongoing/Review Pending/Completed & Approved/Need Help) gained the
+  `kpi-clickable` class, an `onclick="openKpiDrilldown('...')"` handler,
+  and a descriptive `title` tooltip. The existing `.kpi:hover` lift/shadow
+  effect (shared with the non-clickable KPI rows on My Work and the Tool
+  Usage tab) is unchanged. The "N projects overdue or stale" banner above
+  the cards already called `jumpToProject()` on its pills — left as-is.
+
 ## 2026-08-21 — Save confirmation for inline edits (Project Tracker + Daily Log)
 
 Inline edits in the Project Tracker saved silently for every field except
