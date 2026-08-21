@@ -2,6 +2,67 @@
 
 All notable changes to the SEO Automation & Projects Dashboard.
 
+## 2026-08-21 — Mobile responsiveness pass
+
+Full mobile pass across every tab (My Work, Dashboard, Project Tracker,
+Daily Status Log, Team, Leaderboard, Tools Usage) — CSS-only plus one
+small JS default-state tweak, no structural rewrite. Audited the existing
+`@media` rules first (there were already several: a `max-width:720px`
+app-shell/table/header pass, a `max-width:900px` toolbar pass, and a
+handful of narrower one-off breakpoints) and extended rather than
+duplicated them.
+
+### Added
+- Daily Status Log gets its own mobile table treatment instead of
+  inheriting the generic card-stack transform: new `.table-wrap-matrix`
+  class on its `.table-wrap` (the only markup change) plus an ID-scoped
+  `#dailyTable` block inside a new `@media(max-width:720px)` rule —
+  horizontal scroll with a sticky first (Date) column, so the
+  date-by-analyst grid stays scannable instead of turning into a very
+  tall stacked card per date. All new selectors are ID-scoped so they
+  beat the generic `tbody`/`td` mobile rules without `!important`.
+- `@media (pointer: coarse)` block bumping `button.btn`, `nav button`,
+  `select`/`input[type=text]`/`input[type=date]`, `.theme-toggle`,
+  `.sidebar-toggle-btn`, `.modal-close-btn`, `.trend-range-btn`, and the
+  status/priority pill `<select>`s to ~40-44px tap targets on touch
+  devices, without changing anything for mouse/trackpad users.
+- Nav tabs on mobile (`max-width:720px`): `flex-shrink:0` + `white-space:
+  nowrap` on `nav button` so the 7 tabs keep their natural size and
+  scroll horizontally (the existing `overflow-x:auto` on `nav` was
+  already there but the buttons could still get squashed instead of
+  overflowing) plus `scroll-snap-type`/`scroll-snap-align` for a cleaner
+  swipe feel and taller (min-height:40px) tap targets.
+- Project sidebar (`#projectSidebar`) now defaults to collapsed on first
+  load when the viewport is `≤720px` and the user has never explicitly
+  toggled it (`initSidebarCollapsed()` in the `<script>`, keyed off
+  `window.matchMedia("(max-width:720px)")`) — any saved preference,
+  desktop or mobile, still wins on repeat visits. The existing
+  `@media(max-width:720px)` sidebar CSS (stacks above `nav` instead of
+  beside it, `position:static`, capped height with scroll when expanded)
+  was already in place from an earlier pass and needed no changes.
+- `clamp()` on a few numbers/headings that were fixed-size before:
+  `.kpi .val` (`clamp(20px,5vw,28px)`), `header h1`
+  (`clamp(15px,4vw,17px)`), `.ttc-overall-val` (`clamp(20px,5vw,26px)`).
+
+### Changed
+- Project Tracker mobile card view: neutralized the `9c68737` redesign's
+  desktop-only `max-width` caps on the Project/Notes cells
+  (`#projectsTable td[data-label="Project"]`, `...="Notes"]`) inside the
+  `max-width:720px` block so the stacked cards use the full row width
+  instead of being pinned to a 280px/240px column width meant for the
+  desktop table layout. The card-view transform itself (verified against
+  `data-label` attributes) was already working correctly post-redesign.
+
+### Verified, no change needed
+- KPI card grids (`.kpi-row{grid-template-columns:repeat(auto-fit,
+  minmax(150px,220px))}` / the `130px` mobile variant) reflow correctly
+  at 375px/414px.
+- All five modals (Import, Change Password, Tool Usage Reason, Analyst
+  Profile, KPI Drilldown) already use the shared `.modal-card{width:100%;
+  max-width:...}` + `.modal-overlay{padding:20px}` pattern, which already
+  resolves to "full width minus margin" on small viewports with a
+  scrollable body (`max-height:85vh` + `.modal-card-body{overflow:auto}`).
+
 ## 2026-08-21 — Clickable Dashboard KPI cards with project drill-down
 
 The six Dashboard KPI cards (Total Projects, Assigned, Ongoing, Review

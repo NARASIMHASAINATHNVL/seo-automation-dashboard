@@ -148,7 +148,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
   }
   @keyframes sheen{0%,100%{background-position:0% 50%;}50%{background-position:100% 50%;}}
   .header-logo svg{width:21px;height:21px;}
-  header h1{margin:0 0 3px 0;font-size:17px;font-weight:800;letter-spacing:-.02em;color:var(--text-primary);}
+  header h1{margin:0 0 3px 0;font-size:clamp(15px,4vw,17px);font-weight:800;letter-spacing:-.02em;color:var(--text-primary);}
   header p{margin:0;color:var(--text-secondary);font-size:12px;font-weight:500;}
   .user-count-chips{display:flex;flex-wrap:wrap;gap:5px;}
   .user-count-chip{
@@ -290,7 +290,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
   .kpi:hover .kpi-icon{transform:scale(1.08);}
   .kpi .kpi-icon svg{width:13px;height:13px;}
   .kpi .lbl{font-size:10px;color:var(--text-secondary);font-weight:700;text-transform:uppercase;letter-spacing:.04em;}
-  .kpi .val{font-size:28px;font-weight:900;color:var(--brand-text);letter-spacing:-.03em;line-height:1.05;font-variant-numeric:tabular-nums;}
+  .kpi .val{font-size:clamp(20px,5vw,28px);font-weight:900;color:var(--brand-text);letter-spacing:-.03em;line-height:1.05;font-variant-numeric:tabular-nums;}
   .kpi-bar{height:3px;border-radius:2px;background:var(--surface-1);overflow:hidden;margin-top:2px;}
   .kpi-bar-fill{height:100%;border-radius:2px;width:0%;background:var(--neutral);transition:width .6s var(--ease);}
   .kpi-trend{font-size:10.5px;color:var(--text-muted);font-weight:600;min-height:14px;}
@@ -524,6 +524,33 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
     tbody tr td:last-child{border-bottom:none;}
     tbody td::before{content:attr(data-label);font-size:10.5px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.03em;text-align:left;flex-shrink:0;}
     tbody td select,tbody td input[type=text],tbody td input[type=date]{width:auto;max-width:60%;text-align:right;}
+    /* Nav tabs: keep buttons at their natural size and scroll horizontally
+       instead of shrinking into illegible squashed labels (2026-08-21). */
+    nav{gap:6px;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;}
+    nav button{flex-shrink:0;white-space:nowrap;padding:11px 16px;min-height:40px;scroll-snap-align:start;}
+    /* Project Tracker card-view: the 9c68737 redesign's desktop column
+       max-widths shouldn't cap the stacked mobile cards (2026-08-21). */
+    #projectsTable td[data-label="Project"],#projectsTable td[data-label="Notes"]{max-width:none;}
+  }
+
+  /* ============ DAILY STATUS LOG — MOBILE MATRIX OVERRIDE (2026-08-21) ============
+     The generic mobile table rules above turn every row into a stacked card,
+     which suits narrow tables but not this date-by-analyst grid — stacking
+     would put 6+ analyst fields into one tall card per date and lose the
+     "scan across analysts" shape of the table. Horizontal scroll with a
+     sticky first (Date) column keeps the grid mental model instead. Every
+     selector below is ID-scoped so it reliably wins over the generic
+     tbody/td rules above regardless of source order, with no !important. */
+  @media(max-width:720px){
+    .table-wrap-matrix{border:1px solid var(--surface-border);overflow-x:auto;overflow-y:visible;-webkit-overflow-scrolling:touch;}
+    #dailyTable{min-width:640px;}
+    #dailyTable thead{display:table-header-group;}
+    #dailyTable tbody,#dailyTable tr{display:table-row;width:auto;}
+    #dailyTable tr{border:none;margin-bottom:0;padding:0;background:transparent;}
+    #dailyTable td{display:table-cell;width:auto;text-align:left;padding:8px 10px;border-bottom:1px solid var(--surface-border);}
+    #dailyTable td::before{content:none;}
+    #dailyTable th:first-child,#dailyTable td:first-child{position:sticky;left:0;background:var(--surface-2);z-index:1;box-shadow:2px 0 4px -2px rgba(0,0,0,.12);}
+    #dailyTable td select,#dailyTable td input[type=text],#dailyTable td input[type=date]{width:100%;max-width:none;text-align:left;}
   }
 
   /* ============ AUTH SCREEN ============ */
@@ -765,7 +792,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
 
   /* ============ TIME TO COMPLETION ============ */
   .ttc-overall{display:flex;align-items:baseline;gap:8px;margin-bottom:10px;}
-  .ttc-overall-val{font-size:26px;font-weight:900;color:var(--brand-text);}
+  .ttc-overall-val{font-size:clamp(20px,5vw,26px);font-weight:900;color:var(--brand-text);}
   .ttc-overall-lbl{font-size:11px;color:var(--text-muted);font-weight:600;}
   .ttc-row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:5px 2px;font-size:12px;border-bottom:1px solid var(--surface-border);}
   .ttc-row:last-child{border-bottom:none;}
@@ -779,6 +806,23 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
   .trend-range-controls{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;}
   .trend-range-btn{font-size:11px;font-weight:700;padding:5px 11px;border-radius:999px;border:1px solid var(--surface-border);background:var(--surface-1);color:var(--text-secondary);cursor:pointer;transition:background .15s var(--ease),color .15s var(--ease);}
   .trend-range-btn.active{background:var(--brand-gradient);color:#fff;border-color:transparent;}
+
+  /* ============ TOUCH TARGET SIZING (2026-08-21) ============
+     Bumps interactive elements to a comfortable ~40-44px tap size on
+     touch/coarse-pointer devices (phones, tablets) without changing
+     anything for mouse/trackpad users, where the tighter desktop
+     spacing is intentional. */
+  @media (pointer: coarse){
+    button.btn{padding:11px 18px;min-height:44px;}
+    button.btn.danger{padding:9px 14px;min-height:40px;}
+    nav button{padding:12px 18px;min-height:44px;}
+    select,input[type=text],input[type=date]{padding:10px 11px;min-height:40px;}
+    .theme-toggle{width:44px;height:44px;}
+    .sidebar-toggle-btn{width:34px;height:34px;}
+    .modal-close-btn{padding:8px;}
+    .trend-range-btn{padding:9px 14px;min-height:36px;}
+    .status-select-wrap select,.priority-select-wrap select{padding:8px 12px;}
+  }
 
   /* ============ PRINT REPORT (2026-08-18) ============ */
   @media print{
@@ -1071,7 +1115,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
           Add Date Row
         </button>
       </div>
-      <div class="table-wrap">
+      <div class="table-wrap table-wrap-matrix">
         <table id="dailyTable">
           <thead>
             <tr>
@@ -1771,7 +1815,14 @@ function toggleProjectSidebar(){
 (function initSidebarCollapsed(){
   let saved = null;
   try{ saved = localStorage.getItem(SIDEBAR_COLLAPSED_KEY); }catch(e){ /* ignore */ }
-  applySidebarCollapsed(saved === "1");
+  // 2026-08-21 mobile responsiveness pass: if the user has never explicitly
+  // toggled the sidebar, default it to collapsed on narrow viewports so it
+  // doesn't eat vertical space above the tab nav on first load. Any saved
+  // preference (from either desktop or mobile) still wins on repeat visits.
+  const collapsed = saved !== null
+    ? saved === "1"
+    : (typeof window.matchMedia === "function" && window.matchMedia("(max-width:720px)").matches);
+  applySidebarCollapsed(collapsed);
 })();
 function isMissingColumnError(err){
   const msg = (err && err.message) || "";
