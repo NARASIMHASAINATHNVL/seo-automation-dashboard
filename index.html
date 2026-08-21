@@ -45,6 +45,11 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<!-- Delight layer (2026-08-21): Lottie micro-animations + canvas-confetti.
+     Purely additive/decorative — every call site checks these loaded
+     before use and never throws if the CDN is slow/blocked. -->
+<script src="https://cdn.jsdelivr.net/npm/lottie-web@5.12.2/build/player/lottie.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 <style>
   :root{
     --surface-1:#f4f5fb;
@@ -915,6 +920,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
 
 <div id="loadingScreen" class="loading-screen" style="display:none;">
   <div class="loading-card">
+    <div id="loadingLottie" style="width:72px;height:72px;margin:0 auto 4px;"></div>
     <div class="spinner"></div>
     <p>Loading the latest data…</p>
   </div>
@@ -1504,6 +1510,97 @@ function flashSaved(rowId, field){
   el.classList.add("save-flash");
   setTimeout(()=>{ el.classList.remove("save-flash"); }, 1200);
 }
+/* ============================================================
+   DELIGHT LAYER (2026-08-21) — Lottie micro-animations + confetti
+   bursts layered on top of the toast/flashSaved system above.
+   Purely additive and decorative: every function here checks that
+   the relevant CDN library actually loaded (it can be slow/blocked
+   on a restrictive corporate network) and bails out silently, and
+   respects prefers-reduced-motion. Nothing in this block may ever
+   throw in a way that interrupts a real save/render — every entry
+   point is wrapped defensively.
+   ============================================================ */
+const LOTTIE_URLS = {
+  success: "https://assets2.lottiefiles.com/packages/lf20_jbrw3hcz.json", // checkmark + confetti burst
+  loading: "https://assets9.lottiefiles.com/packages/lf20_puciaact.json", // loading/progress dots
+  empty: "https://assets3.lottiefiles.com/packages/lf20_qh5z2fdq.json"    // celebratory/rocket, reused for empty states
+};
+const _lottieInstances = {}; // containerId -> lottie animation instance, so we can destroy() cleanly
+function prefersReducedMotion(){
+  try{ return !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches); }catch(e){ return false; }
+}
+/* Loads a Lottie animation into the element with the given id (by default
+   Animation 3, the general-purpose one used for empty states and the
+   loading screen). Safe to call repeatedly — destroys any prior instance
+   on that container first. No-ops entirely if lottie isn't loaded or the
+   user prefers reduced motion. */
+function mountEmptyLottie(containerId, url){
+  destroyLottie(containerId);
+  if(prefersReducedMotion() || typeof lottie === "undefined") return;
+  const el = document.getElementById(containerId);
+  if(!el) return;
+  try{
+    _lottieInstances[containerId] = lottie.loadAnimation({
+      container: el, renderer: "svg", loop: true, autoplay: true, path: url || LOTTIE_URLS.empty
+    });
+  }catch(e){ /* decorative only — never let a bad/slow CDN response break rendering */ }
+}
+function destroyLottie(containerId){
+  try{
+    if(_lottieInstances[containerId]){ _lottieInstances[containerId].destroy(); delete _lottieInstances[containerId]; }
+  }catch(e){ /* ignore */ }
+}
+/* Confetti burst, optionally originating near a given DOM element
+   (e.g. the table row that was just marked complete) instead of the
+   default center-of-screen origin. */
+function fireConfetti(originEl){
+  if(prefersReducedMotion() || typeof confetti === "undefined") return;
+  try{
+    let origin = { x: 0.5, y: 0.4 };
+    if(originEl && originEl.getBoundingClientRect){
+      const r = originEl.getBoundingClientRect();
+      if(r.width || r.height){
+        origin = { x: (r.left + r.width/2) / window.innerWidth, y: (r.top + r.height/2) / window.innerHeight };
+      }
+    }
+    confetti({ particleCount: 90, spread: 70, startVelocity: 32, origin });
+  }catch(e){ /* decorative only */ }
+}
+/* Briefly shows Animation 1 (checkmark + confetti) in a small transient
+   popup near the given row element (or centered near the top of the
+   viewport as a fallback), auto-removed after ~2s. Non-blocking and
+   never throws — a failure here must never affect the save it's
+   celebrating. */
+function showCelebrationPopup(rowEl){
+  if(prefersReducedMotion() || typeof lottie === "undefined") return;
+  try{
+    const pop = document.createElement("div");
+    pop.setAttribute("aria-hidden", "true");
+    pop.style.cssText = "position:fixed;width:84px;height:84px;z-index:9999;pointer-events:none;";
+    if(rowEl && rowEl.getBoundingClientRect){
+      const r = rowEl.getBoundingClientRect();
+      pop.style.top = Math.max(8, r.top - 30) + "px";
+      pop.style.left = Math.min(window.innerWidth - 92, Math.max(8, r.left + r.width/2 - 42)) + "px";
+    }else{
+      pop.style.top = "90px";
+      pop.style.left = "calc(50% - 42px)";
+    }
+    document.body.appendChild(pop);
+    let anim = null;
+    try{ anim = lottie.loadAnimation({ container: pop, renderer: "svg", loop: false, autoplay: true, path: LOTTIE_URLS.success }); }catch(e){ /* ignore */ }
+    setTimeout(()=>{ try{ anim && anim.destroy(); }catch(e){} pop.remove(); }, 2000);
+  }catch(e){ /* decorative only */ }
+}
+/* Confetti + checkmark popup for a project row that was just marked
+   "Completed & Approved" — called from updateProject() below only
+   after the Supabase write has already succeeded. */
+function celebrateProjectCompletion(id){
+  try{
+    const row = document.getElementById("proj-row-" + id);
+    fireConfetti(row);
+    showCelebrationPopup(row);
+  }catch(e){ /* decorative only — must never affect the save it's celebrating */ }
+}
 /* Turns a raw Supabase/Postgres error (most commonly an RLS
    policy violation) into a clear, human message instead of
    surfacing the raw error text or failing silently. */
@@ -1659,7 +1756,8 @@ function renderProjects(){
   const printWrap = document.getElementById("printReportWrap");
   if(printWrap) printWrap.style.display = isAdminUser() ? "" : "none";
   if(projects.length===0){
-    body.innerHTML = `<tr class="empty-row"><td colspan="11">No projects yet — click "Add Project" above to create the first one.</td></tr>`;
+    body.innerHTML = `<tr class="empty-row"><td colspan="11"><div style="text-align:center;padding:8px 0;"><div id="emptyProjectsLottie" style="width:140px;height:140px;margin:0 auto;"></div><div>No projects yet — click "Add Project" above to create the first one.</div></div></td></tr>`;
+    mountEmptyLottie("emptyProjectsLottie");
     return;
   }
   const term = projectSearchTerm.trim().toLowerCase();
@@ -1672,9 +1770,11 @@ function renderProjects(){
   }
   if(entries.length===0){
     if(onlyMineFilter){
-      body.innerHTML = `<tr class="empty-row"><td colspan="11">No projects assigned to you yet — nice and clear! Ask an admin to assign one your way, or use "Add Project" above (it'll be assigned to you automatically).</td></tr>`;
+      body.innerHTML = `<tr class="empty-row"><td colspan="11"><div style="text-align:center;padding:8px 0;"><div id="emptyMineLottie" style="width:140px;height:140px;margin:0 auto;"></div><div>No projects assigned to you yet — nice and clear! Ask an admin to assign one your way, or use "Add Project" above (it'll be assigned to you automatically).</div></div></td></tr>`;
+      mountEmptyLottie("emptyMineLottie");
     }else{
-      body.innerHTML = `<tr class="empty-row"><td colspan="11">No projects match your filter.</td></tr>`;
+      body.innerHTML = `<tr class="empty-row"><td colspan="11"><div style="text-align:center;padding:8px 0;"><div id="emptyFilterLottie" style="width:140px;height:140px;margin:0 auto;"></div><div>No projects match your filter.</div></div></td></tr>`;
+      mountEmptyLottie("emptyFilterLottie");
     }
     return;
   }
@@ -1792,6 +1892,9 @@ async function updateProject(id, field, value){
       showToast(PROJECT_FIELD_SAVED_MESSAGES[field] || "Saved ✓");
     }
     flashSaved("proj-row-" + id, field);
+    if(field === "status" && value === "Completed & Approved"){
+      celebrateProjectCompletion(id);
+    }
   }catch(err){
     p[field] = prevValue;
     if(clearsPendingPick){ p.pickStatus = prevPickStatus; p.pickRequestedBy = prevPickRequestedBy; }
@@ -2005,7 +2108,8 @@ function renderDaily(){
   body.innerHTML = "";
   if(dailyLog.length===0){
     const colspan = DAILY_ANALYSTS.length + 2;
-    body.innerHTML = `<tr class="empty-row"><td colspan="${colspan}">No daily log entries yet — click "Add Date Row" above.</td></tr>`;
+    body.innerHTML = `<tr class="empty-row"><td colspan="${colspan}"><div style="text-align:center;padding:8px 0;"><div id="emptyDailyLottie" style="width:140px;height:140px;margin:0 auto;"></div><div>No daily log entries yet — click "Add Date Row" above.</div></div></td></tr>`;
+    mountEmptyLottie("emptyDailyLottie");
     return;
   }
   const isAdmin = isAdminUser();
@@ -2177,7 +2281,8 @@ function renderTeam(){
   if(!body) return;
   body.innerHTML = "";
   if(ANALYSTS.length===0){
-    body.innerHTML = `<tr class="empty-row"><td colspan="4">No one on the team yet${isAdmin ? ' — add the first person above.' : '.'}</td></tr>`;
+    body.innerHTML = `<tr class="empty-row"><td colspan="4"><div style="text-align:center;padding:8px 0;"><div id="emptyTeamLottie" style="width:140px;height:140px;margin:0 auto;"></div><div>No one on the team yet${isAdmin ? ' — add the first person above.' : '.'}</div></div></td></tr>`;
+    mountEmptyLottie("emptyTeamLottie");
     return;
   }
   PROFILES.forEach(profile=>{
@@ -4195,6 +4300,8 @@ function showAuthScreen(){
 }
 function showLoadingScreen(show){
   document.getElementById("loadingScreen").style.display = show ? "flex" : "none";
+  if(show){ mountEmptyLottie("loadingLottie", LOTTIE_URLS.loading); }
+  else{ destroyLottie("loadingLottie"); }
 }
 function showApp(){
   document.getElementById("authScreen").style.display = "none";

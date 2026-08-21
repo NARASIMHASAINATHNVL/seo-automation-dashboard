@@ -2,6 +2,60 @@
 
 All notable changes to the SEO Automation & Projects Dashboard.
 
+## 2026-08-21 — Delight layer: Lottie micro-animations + confetti celebrations
+
+Additive-only "delight" pass on top of the existing toast/`flashSaved`
+save-confirmation system — no changes to the KPI drilldown modal, the
+Project Tracker table redesign CSS, responsive/mobile CSS, or the
+colorful visual-identity CSS from the same day's earlier pass. Everything
+here is new script tags, new small JS functions, and minimal targeted
+markup insertions for animation containers.
+
+### Added
+- Loaded `lottie-web@5.12.2` and `canvas-confetti@1.9.3` from jsDelivr,
+  placed alongside the existing Supabase/Chart.js `<script>` tags in
+  `<head>`.
+- New "DELIGHT LAYER" JS block (after `flashSaved()`): `LOTTIE_URLS`
+  (success checkmark, loading dots, empty/celebratory animations),
+  `prefersReducedMotion()`, `mountEmptyLottie()`/`destroyLottie()`,
+  `fireConfetti()`, `showCelebrationPopup()`, and
+  `celebrateProjectCompletion()`. Every function checks
+  `typeof lottie`/`typeof confetti` before use, wraps `loadAnimation()`
+  calls in `try/catch`, and skips/no-ops entirely when
+  `prefers-reduced-motion: reduce` is set — none of this can throw or
+  block the UI even if the CDN is slow or blocked.
+- Completion celebration: in `updateProject()`, after a successful
+  Supabase write where `field === "status"` and
+  `value === "Completed & Approved"` (matches the `STATUSES` constant
+  exactly), a confetti burst fires from the changed row's position and a
+  small transient checkmark-animation popup appears near the row for
+  ~2 seconds, then removes itself.
+- Empty states upgraded with a small (140px) centered Lottie animation
+  above the existing message text, message text unchanged: Project
+  Tracker's "no projects yet" / "no projects assigned to you" / "no
+  projects match your filter" states (`renderProjects()`), Daily Status
+  Log's "no daily log entries yet" (`renderDaily()`), and Team's "no one
+  on the team yet" (`renderTeam()`).
+- Initial loading state: the existing `loadingScreen` (shown by
+  `showLoadingScreen()` during the first Supabase fetch on sign-in) now
+  also mounts a small (72px) loading-dots Lottie animation next to its
+  spinner, destroyed again once loading finishes.
+
+### Judgment calls
+- Login screen flourish was skipped. The `authScreen`'s `.header-logo`/
+  `.auth-brand` classes are shared with the main app header, so adding
+  a persistent animation there carried more cross-screen risk than the
+  optional/nice-to-have value justified; left untouched.
+- Reused Animation 3 (celebratory/rocket) for both empty states and the
+  Team roster's empty state, even though the task only called out
+  Project Tracker/Daily Log/Team as "trivially findable" — Team's
+  `ANALYSTS.length===0` branch followed the identical `empty-row`
+  pattern, so it was included for consistency.
+- All new animation containers use inline `style` sizing rather than new
+  CSS classes/rules, specifically to avoid touching the existing
+  `<style>` block at all (per the constraint not to touch the table
+  redesign / responsive / visual-identity CSS).
+
 ## 2026-08-21 — Colorful 2026 SaaS visual identity pass
 
 Pure CSS/markup styling pass in response to feedback that the dashboard
