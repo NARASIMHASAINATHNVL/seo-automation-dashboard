@@ -2,6 +2,54 @@
 
 All notable changes to the SEO Automation & Projects Dashboard.
 
+## 2026-08-21 — Project Tracker visual polish pass
+
+Pure CSS/markup pass to fix the Project Tracker tab looking "clumsy" next
+to the Dashboard/Leaderboard tabs' card-based design language. No
+permission logic, `updateProject()`, `canEditProject()`, or the
+assign-dropdown feature were touched — behavior is identical, only the
+markup wrapping and CSS classes changed.
+
+### Added
+- `.projects-toolbar` / `.toolbar-group` (`toolbar-primary`,
+  `toolbar-filters`, `toolbar-actions`): the Project Tracker toolbar is
+  now three flex groups (Add Project | search + "Show only my rows" |
+  Import/Download/Print) instead of one flat row split by a `.spacer`,
+  so it wraps predictably at 1280/1440/1600px and stacks cleanly under
+  ~900px instead of buttons falling onto random lines.
+- `.status-select-wrap` / `.priority-select-wrap`: the editable Status
+  and Priority `<select>` cells in `renderProjects()` are now wrapped in
+  a span carrying the row's existing `STATUS_PILL_CLASS` value (Status)
+  or a `data-priority` attribute (Priority), so both dropdowns render as
+  colored pill/badge selects consistent with the read-only status pill
+  styling, using only existing color vars (`--neutral`/`--blue`/
+  `--warning`/`--good`/`--critical`).
+- `.table-wrap` scroll-shadow affordance (`background-attachment:local`
+  edge-gradient trick) so any horizontally-scrollable table (Project
+  Tracker included) shows a subtle shadow on the side that still has
+  more content — no JS needed, and it's a no-op when there's nothing to
+  scroll.
+
+### Changed
+- `#projectsTable` cell padding increased (`td` 5px/10px → 9px/12px,
+  `th` 8px/10px → 10px/12px) for more breathing room; Project/Notes
+  columns now wrap long text (`white-space:normal;word-break:break-word`)
+  instead of being squeezed, while Priority/Help Needed got a
+  `max-width` so they don't over-stretch. The action column (`th:last-child`
+  / `td[data-label=""]`) is now centered with the Delete button and the
+  "View only" tag both stretched to the same width for consistent
+  alignment down the column.
+- Global `select`/`input[type=text]`/`input[type=date]` padding
+  increased slightly (5px/7px → 6px/9px) and their focus ring switched
+  from a hardcoded blue `rgba()` to `color-mix(in srgb, var(--accent) …)`
+  so it themes correctly in dark mode — affects all tables app-wide,
+  not just Project Tracker, as a consistency side-effect.
+- Status stripe (`tr.status-stripe td:first-child`) inset shadow
+  thickened 3px → 4px for a slightly clearer status-color cue.
+- Confirmed the table header (`th{position:sticky;top:0;}` inside the
+  scrolling `.table-wrap`) was already sticky — no JS change needed,
+  just the padding/contrast tweaks above.
+
 ## 2026-08-21 — Direct admin assign/reassign (no pick-request needed)
 
 Admins previously could only change a project's assignee via the

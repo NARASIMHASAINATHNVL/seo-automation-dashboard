@@ -344,14 +344,14 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
   td[data-label="Projects Assigned"]{text-align:right;font-variant-numeric:tabular-nums;font-weight:700;}
   tbody tr{transition:background .1s var(--ease);}
   tr:hover td{background:var(--surface-1);}
-  tr.status-stripe td:first-child{box-shadow:inset 3px 0 0 0 var(--stripe-color,transparent);}
+  tr.status-stripe td:first-child{box-shadow:inset 4px 0 0 0 var(--stripe-color,transparent);}
   select,input[type=text],input[type=date]{
-    width:100%;padding:5px 7px;font-size:12.5px;border:1px solid var(--surface-border);
+    width:100%;padding:6px 9px;font-size:12.5px;border:1px solid var(--surface-border);
     border-radius:var(--radius-sm);font-family:inherit;background:var(--surface-2);color:var(--text-primary);
     transition:border-color .15s var(--ease),box-shadow .15s var(--ease);
   }
   select:focus,input[type=text]:focus,input[type=date]:focus{
-    outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(42,120,214,.15);
+    outline:none;border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent);
   }
   .status-pill{padding:3px 9px;border-radius:20px;font-size:11.5px;font-weight:bold;color:#fff;display:inline-block;}
   .pill-assigned{background:var(--neutral);}
@@ -388,7 +388,17 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
   button.btn.danger:hover{background:color-mix(in srgb, var(--critical) 12%, var(--surface-2));border-color:var(--critical);}
   .spacer{flex:1;}
   .hint{font-size:12px;color:var(--text-muted);margin-top:10px;line-height:1.5;}
-  .table-wrap{max-height:560px;overflow:auto;border:1px solid var(--surface-border);border-radius:var(--radius-sm);}
+  .table-wrap{
+    max-height:560px;overflow:auto;border:1px solid var(--surface-border);border-radius:var(--radius-sm);
+    background-color:var(--surface-2);background-repeat:no-repeat;
+    background-image:
+      linear-gradient(to right, var(--surface-2) 40%, transparent),
+      linear-gradient(to right, transparent, var(--surface-2) 60%) right center,
+      radial-gradient(farthest-side at 0 50%, rgba(0,0,0,.14), rgba(0,0,0,0)),
+      radial-gradient(farthest-side at 100% 50%, rgba(0,0,0,.14), rgba(0,0,0,0)) right center;
+    background-size:32px 100%, 32px 100%, 10px 100%, 10px 100%;
+    background-attachment:local, local, scroll, scroll;
+  }
 
   .search-box{
     display:flex;align-items:center;gap:7px;background:var(--surface-2);border:1px solid var(--surface-border);
@@ -396,6 +406,40 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
   }
   .search-box svg{width:14px;height:14px;color:var(--text-muted);flex-shrink:0;}
   .search-box input{border:none;outline:none;font-size:12.5px;font-family:inherit;width:100%;background:transparent;color:var(--text-primary);}
+
+  /* ============ PROJECT TRACKER POLISH — 2026-08-21 ============ */
+  .projects-toolbar{justify-content:space-between;row-gap:12px;}
+  .toolbar-group{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .toolbar-group.toolbar-filters{flex:1 1 260px;}
+  .toolbar-group.toolbar-actions{justify-content:flex-end;flex:0 1 auto;}
+  @media(max-width:900px){
+    .toolbar-group.toolbar-filters,.toolbar-group.toolbar-actions{flex:1 1 100%;justify-content:flex-start;}
+  }
+
+  #projectsTable{border-collapse:separate;border-spacing:0;}
+  #projectsTable th{padding:10px 12px;}
+  #projectsTable th:last-child{text-align:center;min-width:92px;}
+  #projectsTable td{padding:9px 12px;}
+  #projectsTable td[data-label="Project"]{max-width:280px;}
+  #projectsTable td[data-label="Project"] input,#projectsTable td[data-label="Project"] .ro-text{white-space:normal;word-break:break-word;}
+  #projectsTable td[data-label="Notes"]{max-width:240px;}
+  #projectsTable td[data-label="Notes"] input,#projectsTable td[data-label="Notes"] .ro-text{white-space:normal;word-break:break-word;}
+  #projectsTable td[data-label="Priority"],#projectsTable td[data-label="Help Needed"]{max-width:110px;}
+  #projectsTable td[data-label=""]{text-align:center;}
+  #projectsTable td[data-label=""] .btn.danger,#projectsTable td[data-label=""] .ro-tag{width:100%;justify-content:center;}
+
+  .status-select-wrap{display:inline-block;border-radius:999px;box-shadow:var(--shadow-sm);}
+  .status-select-wrap select{border:none;font-weight:700;color:#fff;padding:6px 10px;border-radius:999px;background-color:var(--neutral);}
+  .status-select-wrap select:focus{box-shadow:0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent);}
+  .status-select-wrap.pill-assigned select{background-color:var(--neutral);}
+  .status-select-wrap.pill-ongoing select{background-color:var(--blue);}
+  .status-select-wrap.pill-review select{background-color:var(--warning);color:#3a2c00;}
+  .status-select-wrap.pill-done select{background-color:var(--good);}
+
+  .priority-select-wrap select{border-radius:999px;font-weight:700;text-align:center;}
+  .priority-select-wrap[data-priority="High"] select{color:var(--critical);border-color:color-mix(in srgb, var(--critical) 45%, var(--surface-border));background-color:color-mix(in srgb, var(--critical) 10%, var(--surface-2));}
+  .priority-select-wrap[data-priority="Medium"] select{color:var(--warning);border-color:color-mix(in srgb, var(--warning) 45%, var(--surface-border));background-color:color-mix(in srgb, var(--warning) 10%, var(--surface-2));}
+  .priority-select-wrap[data-priority="Low"] select{color:var(--good);border-color:color-mix(in srgb, var(--good) 45%, var(--surface-border));background-color:color-mix(in srgb, var(--good) 10%, var(--surface-2));}
 
   .empty-row td{text-align:center;color:var(--text-muted);padding:30px 12px;font-size:13px;}
 
@@ -944,36 +988,41 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
   <!-- ============ PROJECT TRACKER VIEW ============ -->
   <section id="projects" class="view">
     <div class="card">
-      <div class="toolbar">
-        <button class="btn" onclick="addProjectRow()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
-          Add Project
-        </button>
-        <span class="search-box">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
-          <input type="text" id="projectSearch" placeholder="Filter by project or person…" oninput="setProjectSearch(this.value)">
-        </span>
-        <label class="only-mine-toggle" id="onlyMineWrap">
-          <input type="checkbox" id="onlyMineToggle" onchange="setOnlyMine(this.checked)"> Show only my rows
-        </label>
-        <div class="spacer"></div>
-        <span id="importProjectsWrap" style="display:none;">
-          <button class="btn secondary" onclick="document.getElementById('importFileInput').click()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21V9m0 0l-4 4m4-4l4 4M4 5h16"/></svg>
-            Import Projects
+      <div class="toolbar projects-toolbar">
+        <div class="toolbar-group toolbar-primary">
+          <button class="btn" onclick="addProjectRow()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+            Add Project
           </button>
-          <input type="file" id="importFileInput" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleImportFile(this)">
-        </span>
-        <button class="btn secondary" onclick="downloadWorkbook()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 19h16"/></svg>
-          Download Updated Excel (.xlsx)
-        </button>
-        <span id="printReportWrap" style="display:none;">
-          <button class="btn secondary" onclick="printReport()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6z"/></svg>
-            Print Report
+        </div>
+        <div class="toolbar-group toolbar-filters">
+          <span class="search-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
+            <input type="text" id="projectSearch" placeholder="Filter by project or person…" oninput="setProjectSearch(this.value)">
+          </span>
+          <label class="only-mine-toggle" id="onlyMineWrap">
+            <input type="checkbox" id="onlyMineToggle" onchange="setOnlyMine(this.checked)"> Show only my rows
+          </label>
+        </div>
+        <div class="toolbar-group toolbar-actions">
+          <span id="importProjectsWrap" style="display:none;">
+            <button class="btn secondary" onclick="document.getElementById('importFileInput').click()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21V9m0 0l-4 4m4-4l4 4M4 5h16"/></svg>
+              Import Projects
+            </button>
+            <input type="file" id="importFileInput" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleImportFile(this)">
+          </span>
+          <button class="btn secondary" onclick="downloadWorkbook()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 19h16"/></svg>
+            Download Updated Excel (.xlsx)
           </button>
-        </span>
+          <span id="printReportWrap" style="display:none;">
+            <button class="btn secondary" onclick="printReport()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6z"/></svg>
+              Print Report
+            </button>
+          </span>
+        </div>
       </div>
       <div class="table-wrap">
         <table id="projectsTable">
@@ -1509,8 +1558,8 @@ function renderProjects(){
     tr.innerHTML = `
       <td data-label="Project">${editable ? `<input type="text" value="${p.project}" onchange="updateProject('${id}','project',this.value)">` : `<span class="ro-text">${p.project || "—"}</span>`}</td>
       <td data-label="Assigned to">${assigneeCell}</td>
-      <td data-label="Status">${editable ? selectHtml('status',["",...STATUSES],p.status,id,'status') : `<span class="status-pill ${STATUS_PILL_CLASS[p.status]||''}">${p.status||"—"}</span>`}${stalenessTag}</td>
-      <td data-label="Priority">${editable ? selectHtml('priority',PRIORITIES,p.priority,id,'priority') : `<span class="ro-text">${p.priority || "—"}</span>`}</td>
+      <td data-label="Status">${editable ? `<span class="status-select-wrap ${STATUS_PILL_CLASS[p.status]||'pill-assigned'}">${selectHtml('status',["",...STATUSES],p.status,id,'status')}</span>` : `<span class="status-pill ${STATUS_PILL_CLASS[p.status]||''}">${p.status||"—"}</span>`}${stalenessTag}</td>
+      <td data-label="Priority">${editable ? `<span class="priority-select-wrap" data-priority="${p.priority||''}">${selectHtml('priority',PRIORITIES,p.priority,id,'priority')}</span>` : `<span class="ro-text">${p.priority || "—"}</span>`}</td>
       <td data-label="Date Assigned">${editable ? `<input type="date" value="${p.dateAssigned}" onchange="updateProject('${id}','dateAssigned',this.value)">` : `<span class="ro-text">${p.dateAssigned || "—"}</span>`}</td>
       <td data-label="Target Date">${editable ? `<input type="date" value="${p.targetDate}" onchange="updateProject('${id}','targetDate',this.value)">` : `<span class="ro-text">${p.targetDate || "—"}</span>`}<br>${predictedBadgeHtml(p, ttc)}</td>
       <td data-label="Date Completed">${editable ? `<input type="date" value="${p.dateCompleted}" onchange="updateProject('${id}','dateCompleted',this.value)">` : `<span class="ro-text">${p.dateCompleted || "—"}</span>`}</td>
