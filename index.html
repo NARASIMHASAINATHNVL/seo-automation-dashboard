@@ -463,6 +463,15 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
   @keyframes toast-in{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
   @keyframes toast-out{to{opacity:0;transform:translateY(-6px);}}
 
+  /* Brief inline "saved" glow on a table cell's input/select right after
+     a successful write — a second, harder-to-miss confirmation alongside
+     the toast (2026-08-21). */
+  .save-flash{animation:field-saved-flash 1.2s ease;}
+  @keyframes field-saved-flash{
+    0%{box-shadow:0 0 0 3px color-mix(in srgb, var(--good) 40%, transparent);border-color:var(--good);}
+    100%{box-shadow:0 0 0 0 transparent;}
+  }
+
   /* ============ MODAL (generic overlay + centered card pattern) ============ */
   .modal-overlay{
     position:fixed;inset:0;z-index:940;background:rgba(15,23,32,.55);
@@ -1366,6 +1375,20 @@ function showToast(message, kind){
   stack.appendChild(el);
   setTimeout(()=>el.remove(), 3000);
 }
+/* Briefly glows the specific input/select that was just saved — looked
+   up via its row id (e.g. "proj-row-<id>" / "daily-row-<idx>") and a
+   data-field attribute — so a save is confirmed right at the cell the
+   user was looking at, not just in the toast stack (2026-08-21). */
+function flashSaved(rowId, field){
+  const row = document.getElementById(rowId);
+  if(!row) return;
+  const el = Array.from(row.querySelectorAll("[data-field]")).find(e => e.dataset.field === field);
+  if(!el) return;
+  el.classList.remove("save-flash");
+  void el.offsetWidth; // restart the animation if it's already running
+  el.classList.add("save-flash");
+  setTimeout(()=>{ el.classList.remove("save-flash"); }, 1200);
+}
 /* Turns a raw Supabase/Postgres error (most commonly an RLS
    policy violation) into a clear, human message instead of
    surfacing the raw error text or failing silently. */
@@ -1505,7 +1528,7 @@ document.querySelectorAll(".tab-btn").forEach(btn=>{
    PROJECT TRACKER TABLE
    ============================================================ */
 function selectHtml(name, list, current, id, field){
-  return `<select onchange="updateProject('${id}','${field}',this.value)">` +
+  return `<select data-field="${field}" onchange="updateProject('${id}','${field}',this.value)">` +
     list.map(v=>`<option value="${v}" ${v===current?"selected":""}>${v===""?"—":v}</option>`).join("") +
     `</select>`;
 }
@@ -1556,16 +1579,16 @@ function renderProjects(){
     const staleness = getProjectStaleness(p);
     const stalenessTag = staleness ? `<span class="staleness-tag type-${staleness.type}" title="${staleness.label}">${staleness.type==='overdue'?'⚠':'⏳'} ${staleness.type==='overdue'?'Overdue':'Stale'}</span>` : '';
     tr.innerHTML = `
-      <td data-label="Project">${editable ? `<input type="text" value="${p.project}" onchange="updateProject('${id}','project',this.value)">` : `<span class="ro-text">${p.project || "—"}</span>`}</td>
+      <td data-label="Project">${editable ? `<input type="text" data-field="project" value="${p.project}" onchange="updateProject('${id}','project',this.value)">` : `<span class="ro-text">${p.project || "—"}</span>`}</td>
       <td data-label="Assigned to">${assigneeCell}</td>
       <td data-label="Status">${editable ? `<span class="status-select-wrap ${STATUS_PILL_CLASS[p.status]||'pill-assigned'}">${selectHtml('status',["",...STATUSES],p.status,id,'status')}</span>` : `<span class="status-pill ${STATUS_PILL_CLASS[p.status]||''}">${p.status||"—"}</span>`}${stalenessTag}</td>
       <td data-label="Priority">${editable ? `<span class="priority-select-wrap" data-priority="${p.priority||''}">${selectHtml('priority',PRIORITIES,p.priority,id,'priority')}</span>` : `<span class="ro-text">${p.priority || "—"}</span>`}</td>
-      <td data-label="Date Assigned">${editable ? `<input type="date" value="${p.dateAssigned}" onchange="updateProject('${id}','dateAssigned',this.value)">` : `<span class="ro-text">${p.dateAssigned || "—"}</span>`}</td>
-      <td data-label="Target Date">${editable ? `<input type="date" value="${p.targetDate}" onchange="updateProject('${id}','targetDate',this.value)">` : `<span class="ro-text">${p.targetDate || "—"}</span>`}<br>${predictedBadgeHtml(p, ttc)}</td>
-      <td data-label="Date Completed">${editable ? `<input type="date" value="${p.dateCompleted}" onchange="updateProject('${id}','dateCompleted',this.value)">` : `<span class="ro-text">${p.dateCompleted || "—"}</span>`}</td>
+      <td data-label="Date Assigned">${editable ? `<input type="date" data-field="dateAssigned" value="${p.dateAssigned}" onchange="updateProject('${id}','dateAssigned',this.value)">` : `<span class="ro-text">${p.dateAssigned || "—"}</span>`}</td>
+      <td data-label="Target Date">${editable ? `<input type="date" data-field="targetDate" value="${p.targetDate}" onchange="updateProject('${id}','targetDate',this.value)">` : `<span class="ro-text">${p.targetDate || "—"}</span>`}<br>${predictedBadgeHtml(p, ttc)}</td>
+      <td data-label="Date Completed">${editable ? `<input type="date" data-field="dateCompleted" value="${p.dateCompleted}" onchange="updateProject('${id}','dateCompleted',this.value)">` : `<span class="ro-text">${p.dateCompleted || "—"}</span>`}</td>
       <td data-label="Time Taken">${timeTakenHtml(p)}</td>
       <td data-label="Help Needed">${editable ? selectHtml('help',YESNO,p.help,id,'help') : `<span class="ro-text ${p.help==='Yes'?'help-yes':''}">${p.help || "—"}</span>`}</td>
-      <td data-label="Notes">${editable ? `<input type="text" value="${p.notes}" onchange="updateProject('${id}','notes',this.value)">` : `<span class="ro-text">${p.notes || "—"}</span>`}</td>
+      <td data-label="Notes">${editable ? `<input type="text" data-field="notes" value="${p.notes}" onchange="updateProject('${id}','notes',this.value)">` : `<span class="ro-text">${p.notes || "—"}</span>`}</td>
       <td data-label="">${editable ? `<button class="btn danger" onclick="deleteProject('${id}')">Delete</button>` : viewOnlyTag()}</td>
     `;
     body.appendChild(tr);
@@ -1578,6 +1601,18 @@ const PROJECT_FIELD_TO_COLUMN = {
   project:"project", assignedTo:"assigned_to", status:"status", priority:"priority",
   dateAssigned:"date_assigned", targetDate:"target_date", dateCompleted:"date_completed",
   help:"help_needed", notes:"notes"
+};
+/* Success-toast wording per field for updateProject() — every field gets
+   its own confirmation now, not just assignedTo (2026-08-21). */
+const PROJECT_FIELD_SAVED_MESSAGES = {
+  project: "Project name saved ✓",
+  status: "Status updated ✓",
+  priority: "Priority updated ✓",
+  dateAssigned: "Date assigned saved ✓",
+  targetDate: "Target date updated ✓",
+  dateCompleted: "Completion date saved ✓",
+  help: "Help flag updated ✓",
+  notes: "Notes saved ✓"
 };
 function mapProjectRow(row){
   return {
@@ -1638,7 +1673,10 @@ async function updateProject(id, field, value){
     }
     if(field === "assignedTo"){
       showToast(value ? `Assigned to ${value}` : "Project unassigned");
+    }else{
+      showToast(PROJECT_FIELD_SAVED_MESSAGES[field] || "Saved ✓");
     }
+    flashSaved("proj-row-" + id, field);
   }catch(err){
     p[field] = prevValue;
     if(clearsPendingPick){ p.pickStatus = prevPickStatus; p.pickRequestedBy = prevPickRequestedBy; }
@@ -1851,15 +1889,16 @@ function renderDaily(){
   const isAdmin = isAdminUser();
   dailyLog.forEach((row,idx)=>{
     const tr = document.createElement("tr");
+    tr.id = "daily-row-" + idx;
     if(!isAdmin) tr.className = "row-readonly-partial";
     let cells = isAdmin
-      ? `<td data-label="Date"><input type="date" value="${row.date}" onchange="updateDaily(${idx},'date',this.value)"></td>`
+      ? `<td data-label="Date"><input type="date" data-field="date" value="${row.date}" onchange="updateDaily(${idx},'date',this.value)"></td>`
       : `<td data-label="Date"><span class="ro-text">${row.date}</span></td>`;
     DAILY_ANALYSTS.forEach(a=>{
       const editable = canEditDailyColumn(a);
       const val = row[a]||"";
       cells += editable
-        ? `<td data-label="${a}"><input type="text" value="${val}" onchange="updateDaily(${idx},'${a}',this.value)"></td>`
+        ? `<td data-label="${a}"><input type="text" data-field="${a}" value="${val}" onchange="updateDaily(${idx},'${a}',this.value)"></td>`
         : `<td data-label="${a}">${val ? `<span class="ro-text">${val}</span>` : `<span class="ro-text ro-muted">—</span>`}</td>`;
     });
     cells += isAdmin
@@ -1908,7 +1947,8 @@ async function updateDaily(idx, field, value){
         if(error) throw error;
       });
       await Promise.all(moves);
-      showToast("Date updated");
+      showToast("Date updated ✓");
+      flashSaved("daily-row-" + idx, "date");
     }catch(err){
       row.date = oldDate;
       renderDaily();
@@ -1932,10 +1972,13 @@ async function updateDaily(idx, field, value){
         { log_date: row.date, analyst_id: analystId, task: value }, { onConflict: "log_date,analyst_id" }
       );
       if(error) throw error;
+      showToast("Task saved ✓");
     }else{
       const { error } = await sb.from("daily_logs").delete().eq("log_date", row.date).eq("analyst_id", analystId);
       if(error) throw error;
+      showToast("Task cleared ✓");
     }
+    flashSaved("daily-row-" + idx, field);
   }catch(err){
     row[field] = prevValue;
     renderDaily();

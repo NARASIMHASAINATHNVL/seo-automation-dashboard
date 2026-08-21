@@ -2,6 +2,43 @@
 
 All notable changes to the SEO Automation & Projects Dashboard.
 
+## 2026-08-21 — Save confirmation for inline edits (Project Tracker + Daily Log)
+
+Inline edits in the Project Tracker saved silently for every field except
+`assignedTo` (only that one showed a toast) — analysts had no visual
+confirmation that a status/priority/date/notes edit had actually been
+saved, since there is no explicit Save/Submit button anywhere in these
+tables. Same silent-save gap existed for the Daily Status Log's per-analyst
+task cells. This adds a clear success confirmation on every successful
+inline write, without adding any Save button or changing table layout.
+
+### Added
+- `flashSaved(rowId, field)` (new helper, next to `showToast`): briefly
+  glows the specific `<input>`/`<select>` that was just saved with a
+  `--good`-colored ring (`.save-flash` / `@keyframes field-saved-flash`,
+  1.2s, auto-removes itself) — a second, at-the-cell confirmation beyond
+  the toast, looked up via the row's `id` (`proj-row-<id>` /
+  `daily-row-<idx>`) and a new `data-field="<field>"` attribute added to
+  every editable cell's input/select (via `selectHtml()` and the
+  `renderProjects()` / `renderDaily()` markup).
+- `PROJECT_FIELD_SAVED_MESSAGES` lookup: per-field success toast wording
+  for `updateProject()` — "Status updated ✓", "Priority updated ✓",
+  "Date assigned saved ✓", "Target date updated ✓", "Completion date
+  saved ✓", "Help flag updated ✓", "Notes saved ✓", "Project name saved
+  ✓".
+
+### Changed
+- `updateProject()`: the success branch now shows a toast for **every**
+  field, not just `assignedTo` (whose existing message wording is
+  unchanged), and calls `flashSaved("proj-row-"+id, field)` after every
+  successful write. The failure path (`friendlyWriteError`, red/danger
+  toast) is untouched.
+- `updateDaily()`: the per-analyst task-cell write (previously fully
+  silent on success) now shows "Task saved ✓" / "Task cleared ✓" and
+  calls `flashSaved("daily-row-"+idx, field)`; the date-row write's
+  existing "Date updated" toast gained a ✓ and a matching flash. Failure
+  path unchanged.
+
 ## 2026-08-21 — Project Tracker visual polish pass
 
 Pure CSS/markup pass to fix the Project Tracker tab looking "clumsy" next
