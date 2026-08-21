@@ -259,6 +259,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
   .sidebar-assignee .assignee-name{font-size:11.5px;color:var(--text-secondary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .sidebar-unassigned{font-size:10.5px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.02em;}
   .sidebar-project-bottom .btn{padding:5px 10px !important;font-size:10.5px !important;}
+  .sidebar-project-bottom select.sidebar-assign-select{width:auto;flex:1 1 120px;padding:5px 7px;font-size:10.5px;}
   .sidebar-pick-pending{display:flex;flex-direction:column;gap:6px;width:100%;}
   .sidebar-requester{font-size:10.5px;font-weight:600;color:var(--text-muted);}
   .sidebar-pick-actions{display:flex;gap:6px;}
@@ -1560,7 +1561,14 @@ async function updateProject(id, field, value){
     return;
   }
   const prevValue = p[field];
+  // A direct admin reassignment supersedes any pending pick request on
+  // this project — remember prior pick state so it can be rolled back if
+  // the write below fails.
+  const prevPickStatus = p.pickStatus;
+  const prevPickRequestedBy = p.pickRequestedBy;
+  const clearsPendingPick = field === "assignedTo" && isAdmin && p.pickStatus === "pending";
   p[field] = value;
+  if(clearsPendingPick){ p.pickStatus = "none"; p.pickRequestedBy = null; }
   renderAll();
   const column = PROJECT_FIELD_TO_COLUMN[field];
   const payload = {};
@@ -1568,8 +1576,23 @@ async function updateProject(id, field, value){
   try{
     const { error } = await sb.from("projects").update(payload).eq("id", id);
     if(error) throw error;
+    if(clearsPendingPick){
+      // pick_status / pick_requested_by are queued-migration columns that
+      // may not exist yet — this reset is defensive/best-effort and must
+      // never undo the assignment above just because it fails.
+      try{
+        const { error: pickErr } = await sb.from("projects")
+          .update({ pick_status: "none", pick_requested_by: null })
+          .eq("id", id);
+        if(pickErr) throw pickErr;
+      }catch(pickErr){ /* non-fatal: pick columns may not exist yet */ }
+    }
+    if(field === "assignedTo"){
+      showToast(value ? `Assigned to ${value}` : "Project unassigned");
+    }
   }catch(err){
     p[field] = prevValue;
+    if(clearsPendingPick){ p.pickStatus = prevPickStatus; p.pickRequestedBy = prevPickRequestedBy; }
     renderAll();
     showToast(friendlyWriteError(err, "project"), "danger");
   }
@@ -1740,9 +1763,20 @@ function renderProjectSidebar(){
         </div>`;
     }else if(!isAdmin && pickStatus === "pending"){
       bottomHtml = `<span class="sidebar-unassigned">Unassigned</span><button class="btn secondary" disabled>Pending approval</button>`;
+    }else if(isAdmin){
+      // No pending request — admin can assign this unassigned project
+      // directly, no request/approval needed (the admin IS the approver).
+      // Reuses updateProject('assignedTo', ...) so it goes through the
+      // exact same Supabase write / rollback / toast path as the Project
+      // Tracker table's assignee dropdown.
+      bottomHtml = `<span class="sidebar-unassigned">Unassigned</span>` +
+        `<select class="sidebar-assign-select" onchange="if(this.value) updateProject('${p.id}','assignedTo',this.value)">` +
+        `<option value="">Assign to…</option>` +
+        ANALYSTS.map(a=>`<option value="${a.replace(/"/g,"&quot;")}">${a}</option>`).join("") +
+        `</select>`;
     }else{
       bottomHtml = `<span class="sidebar-unassigned">Unassigned</span>` +
-        (!isAdmin ? `<button class="btn secondary" onclick="requestPickProject('${p.id}')">Pick this project</button>` : "");
+        `<button class="btn secondary" onclick="requestPickProject('${p.id}')">Pick this project</button>`;
     }
     return `<div class="sidebar-project-row">
         <div class="sidebar-project-top">

@@ -2,6 +2,38 @@
 
 All notable changes to the SEO Automation & Projects Dashboard.
 
+## 2026-08-21 — Direct admin assign/reassign (no pick-request needed)
+
+Admins previously could only change a project's assignee via the
+Project Tracker table's existing assignee dropdown, or indirectly by
+approving an analyst-initiated pick request. This adds a direct
+admin-only assign path from the sidebar too, and makes the two paths
+consistent with each other.
+
+### Added
+- Sidebar (`renderProjectSidebar()`): unassigned projects with no
+  pending pick request now show a compact "Assign to…" dropdown
+  (admin-only, class `sidebar-assign-select`) populated with
+  `ANALYSTS`, styled to match the existing compact sidebar action
+  buttons. Selecting a name calls the same `updateProject(id,
+  'assignedTo', value)` path used by the Project Tracker table, so it
+  goes through identical validation, Supabase write, rollback-on-error,
+  and toast behavior. Non-admins and rows with a pending request are
+  unaffected.
+
+### Changed
+- `updateProject()`: when an admin changes `assignedTo` on a project
+  that has a pending pick request (`pickStatus === 'pending'`), the
+  pending request is now defensively cleared (`pick_status` reset to
+  `'none'`, `pick_requested_by` to `null`) since the admin's direct
+  assignment supersedes it. This secondary write is wrapped in its own
+  try/catch so a missing `pick_status`/`pick_requested_by` column (the
+  columns are still behind a queued migration) never rolls back the
+  assignment itself. Also added a success toast ("Assigned to X" /
+  "Project unassigned") specifically for the `assignedTo` field, since
+  other inline-edited fields don't toast on success and this one
+  benefits from explicit confirmation.
+
 ## 2026-08-20 — Responsive layout & widget sizing pass
 
 CSS/layout-only pass fixing complaints that the UI "isn't responsive" and
