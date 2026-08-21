@@ -65,6 +65,15 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
     --navy-2:#4335a8;
     --accent:#4f46e5;
     --accent-2:#9024d6;
+    /* ============ COLORFUL WIDGET IDENTITY PALETTE — 2026-08-21 ============
+       Secondary accent hues layered onto the existing semantic vars
+       (--blue/--good/--warning/--critical/--navy stay authoritative for
+       meaning; these add richer gradient/aurora tones without touching
+       any existing variable). */
+    --accent-3:#0ea5b8;
+    --accent-4:#059669;
+    --accent-5:#e11d48;
+    --accent-6:#d97706;
     --radius:18px;
     --radius-sm:12px;
     --shadow:0 1px 2px rgba(24,20,60,.04),0 8px 22px -8px rgba(30,22,90,.12),0 22px 46px -22px rgba(30,22,90,.14);
@@ -94,6 +103,10 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
     --navy-2:#5b47c9;
     --accent:#7c74f0;
     --accent-2:#c164f0;
+    --accent-3:#22d3ee;
+    --accent-4:#34d399;
+    --accent-5:#fb7185;
+    --accent-6:#fbbf24;
     --shadow:0 1px 2px rgba(0,0,0,.35),0 8px 24px -8px rgba(0,0,0,.5),0 24px 50px -22px rgba(0,0,0,.55);
     --shadow-hover:0 2px 4px rgba(0,0,0,.4),0 16px 36px -8px rgba(0,0,0,.6),0 34px 64px -20px rgba(0,0,0,.65);
     --shadow-sm:0 1px 2px rgba(0,0,0,.3),0 2px 8px -2px rgba(0,0,0,.4);
@@ -124,6 +137,34 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
       radial-gradient(1000px 460px at 8% -10%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 60%),
       radial-gradient(900px 460px at 96% 0%, color-mix(in srgb, var(--accent-2) 13%, transparent), transparent 58%),
       linear-gradient(165deg, #090a18, #0d0f22 55%, #0a0c1c);
+  }
+
+  /* ============ AURORA / GRADIENT MESH BACKGROUND — 2026-08-21 ============
+     Two slow-drifting blurred blobs, fixed behind all content (z-index:-1).
+     The glass surfaces (header/nav/sidebar/sync-bar/modals) already use
+     backdrop-filter, so this mesh diffuses through them for a layered
+     "2026 SaaS" feel. transform-only animation (no layout properties) +
+     will-change keeps this cheap; prefers-reduced-motion disables drift
+     for users who've asked for less motion. */
+  body::before,body::after{
+    content:"";position:fixed;z-index:-1;pointer-events:none;
+    border-radius:50%;filter:blur(90px);opacity:.55;will-change:transform;
+  }
+  body::before{
+    width:560px;height:560px;top:-180px;left:-140px;
+    background:radial-gradient(circle at 30% 30%, color-mix(in srgb, var(--accent) 60%, transparent), transparent 70%);
+    animation:aurora-drift-a 26s var(--ease) infinite;
+  }
+  body::after{
+    width:620px;height:620px;bottom:-220px;right:-160px;
+    background:radial-gradient(circle at 60% 60%, color-mix(in srgb, var(--accent-2) 55%, transparent), transparent 70%);
+    animation:aurora-drift-b 32s var(--ease) infinite;
+  }
+  body.dark::before,body.dark::after{opacity:.7;}
+  @keyframes aurora-drift-a{0%,100%{transform:translate(0,0) scale(1);}50%{transform:translate(70px,50px) scale(1.18);}}
+  @keyframes aurora-drift-b{0%,100%{transform:translate(0,0) scale(1);}50%{transform:translate(-60px,-70px) scale(1.12);}}
+  @media(prefers-reduced-motion:reduce){
+    body::before,body::after{animation:none;}
   }
   header{
     margin:16px 24px 0;
@@ -234,6 +275,8 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
   .sidebar-header{
     display:flex;align-items:center;justify-content:space-between;gap:8px;
     padding:14px 14px 10px;border-bottom:1px solid var(--surface-border);flex-shrink:0;
+    background:linear-gradient(135deg, color-mix(in srgb, var(--accent) 10%, transparent), color-mix(in srgb, var(--accent-2) 6%, transparent));
+    border-radius:var(--radius) var(--radius) 0 0;
   }
   .sidebar-title{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:800;color:var(--brand-text);text-transform:uppercase;letter-spacing:.05em;white-space:nowrap;}
   .sidebar-count{font-size:10.5px;font-weight:700;color:var(--text-muted);}
@@ -250,7 +293,9 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
   .sidebar-project-row{
     border:1px solid var(--surface-border);border-radius:var(--radius-sm);
     padding:9px 10px;background:var(--surface-2);
+    transition:border-color .15s var(--ease),transform .15s var(--ease),box-shadow .15s var(--ease);
   }
+  .sidebar-project-row:hover{border-color:color-mix(in srgb, var(--accent) 45%, var(--surface-border));box-shadow:var(--shadow-sm);transform:translateX(2px);}
   .sidebar-project-top{display:flex;align-items:center;gap:7px;margin-bottom:6px;}
   .sidebar-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
   .sidebar-project-name{font-size:12.5px;font-weight:700;color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
@@ -300,12 +345,20 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
   .kpi-drilldown-row:hover{background:var(--surface-1);}
   .kpi-trend .trend-up{color:var(--good);font-weight:800;}
   .kpi-trend .trend-flat{color:var(--text-muted);}
-  .kpi.total{border-top-color:var(--navy);} .kpi.total .kpi-icon{color:var(--brand-text);background:color-mix(in srgb, var(--navy) 15%, transparent);} .kpi.total .kpi-bar-fill{background:var(--navy);}
-  .kpi.assigned{border-top-color:var(--neutral);} .kpi.assigned .kpi-bar-fill{background:var(--neutral);}
-  .kpi.ongoing{border-top-color:var(--blue);} .kpi.ongoing .kpi-icon{color:var(--blue);background:color-mix(in srgb, var(--blue) 15%, transparent);} .kpi.ongoing .kpi-bar-fill{background:var(--blue);}
-  .kpi.review{border-top-color:var(--warning);} .kpi.review .kpi-icon{color:var(--warning);background:color-mix(in srgb, var(--warning) 15%, transparent);} .kpi.review .kpi-bar-fill{background:var(--warning);}
-  .kpi.done{border-top-color:var(--good);} .kpi.done .kpi-icon{color:var(--good);background:color-mix(in srgb, var(--good) 15%, transparent);} .kpi.done .kpi-bar-fill{background:var(--good);}
-  .kpi.help{border-top-color:var(--critical);} .kpi.help .kpi-icon{color:var(--critical);background:color-mix(in srgb, var(--critical) 15%, transparent);} .kpi.help .kpi-bar-fill{background:var(--critical);}
+  /* ============ KPI CARD COLOR IDENTITY — 2026-08-21 ============
+     Every category now carries a soft two-tone gradient wash (built with
+     color-mix against --surface-2, so it themes correctly light/dark)
+     plus a matching hover glow, instead of a plain surface with only a
+     colored top border. The semantic hue per category (navy=total,
+     neutral=assigned, blue=ongoing, warning=review, good=done,
+     critical=help) is unchanged from the rest of the app (status pills,
+     table row tints) — only richer background/glow treatment is added. */
+  .kpi.total{border-top-color:var(--navy);background:linear-gradient(135deg, color-mix(in srgb, var(--navy) 14%, var(--surface-2)) 0%, color-mix(in srgb, var(--accent-2) 10%, var(--surface-2)) 100%);} .kpi.total .kpi-icon{color:var(--brand-text);background:color-mix(in srgb, var(--navy) 18%, transparent);} .kpi.total .kpi-bar-fill{background:var(--navy);} .kpi.total:hover{box-shadow:var(--shadow-hover), 0 0 24px -10px color-mix(in srgb, var(--navy) 55%, transparent);}
+  .kpi.assigned{border-top-color:var(--neutral);background:linear-gradient(135deg, color-mix(in srgb, var(--accent-3) 12%, var(--surface-2)) 0%, color-mix(in srgb, var(--neutral) 9%, var(--surface-2)) 100%);} .kpi.assigned .kpi-icon{color:var(--neutral);background:color-mix(in srgb, var(--accent-3) 18%, transparent);} .kpi.assigned .kpi-bar-fill{background:var(--neutral);} .kpi.assigned:hover{box-shadow:var(--shadow-hover), 0 0 24px -10px color-mix(in srgb, var(--accent-3) 50%, transparent);}
+  .kpi.ongoing{border-top-color:var(--blue);background:linear-gradient(135deg, color-mix(in srgb, var(--blue) 14%, var(--surface-2)) 0%, color-mix(in srgb, var(--accent-6) 8%, var(--surface-2)) 100%);} .kpi.ongoing .kpi-icon{color:var(--blue);background:color-mix(in srgb, var(--blue) 16%, transparent);} .kpi.ongoing .kpi-bar-fill{background:var(--blue);} .kpi.ongoing:hover{box-shadow:var(--shadow-hover), 0 0 24px -10px color-mix(in srgb, var(--blue) 50%, transparent);}
+  .kpi.review{border-top-color:var(--warning);background:linear-gradient(135deg, color-mix(in srgb, var(--gold) 16%, var(--surface-2)) 0%, color-mix(in srgb, var(--warning) 9%, var(--surface-2)) 100%);} .kpi.review .kpi-icon{color:var(--warning);background:color-mix(in srgb, var(--warning) 16%, transparent);} .kpi.review .kpi-bar-fill{background:var(--warning);} .kpi.review:hover{box-shadow:var(--shadow-hover), 0 0 24px -10px color-mix(in srgb, var(--gold) 55%, transparent);}
+  .kpi.done{border-top-color:var(--good);background:linear-gradient(135deg, color-mix(in srgb, var(--good) 14%, var(--surface-2)) 0%, color-mix(in srgb, var(--accent-4) 9%, var(--surface-2)) 100%);} .kpi.done .kpi-icon{color:var(--good);background:color-mix(in srgb, var(--good) 16%, transparent);} .kpi.done .kpi-bar-fill{background:var(--good);} .kpi.done:hover{box-shadow:var(--shadow-hover), 0 0 24px -10px color-mix(in srgb, var(--good) 50%, transparent);}
+  .kpi.help{border-top-color:var(--critical);background:linear-gradient(135deg, color-mix(in srgb, var(--critical) 14%, var(--surface-2)) 0%, color-mix(in srgb, var(--accent-5) 9%, var(--surface-2)) 100%);} .kpi.help .kpi-icon{color:var(--critical);background:color-mix(in srgb, var(--critical) 16%, transparent);} .kpi.help .kpi-bar-fill{background:var(--critical);} .kpi.help:hover{box-shadow:var(--shadow-hover), 0 0 24px -10px color-mix(in srgb, var(--critical) 50%, transparent);}
 
   .card{
     background:var(--surface-2);border:1px solid var(--surface-border);border-radius:var(--radius);
@@ -358,10 +411,10 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
     outline:none;border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent);
   }
   .status-pill{padding:3px 9px;border-radius:20px;font-size:11.5px;font-weight:bold;color:#fff;display:inline-block;}
-  .pill-assigned{background:var(--neutral);}
-  .pill-ongoing{background:var(--blue);}
-  .pill-review{background:var(--warning);color:#3a2c00;}
-  .pill-done{background:var(--good);}
+  .pill-assigned{background:linear-gradient(135deg,var(--neutral),color-mix(in srgb, var(--neutral) 70%, var(--accent-3)));}
+  .pill-ongoing{background:linear-gradient(135deg,var(--blue),color-mix(in srgb, var(--blue) 65%, var(--accent-2)));}
+  .pill-review{background:linear-gradient(135deg,var(--warning),var(--gold));color:#3a2c00;}
+  .pill-done{background:linear-gradient(135deg,var(--good),color-mix(in srgb, var(--good) 65%, var(--accent-4)));}
   .help-yes{color:var(--critical);font-weight:bold;}
 
   /* Project Tracker row tints - "not started" (status Assigned) vs
@@ -384,10 +437,10 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
     box-shadow:var(--shadow-sm);
   }
   button.btn svg{width:14px;height:14px;flex-shrink:0;}
-  button.btn:hover{box-shadow:0 4px 12px -3px rgba(31,56,100,.5);}
-  button.btn:active{transform:translateY(1px);}
+  button.btn:hover{box-shadow:0 8px 20px -6px color-mix(in srgb, var(--navy) 60%, transparent);transform:translateY(-2px) scale(1.015);}
+  button.btn:active{transform:translateY(1px) scale(1);}
   button.btn.secondary{background:var(--surface-2);color:var(--brand-text);border:1px solid var(--surface-border);box-shadow:none;}
-  button.btn.secondary:hover{border-color:var(--navy);background:var(--surface-1);}
+  button.btn.secondary:hover{border-color:var(--navy);background:var(--surface-1);box-shadow:0 6px 16px -8px color-mix(in srgb, var(--navy) 35%, transparent);transform:translateY(-2px) scale(1.015);}
   button.btn.danger{background:var(--surface-2);color:var(--critical);border:1px solid var(--surface-border);padding:5px 10px;font-size:12px;box-shadow:none;}
   button.btn.danger:hover{background:color-mix(in srgb, var(--critical) 12%, var(--surface-2));border-color:var(--critical);}
   .spacer{flex:1;}
@@ -435,10 +488,10 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
   .status-select-wrap{display:inline-block;border-radius:999px;box-shadow:var(--shadow-sm);}
   .status-select-wrap select{border:none;font-weight:700;color:#fff;padding:6px 10px;border-radius:999px;background-color:var(--neutral);}
   .status-select-wrap select:focus{box-shadow:0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent);}
-  .status-select-wrap.pill-assigned select{background-color:var(--neutral);}
-  .status-select-wrap.pill-ongoing select{background-color:var(--blue);}
-  .status-select-wrap.pill-review select{background-color:var(--warning);color:#3a2c00;}
-  .status-select-wrap.pill-done select{background-color:var(--good);}
+  .status-select-wrap.pill-assigned select{background-image:linear-gradient(135deg,var(--neutral),color-mix(in srgb, var(--neutral) 70%, var(--accent-3)));background-color:var(--neutral);}
+  .status-select-wrap.pill-ongoing select{background-image:linear-gradient(135deg,var(--blue),color-mix(in srgb, var(--blue) 65%, var(--accent-2)));background-color:var(--blue);}
+  .status-select-wrap.pill-review select{background-image:linear-gradient(135deg,var(--warning),var(--gold));background-color:var(--warning);color:#3a2c00;}
+  .status-select-wrap.pill-done select{background-image:linear-gradient(135deg,var(--good),color-mix(in srgb, var(--good) 65%, var(--accent-4)));background-color:var(--good);}
 
   .priority-select-wrap select{border-radius:999px;font-weight:700;text-align:center;}
   .priority-select-wrap[data-priority="High"] select{color:var(--critical);border-color:color-mix(in srgb, var(--critical) 45%, var(--surface-border));background-color:color-mix(in srgb, var(--critical) 10%, var(--surface-2));}
@@ -483,7 +536,8 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
   }
   .modal-overlay.open{display:flex;}
   .modal-card{
-    background:var(--surface-2);border:1px solid var(--surface-border);border-radius:var(--radius);
+    background:var(--surface-glass);backdrop-filter:blur(20px);
+    border:1px solid var(--surface-border);border-radius:var(--radius);
     box-shadow:var(--shadow-lg);width:100%;max-width:760px;max-height:85vh;
     display:flex;flex-direction:column;overflow:hidden;animation:auth-in .2s var(--ease);
   }

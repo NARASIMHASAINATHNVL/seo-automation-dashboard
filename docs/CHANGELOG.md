@@ -2,6 +2,64 @@
 
 All notable changes to the SEO Automation & Projects Dashboard.
 
+## 2026-08-21 — Colorful 2026 SaaS visual identity pass
+
+Pure CSS/markup styling pass in response to feedback that the dashboard
+"looks white and blue, like generic AI-generated UI." Layered a genuinely
+colorful, modern visual identity on top of the existing structure — no
+JS logic, table row logic, KPI drilldown, save-confirmation, or
+assign-dropdown behavior touched. All new colors are added as new CSS
+custom properties (`--accent-3/4/5/6`) alongside the existing ones
+(`--brand-text`, `--brand-gradient`, `--good`, `--warning`, `--critical`,
+`--surface-1/2`, `--accent`, `--accent-2`, `--navy`, `--shadow-*`, etc.),
+none of which were renamed or removed, and every addition is defined for
+both the light `:root` block and the `body.dark` block.
+
+### Added
+- Animated aurora/gradient-mesh background: two large blurred
+  (`filter:blur(90px)`), low-opacity radial blobs pinned to `body::before`
+  / `body::after` with `position:fixed` and a `transform`-only drift
+  animation (`@keyframes aurora-drift-a/b`, 26s/32s, `will-change:
+  transform`) so it's cheap and never triggers layout. Respects
+  `prefers-reduced-motion`. Because the header, nav, sidebar, sync-bar,
+  and (now) modals already use `var(--surface-glass)` +
+  `backdrop-filter:blur(...)`, the mesh diffuses through them for a
+  layered look rather than sitting flat behind opaque panels.
+- Per-category KPI card color identity (Dashboard's main 6-card row and
+  My Work's 5-card row, since both share the `.kpi.total/.assigned/
+  .ongoing/.review/.done/.help` classes): each now gets a soft two-tone
+  `linear-gradient` background built with `color-mix(in srgb, <hue> %,
+  var(--surface-2))` plus a matching hover glow shadow, instead of a
+  plain white card with only a colored top border and icon tint.
+- Status pills (`.pill-assigned/.pill-ongoing/.pill-review/.pill-done`)
+  and the matching `.status-select-wrap` dropdown pills now use a subtle
+  two-tone gradient fill instead of a flat single color.
+- Modal cards (`.modal-card`) upgraded from an opaque `var(--surface-2)`
+  panel to `var(--surface-glass)` + `backdrop-filter:blur(20px)`,
+  matching the glass treatment already used by header/nav/sidebar/auth
+  card.
+- Sidebar polish: `.sidebar-header` gets a subtle accent gradient tint;
+  `.sidebar-project-row` gets a hover state (accent border, shadow,
+  slight rightward shift) — previously static.
+- Buttons: `button.btn` and `button.btn.secondary` hover states now lift
+  (`translateY(-2px) scale(1.015)`) with a colored glow shadow instead of
+  only changing box-shadow depth.
+
+### Judgment calls
+- Kept the existing semantic color mapping intact (grey/slate = Assigned,
+  blue = Ongoing, amber/gold = Review, green = Done, red = Help/Critical,
+  indigo-violet = Total) rather than switching hues per the task brief's
+  literal example (e.g. "Ongoing = amber/orange"), since that mapping is
+  already used consistently elsewhere in the app (status pills, priority
+  pills, table row tints, `STATUS_HEX`) and changing it there would have
+  broken an established mental model. Instead, richer secondary hues
+  (`--accent-3` cyan, `--accent-4` emerald, `--accent-5` rose, `--accent-6`
+  amber) were blended in as gradient *accents* alongside each category's
+  existing semantic color, to add visual distinctiveness without
+  contradicting it.
+- Left `STATUS_HEX`/chart color mappings, KPI drilldown modal logic, and
+  all table row JS untouched per scope.
+
 ## 2026-08-21 — Mobile responsiveness pass
 
 Full mobile pass across every tab (My Work, Dashboard, Project Tracker,
