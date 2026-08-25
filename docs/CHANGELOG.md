@@ -2,6 +2,57 @@
 
 All notable changes to the SEO Automation & Projects Dashboard.
 
+## 2026-08-25 — Add Project modal (replaces instant blank-row insert)
+
+Analyst feedback: "Project tracker looks too clumsy and analysts are
+finding it very difficult to add new projects" and "When we add any
+project it is automatically saving, give a button to save or edit the
+project." Previously, clicking "+ Add Project" immediately inserted a
+blank/nameless row into the shared Supabase `projects` table, then relied
+on the existing per-cell inline auto-save (`updateProject()`) to fill it
+in field by field — each field change a separate write + toast + flash.
+This scoped change only touches the Add Project creation flow; the
+inline per-cell auto-save editing on already-created rows, delete/assign
+permission logic, KPI drilldown, and mobile/visual-identity CSS are all
+unchanged.
+
+### Added
+- New "Add Project" modal (`#addProjectModalOverlay` / `.modal-card`),
+  following the same structural pattern as the existing Change Password
+  and Tool Usage Reason modals (overlay click-outside-to-close, header
+  with close button, `.modal-card-body` form, `.modal-card-footer`
+  actions). Fields: Project Name (required), Assigned To (`ANALYSTS`
+  dropdown — locked to self for non-admins, defaults to "— Unassigned —"
+  for admins), Priority (`PRIORITIES`), Date Assigned (defaults to
+  today), Target Date (optional), Notes (optional). Status/Date
+  Completed/Help Needed are intentionally left out of the create form —
+  status still defaults to `"Assigned"` and those fields remain editable
+  inline afterward as before.
+- `openAddProjectModal()` / `closeAddProjectModal()` — open resets and
+  pre-fills the form (today's date, assignee locked/defaulted per role);
+  registered in the shared Escape-key modal listener alongside the other
+  modals.
+- `submitAddProjectForm()` — performs one single Supabase insert with
+  every filled-in field at once (previously each field triggered its own
+  write). Blocks submission with an inline validation message
+  (`#addProjectHint`, styled via `var(--critical)`) if Project Name is
+  empty, which eliminates the nameless "ghost row" that could previously
+  be left behind in the shared live table. On success: maps the returned
+  row via the existing `mapProjectRow()`, pushes it into `projects`,
+  calls `renderAll()`, shows a success toast, and closes the modal. On
+  failure: keeps the modal open with everything the analyst typed intact
+  and surfaces the error via the existing `friendlyWriteError(err,
+  "project")` + `showToast(..., "danger")`, mirroring the same
+  keep-modal-open-on-failure pattern used by the Tool Usage Reason
+  modal's submit handler.
+
+### Changed
+- "+ Add Project" button now calls `openAddProjectModal()` instead of
+  the old `addProjectRow()`.
+- `addProjectRow()` removed; its instant-insert logic was replaced by
+  `submitAddProjectForm()`, which now performs one insert with real
+  values instead of a blank placeholder row.
+
 ## 2026-08-21 — Delight layer: Lottie micro-animations + confetti celebrations
 
 Additive-only "delight" pass on top of the existing toast/`flashSaved`

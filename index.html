@@ -1107,7 +1107,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
     <div class="card">
       <div class="toolbar projects-toolbar">
         <div class="toolbar-group toolbar-primary">
-          <button class="btn" onclick="addProjectRow()">
+          <button class="btn" onclick="openAddProjectModal()">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
             Add Project
           </button>
@@ -1402,6 +1402,33 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
       <div class="modal-card-footer">
         <button type="button" class="btn secondary" onclick="closeToolUsageReasonModal()">Cancel</button>
         <button type="submit" class="btn" id="toolUsageReasonSubmitBtn">Submit</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ============ ADD PROJECT MODAL (replaces instant blank-row insert with a real create form, single insert on submit) ============ -->
+<div class="modal-overlay" id="addProjectModalOverlay" onclick="if(event.target===this) closeAddProjectModal()">
+  <div class="modal-card" style="max-width:460px;">
+    <div class="modal-card-header">
+      <h2>Add Project</h2>
+      <button type="button" class="modal-close-btn" onclick="closeAddProjectModal()" aria-label="Close">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <form id="addProjectForm" onsubmit="submitAddProjectForm(event)">
+      <div class="modal-card-body">
+        <label>Project name<input type="text" id="addProjectNameInput" placeholder="e.g. Bulk meta description refresh" required></label>
+        <label style="margin-top:10px;display:block;">Assigned to<select id="addProjectAssignedToInput"></select></label>
+        <label style="margin-top:10px;display:block;">Priority<select id="addProjectPriorityInput"></select></label>
+        <label style="margin-top:10px;display:block;">Date assigned<input type="date" id="addProjectDateAssignedInput"></label>
+        <label style="margin-top:10px;display:block;">Target date (optional)<input type="date" id="addProjectTargetDateInput"></label>
+        <label style="margin-top:10px;display:block;">Notes (optional)<input type="text" id="addProjectNotesInput" placeholder="Any context worth noting"></label>
+        <p class="hint" id="addProjectHint" style="margin-top:8px;">Project name is required — Status starts as "Assigned" and can be updated from the table afterward.</p>
+      </div>
+      <div class="modal-card-footer">
+        <button type="button" class="btn secondary" onclick="closeAddProjectModal()">Cancel</button>
+        <button type="submit" class="btn" id="addProjectSubmitBtn">Create Project</button>
       </div>
     </form>
   </div>
@@ -1902,21 +1929,89 @@ async function updateProject(id, field, value){
     showToast(friendlyWriteError(err, "project"), "danger");
   }
 }
-async function addProjectRow(){
+/* ------------------------------------------------------------
+   ADD PROJECT MODAL — replaces the old instant blank-row insert
+   (addProjectRow) with a real create form. Nothing is written to
+   Supabase until "Create Project" is submitted, and it's a single
+   insert with every field already filled in — no more one save
+   per cell on a brand-new row. (2026-08-25)
+   ------------------------------------------------------------ */
+function openAddProjectModal(){
+  if(!currentProfile){
+    showToast("Sign in to add a project.", "danger");
+    return;
+  }
   const isAdmin = isAdminUser();
-  const assignedTo = isAdmin ? null : (currentProfile ? currentProfile.id : null);
+  const nameInput = document.getElementById("addProjectNameInput");
+  nameInput.value = "";
+  const assignedSel = document.getElementById("addProjectAssignedToInput");
+  assignedSel.innerHTML = ["", ...ANALYSTS].map(v=>`<option value="${v}">${v===""?"— Unassigned —":v}</option>`).join("");
+  if(isAdmin){
+    assignedSel.value = "";
+    assignedSel.disabled = false;
+  }else{
+    assignedSel.value = currentProfile.full_name;
+    assignedSel.disabled = true;
+  }
+  const prioritySel = document.getElementById("addProjectPriorityInput");
+  prioritySel.innerHTML = PRIORITIES.map(v=>`<option value="${v}">${v===""?"—":v}</option>`).join("");
+  prioritySel.value = "";
+  document.getElementById("addProjectDateAssignedInput").value = new Date().toISOString().slice(0,10);
+  document.getElementById("addProjectTargetDateInput").value = "";
+  document.getElementById("addProjectNotesInput").value = "";
+  const hint = document.getElementById("addProjectHint");
+  hint.textContent = "Project name is required — Status starts as \"Assigned\" and can be updated from the table afterward.";
+  hint.style.color = "var(--text-muted)";
+  document.getElementById("addProjectModalOverlay").classList.add("open");
+  nameInput.focus();
+}
+function closeAddProjectModal(){
+  document.getElementById("addProjectModalOverlay").classList.remove("open");
+}
+async function submitAddProjectForm(evt){
+  evt.preventDefault();
+  const hint = document.getElementById("addProjectHint");
+  const nameInput = document.getElementById("addProjectNameInput");
+  const name = nameInput.value.trim();
+  if(!name){
+    hint.textContent = "Project name is required before you can create this project.";
+    hint.style.color = "var(--critical)";
+    nameInput.focus();
+    return;
+  }
+  const isAdmin = isAdminUser();
+  const assignedName = document.getElementById("addProjectAssignedToInput").value;
+  const assignedTo = isAdmin ? (profileIdByName(assignedName) || null) : (currentProfile ? currentProfile.id : null);
+  const priority = document.getElementById("addProjectPriorityInput").value;
+  const dateAssigned = document.getElementById("addProjectDateAssignedInput").value || null;
+  const targetDate = document.getElementById("addProjectTargetDateInput").value || null;
+  const notes = document.getElementById("addProjectNotesInput").value.trim();
   const insertPayload = {
-    project:"", assigned_to:assignedTo, status:"Assigned", priority:"", date_assigned:null, target_date:null,
-    date_completed:null, help_needed:"", notes:"", created_by: currentProfile ? currentProfile.id : null
+    project: name, assigned_to: assignedTo, status: "Assigned", priority: priority,
+    date_assigned: dateAssigned, target_date: targetDate,
+    date_completed: null, help_needed: "", notes: notes,
+    created_by: currentProfile ? currentProfile.id : null
   };
+  const btn = document.getElementById("addProjectSubmitBtn");
+  btn.disabled = true;
+  btn.textContent = "Creating…";
   try{
     const { data, error } = await sb.from("projects").insert(insertPayload).select().single();
     if(error) throw error;
     projects.push(mapProjectRow(data));
     renderAll();
-    showToast(isAdmin ? "Project added — pick an assignee in the row below" : "Project added — assigned to you");
+    showToast(assignedTo ? `Project created — assigned to ${profileNameById(assignedTo)}` : "Project created — unassigned");
+    closeAddProjectModal();
   }catch(err){
-    showToast(friendlyWriteError(err, "project"), "danger");
+    // Keep the modal open with everything the analyst typed intact —
+    // mirrors handleToolUsageReasonSubmit's failure handling below.
+    const msg = friendlyWriteError(err, "project");
+    showToast(msg, "danger");
+    hint.textContent = msg;
+    hint.style.color = "var(--critical)";
+  }finally{
+    btn.disabled = false;
+    btn.textContent = "Create Project";
   }
 }
 async function deleteProject(id){
@@ -2983,6 +3078,8 @@ document.addEventListener("keydown", function(e){
   if(overlay && overlay.classList.contains("open")) closeAnalystProfileModal();
   const toolUsageOverlay = document.getElementById("toolUsageReasonModalOverlay");
   if(toolUsageOverlay && toolUsageOverlay.classList.contains("open")) closeToolUsageReasonModal();
+  const addProjectOverlay = document.getElementById("addProjectModalOverlay");
+  if(addProjectOverlay && addProjectOverlay.classList.contains("open")) closeAddProjectModal();
   const kpiDrilldownOverlay = document.getElementById("kpiDrilldownModalOverlay");
   if(kpiDrilldownOverlay && kpiDrilldownOverlay.classList.contains("open")) closeKpiDrilldownModal();
 });
