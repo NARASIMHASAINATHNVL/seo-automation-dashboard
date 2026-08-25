@@ -556,6 +556,15 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
     display:flex;align-items:center;justify-content:center;border-radius:6px;
   }
   .modal-close-btn:hover{background:var(--surface-1);color:var(--text-primary);}
+  /* Several modals wrap .modal-card-body + .modal-card-footer in a <form>,
+     which by default is a plain block box and breaks the flex-shrink chain
+     below it (the form just grows to content height, pushing the footer
+     past .modal-card's max-height/overflow:hidden and off-screen on short
+     viewports). Making the form itself participate in the column flex
+     layout — and letting it, not modal-card-body, be the shrinkable item —
+     restores the intended "header fixed, body scrolls, footer fixed" modal
+     behavior for every modal that uses this <form> pattern. */
+  .modal-card>form{display:flex;flex-direction:column;flex:1 1 auto;min-height:0;overflow:hidden;}
   .modal-card-body{padding:16px 18px;overflow:auto;flex:1 1 auto;min-height:0;}
   .modal-card-footer{
     display:flex;align-items:center;justify-content:flex-end;gap:10px;
