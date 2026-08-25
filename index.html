@@ -687,9 +687,22 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
     width:28px;height:28px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;
     background:linear-gradient(135deg,var(--navy),var(--accent-2));color:#fff;font-size:12px;font-weight:700;
   }
+  img.user-avatar{object-fit:cover;}
   .user-name{font-size:12.5px;font-weight:700;color:var(--text-primary);white-space:nowrap;max-width:140px;overflow:hidden;text-overflow:ellipsis;}
   .sign-out-btn{padding:6px 12px !important;font-size:11.5px !important;}
   @media(max-width:520px){ .user-name{display:none;} }
+
+  /* ============ AVATAR UPLOAD (header chip + Analyst Profile modal, self-view only) ============ */
+  .avatar-upload-wrap{position:relative;display:inline-flex;flex-shrink:0;cursor:pointer;}
+  .avatar-upload-wrap:hover .avatar-upload-badge{filter:brightness(1.12);}
+  .avatar-upload-badge{
+    position:absolute;right:-2px;bottom:-2px;width:14px;height:14px;border-radius:50%;
+    background:var(--brand-gradient);color:#fff;display:flex;align-items:center;justify-content:center;
+    border:2px solid var(--surface-2);box-shadow:var(--shadow-sm);transition:opacity .15s,filter .15s;
+  }
+  .avatar-upload-badge svg{width:8px;height:8px;flex-shrink:0;}
+  .ap-avatar-wrap .avatar-upload-badge{width:18px;height:18px;border:2px solid var(--surface-1);}
+  .ap-avatar-wrap .avatar-upload-badge svg{width:10px;height:10px;}
 
   /* ============ ROLE BADGE / PERMISSIONS UI ============ */
   .role-pill{
@@ -710,6 +723,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
     background:linear-gradient(135deg,var(--navy),var(--accent-2));color:#fff;font-size:9px;font-weight:700;
     flex-shrink:0;letter-spacing:0;
   }
+  img.mini-avatar{object-fit:cover;}
   .assignee-cell{display:inline-flex;align-items:center;gap:7px;min-width:0;}
   .assignee-cell .assignee-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12.5px;color:var(--text-primary);}
   .th-analyst{display:inline-flex;align-items:center;gap:6px;}
@@ -809,6 +823,8 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
     width:52px;height:52px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;
     background:linear-gradient(135deg,var(--navy),var(--accent-2));color:#fff;font-size:18px;font-weight:700;box-shadow:var(--shadow-sm);
   }
+  img.ap-avatar-lg{object-fit:cover;}
+  .ap-avatar-wrap{position:relative;display:inline-flex;flex-shrink:0;}
   .ap-header-name{display:flex;align-items:center;gap:8px;font-size:16px;font-weight:800;color:var(--text-primary);flex-wrap:wrap;}
   .ap-section-title{font-size:11px;font-weight:800;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.05em;margin:16px 0 8px;}
   .ap-section-title:first-of-type{margin-top:0;}
@@ -941,7 +957,11 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
   <div class="header-actions">
     <span class="badge" id="teamBadge"><span class="dot" style="background:var(--good)"></span>0 team members</span>
     <div class="user-chip" id="userChip">
-      <span class="user-avatar" id="userAvatar">?</span>
+      <span class="avatar-upload-wrap" id="userAvatarWrap" title="Click to update your profile photo" onclick="triggerAvatarUpload()">
+        <span class="user-avatar" id="userAvatar">?</span>
+        <span class="avatar-upload-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg></span>
+      </span>
+      <input type="file" id="avatarFileInput" accept="image/*" style="display:none;" onchange="handleAvatarFileChange(event)">
       <span class="user-name" id="userName">—</span>
       <span class="role-pill" id="roleBadge" title="Your permission level"></span>
       <button class="btn secondary" onclick="openChangePasswordModal()" title="Change your password">Change Password</button>
@@ -1652,8 +1672,16 @@ function isAdminUser(){ return !!(currentProfile && currentProfile.is_admin); }
 function initialsOf(name){
   return (name||"?").trim().split(/\s+/).map(w=>w[0]).slice(0,2).join("").toUpperCase() || "?";
 }
-function avatarHtml(name){
+const CAMERA_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>';
+/* Renders a small circular avatar: a real photo (profiles.avatar_url)
+   when one is set, falling back to initials otherwise. avatarUrl is
+   optional — when omitted, it's looked up from PROFILES by name so
+   every existing call site (which only ever passed a name) picks up
+   uploaded photos automatically. */
+function avatarHtml(name, avatarUrl){
   if(!name) return "";
+  const url = typeof avatarUrl !== "undefined" ? avatarUrl : (profileByName(name) || {}).avatar_url;
+  if(url) return `<img class="mini-avatar" src="${url}" alt="${name}" title="${name}">`;
   return `<span class="mini-avatar" title="${name}">${initialsOf(name)}</span>`;
 }
 function viewOnlyTag(title){
@@ -2353,6 +2381,81 @@ function renderDailyHeader(){
 function profileByName(name){ return PROFILES.find(p=>p.full_name===name); }
 function profileIdByName(name){ const p = profileByName(name); return p ? p.id : null; }
 function profileNameById(id){ const p = PROFILES.find(x=>x.id===id); return p ? p.full_name : ""; }
+
+/* ============================================================
+   AVATAR UPLOAD — lets an analyst set their own profile photo.
+   Shared by the header user chip and the Analyst Profile modal
+   (self-view only, wired up in openAnalystProfile()). Uploads to
+   the public "avatars" Storage bucket at <profileId>/avatar.<ext>
+   with upsert:true so re-uploads cleanly overwrite the old photo,
+   then writes the public URL onto profiles.avatar_url.
+   ============================================================ */
+let avatarUploadBusy = false;
+function triggerAvatarUpload(){
+  if(!currentProfile){ showToast("You need to be signed in to update your photo.", "danger"); return; }
+  if(avatarUploadBusy) return;
+  const input = document.getElementById("avatarFileInput");
+  if(input) input.click();
+}
+async function handleAvatarFileChange(evt){
+  const file = evt.target.files && evt.target.files[0];
+  evt.target.value = ""; // reset so choosing the same file again still fires "change"
+  if(!file) return;
+  await handleAvatarUpload(file);
+}
+function setAvatarUploadBusyUi(busy){
+  document.querySelectorAll(".avatar-upload-wrap").forEach(el=>{
+    el.style.pointerEvents = busy ? "none" : "";
+    el.style.opacity = busy ? "0.55" : "";
+  });
+}
+async function handleAvatarUpload(file){
+  if(!currentProfile){ showToast("You need to be signed in to update your photo.", "danger"); return; }
+  if(avatarUploadBusy){ return; }
+  if(!file.type || !file.type.startsWith("image/")){
+    showToast("Please choose an image file.", "danger");
+    return;
+  }
+  if(file.size > 5 * 1024 * 1024){
+    showToast("That image is too large — please choose a file under 5MB.", "danger");
+    return;
+  }
+  avatarUploadBusy = true;
+  setAvatarUploadBusyUi(true);
+  showToast("Uploading photo…");
+  try{
+    const extMatch = /\.([a-zA-Z0-9]+)$/.exec(file.name || "");
+    const ext = (extMatch ? extMatch[1] : "jpg").toLowerCase().replace(/[^a-z0-9]/g,"") || "jpg";
+    const path = `${currentProfile.id}/avatar.${ext}`;
+    const { error: uploadErr } = await sb.storage.from("avatars").upload(path, file, { upsert: true, contentType: file.type });
+    if(uploadErr) throw uploadErr;
+    const { data: urlData } = sb.storage.from("avatars").getPublicUrl(path);
+    if(!urlData || !urlData.publicUrl) throw new Error("Could not get a public URL for the uploaded photo.");
+    const publicUrl = `${urlData.publicUrl}?t=${Date.now()}`; // cache-bust so re-uploads show immediately
+    const { error: updateErr } = await sb.from("profiles").update({ avatar_url: publicUrl }).eq("id", currentProfile.id);
+    if(updateErr) throw updateErr;
+
+    currentProfile.avatar_url = publicUrl;
+    const idx = PROFILES.findIndex(p=>p.id===currentProfile.id);
+    if(idx>=0) PROFILES[idx] = { ...PROFILES[idx], avatar_url: publicUrl };
+
+    updateHeaderUser();
+    renderAll();
+    renderTeam();
+    if(typeof renderDailyHeader === "function") renderDailyHeader();
+    if(typeof renderDaily === "function") renderDaily();
+    const apOverlay = document.getElementById("analystProfileModalOverlay");
+    if(apOverlay && apOverlay.classList.contains("open")){
+      openAnalystProfile(currentProfile.id);
+    }
+    showToast("Profile photo updated.");
+  }catch(err){
+    showToast(friendlyWriteError(err, "your profile photo"), "danger");
+  }finally{
+    avatarUploadBusy = false;
+    setAvatarUploadBusyUi(false);
+  }
+}
 /* Rebuilds the ANALYSTS / DAILY_ANALYSTS name lists from the raw
    PROFILES rows fetched from Supabase. Called after every load
    and every realtime profiles change. */
@@ -2954,9 +3057,19 @@ function openAnalystProfile(profileId){
   const ttc = computeTimeToCompletion();
   const avgDaysLabel = ttc.perAnalyst[name] ? `${ttc.perAnalyst[name].avgDays}d` : "—";
 
+  const isSelf = !!(currentProfile && currentProfile.id === profileId);
+  const apAvatarInner = profile.avatar_url
+    ? `<img class="ap-avatar-lg" src="${profile.avatar_url}" alt="${name}" title="${name}">`
+    : `<span class="ap-avatar-lg">${initialsOf(name)}</span>`;
+  const apAvatarHtml = isSelf
+    ? `<span class="ap-avatar-wrap avatar-upload-wrap" title="Click to update your profile photo" onclick="triggerAvatarUpload()">
+        ${apAvatarInner}
+        <span class="avatar-upload-badge">${CAMERA_ICON}</span>
+      </span>`
+    : apAvatarInner;
   const headerHtml = `
     <div class="ap-header">
-      <span class="ap-avatar-lg">${initialsOf(name)}</span>
+      ${apAvatarHtml}
       <div>
         <div class="ap-header-name">${name}${profile.is_admin ? `<span class="role-pill is-admin">${SHIELD_ICON}Admin</span>` : ""}</div>
       </div>
@@ -4407,9 +4520,17 @@ function showApp(){
 }
 function updateHeaderUser(){
   const name = currentProfile ? currentProfile.full_name : (currentUser && currentUser.email ? currentUser.email.split("@")[0] : "—");
-  const initials = initialsOf(name);
   document.getElementById("userName").textContent = name;
-  document.getElementById("userAvatar").textContent = initials;
+  const avatarEl = document.getElementById("userAvatar");
+  if(avatarEl){
+    const url = currentProfile && currentProfile.avatar_url;
+    if(url){
+      avatarEl.outerHTML = `<img class="user-avatar" id="userAvatar" src="${url}" alt="${name}" title="${name}">`;
+    }else{
+      avatarEl.className = "user-avatar";
+      avatarEl.textContent = initialsOf(name);
+    }
+  }
   const roleBadge = document.getElementById("roleBadge");
   if(roleBadge){
     if(!currentProfile){

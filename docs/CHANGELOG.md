@@ -2,6 +2,60 @@
 
 All notable changes to the SEO Automation & Projects Dashboard.
 
+## 2026-08-25 — Profile photo upload & display
+
+The only avatar rendering in the app (`avatarHtml(name)`) always rendered
+initials — there was no way to see or set a real profile photo anywhere,
+even though `profiles.avatar_url` and a public `avatars` Storage bucket
+(with `avatars_auth_upload` / `avatars_auth_update` / `avatars_public_read`
+RLS policies) already existed on the backend. This change wires the
+frontend up to that existing backend, scoped strictly to avatar display +
+upload — no changes to the Add Project modal, Project Tracker structure,
+or permission logic.
+
+### Added
+- `handleAvatarUpload(file)` — single shared upload handler (used by both
+  entry points below) that validates the file is an image under 5MB,
+  uploads it to `sb.storage.from('avatars')` at a stable, collision-safe
+  `${currentProfile.id}/avatar.<ext>` path with `{ upsert: true }`, reads
+  back the public URL (cache-busted with a `?t=` query param so a
+  re-upload shows immediately), writes it to `profiles.avatar_url` via
+  `sb.from('profiles').update(...)`, updates `currentProfile`/`PROFILES`
+  locally, re-renders every affected view, and shows a success/error
+  toast (reusing `showToast` / `friendlyWriteError`). Guards against
+  double-uploads with an `avatarUploadBusy` flag and a
+  `setAvatarUploadBusyUi()` helper that dims/disables the avatar control
+  while an upload is in flight.
+- `triggerAvatarUpload()` / `handleAvatarFileChange(evt)` — open/handle a
+  hidden `<input type="file" accept="image/*" id="avatarFileInput">`.
+- Header "My Profile" upload control: the user chip's avatar is now
+  wrapped in a clickable `.avatar-upload-wrap` with a small circular
+  camera-icon badge (`.avatar-upload-badge`, `--brand-gradient`
+  background) in the bottom-right corner, matching the app's existing
+  glassmorphism styling conventions (`.user-chip`, `.ap-avatar-lg`
+  sizing). Clicking it opens the file picker.
+- Analyst Profile modal (`openAnalystProfile(profileId)`): when viewing
+  your **own** profile, the large avatar gets the same clickable
+  upload-badge treatment (`.ap-avatar-wrap`); viewing anyone else's
+  profile stays fully read-only, consistent with the rest of the app's
+  per-analyst permission model.
+
+### Changed
+- `avatarHtml(name, avatarUrl)` — now renders `<img class="mini-avatar" ...>`
+  when a photo is available, falling back to the existing initials
+  `<span>`. `avatarUrl` is optional: when a call site only passes a name
+  (all ~15 existing call sites — Project Tracker, sidebar, Team tab,
+  Leaderboard, KPI drilldown, Analyst Profile modal, My Work, Daily
+  Status Log header), it's looked up automatically via `profileByName()`,
+  so every existing avatar everywhere in the app now shows a real photo
+  once one is uploaded, with no per-call-site changes required.
+- `updateHeaderUser()` — renders `#userAvatar` as an `<img>` when
+  `currentProfile.avatar_url` is set, otherwise falls back to initials as
+  before.
+- CSS: added `img.mini-avatar`, `img.user-avatar`, `img.ap-avatar-lg`
+  (`object-fit:cover`) so the `<img>` variant matches the existing
+  circular sizing of each avatar class exactly.
+
 ## 2026-08-25 — Add Project modal (replaces instant blank-row insert)
 
 Analyst feedback: "Project tracker looks too clumsy and analysts are
