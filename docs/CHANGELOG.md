@@ -2,6 +2,65 @@
 
 All notable changes to the SEO Automation & Projects Dashboard.
 
+## 2026-08-25 — Project Tracker: explicit Edit / Save / Cancel per row
+
+User feedback on the Project Tracker table: "this looks clumsy also save
+and edit buttons are missing. as soon as i add it is getting saved." Every
+editable cell in every row was a live `<input>`/`<select>` that wrote to
+Supabase the instant its `onchange` fired — one DB write per field, no
+Save step, no way to review or cancel a change before it was committed.
+Scoped strictly to the main Project Tracker table's row-editing model
+(not the Add Project modal, already fixed separately).
+
+### Added
+- `editingProjectId` — module-level state; only one Project Tracker row
+  can be in edit mode at a time (simplest model, avoids concurrent-edit
+  conflicts on a table shared live across analysts).
+- `startEditProject(id)` — enters edit mode for a row. If another row is
+  already being edited, shows a "Finish or cancel your current edit
+  first" toast instead of silently discarding it.
+- `cancelEditProject(id)` — exits edit mode with no write. Safe no-op
+  since inputs in an editing row are uncontrolled and the `projects`
+  array is never touched until Save succeeds.
+- `saveEditProject(id)` — reads every `[data-field]` value out of the
+  row's DOM (excluding the "Assigned to" cell, which is a separate,
+  always-instant admin quick-reassign control — see Changed below),
+  builds one payload via the existing `PROJECT_FIELD_TO_COLUMN` map, and
+  issues a single batched `sb.from("projects").update(payload)` call
+  instead of one write per field. On success: applies the values to the
+  local `projects` entry, exits edit mode, shows one "Project saved ✓"
+  toast, flashes the row (`flashSavedRow`), and fires
+  `celebrateProjectCompletion(id)` only if status became "Completed &
+  Approved" from something else. On failure: stays in edit mode (so the
+  user's typed values aren't lost) and shows the existing
+  `friendlyWriteError` danger toast.
+- `flashSavedRow(rowId)` + `.row-save-flash`/`@keyframes row-saved-flash`
+  CSS — whole-row version of the existing `flashSaved()` cell glow, used
+  because a saved row switches back to read-only markup (no more
+  `[data-field]` input to glow at) before the confirmation fires.
+- `.row-actions` CSS — compact flex-with-gap button group for the action
+  column (Edit+Delete / Save+Cancel), following the same convention as
+  the existing `.sidebar-pick-actions` button pair.
+
+### Changed
+- `renderProjects()` — cells now render as inputs/selects only for the
+  row matching `editingProjectId`; every other row (even ones the current
+  user is allowed to edit) shows the existing clean read-only markup
+  (status pill, `ro-text`, etc.) with an **Edit** button instead. The
+  action column now has three states: read-only tag (no permission),
+  Edit + Delete (can edit, not currently editing), or Save + Cancel
+  (currently editing — Delete hidden to avoid an accidental destructive
+  click mid-edit). The `onchange="updateProject(...)"` handlers were
+  removed from the Project/Status/Priority/Date Assigned/Target
+  Date/Date Completed/Help/Notes inputs — their values are now read once
+  at Save time — but `data-field` attributes are unchanged. The admin
+  "Assigned to" quick-reassign dropdown is untouched: it keeps its own
+  instant `onchange` write via `updateProject()` and renders in every
+  row regardless of edit state, exactly as before.
+- `updateProject(id, field, value)` itself is unchanged — still used by
+  the admin quick-reassign dropdown (`selectHtml('assignedTo', ...)`) and
+  the sidebar's admin assign-select.
+
 ## 2026-08-25 — Profile photo upload & display
 
 The only avatar rendering in the app (`avatarHtml(name)`) always rendered

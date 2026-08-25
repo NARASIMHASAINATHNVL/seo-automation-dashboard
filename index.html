@@ -488,7 +488,16 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
   #projectsTable td[data-label="Notes"] input,#projectsTable td[data-label="Notes"] .ro-text{white-space:normal;word-break:break-word;}
   #projectsTable td[data-label="Priority"],#projectsTable td[data-label="Help Needed"]{max-width:110px;}
   #projectsTable td[data-label=""]{text-align:center;}
+  /* Edit/Save/Cancel/Delete button group in the Project Tracker action
+     column — mirrors .sidebar-pick-actions' compact flex-with-gap
+     convention so the buttons don't look jammed together (2026-08-25). */
+  .row-actions{display:inline-flex;gap:6px;align-items:center;justify-content:center;flex-wrap:wrap;}
+  .row-actions .btn{padding:6px 12px;font-size:12px;}
   #projectsTable td[data-label=""] .btn.danger,#projectsTable td[data-label=""] .ro-tag{width:100%;justify-content:center;}
+  /* Override the width:100% above for buttons inside the new Edit/Save/
+     Cancel/Delete group — with two buttons per cell now, full-width
+     would stack them instead of sitting compactly side by side (2026-08-25). */
+  #projectsTable td[data-label=""] .row-actions .btn{width:auto;}
 
   .status-select-wrap{display:inline-block;border-radius:999px;box-shadow:var(--shadow-sm);}
   .status-select-wrap select{border:none;font-weight:700;color:#fff;padding:6px 10px;border-radius:999px;background-color:var(--neutral);}
@@ -532,6 +541,15 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
   @keyframes field-saved-flash{
     0%{box-shadow:0 0 0 3px color-mix(in srgb, var(--good) 40%, transparent);border-color:var(--good);}
     100%{box-shadow:0 0 0 0 transparent;}
+  }
+  /* Same idea as .save-flash but for a whole table row (used when a
+     Project Tracker row is saved via the Edit/Save flow — the row goes
+     back to read-only markup on re-render so there's no single input to
+     glow, so the whole row briefly glows instead) (2026-08-25). */
+  .row-save-flash td{animation:row-saved-flash 1.2s ease;}
+  @keyframes row-saved-flash{
+    0%{background:color-mix(in srgb, var(--good) 22%, transparent);}
+    100%{background:transparent;}
   }
 
   /* ============ MODAL (generic overlay + centered card pattern) ============ */
@@ -1515,6 +1533,13 @@ const YESNO = ["", "Yes","No"];
 let DAILY_ANALYSTS = [];
 let projectSearchTerm = "";
 let onlyMineFilter = false;
+/* Row currently in explicit Edit mode in the Project Tracker table. Only
+   one row can be edited at a time — keeps this simple and avoids
+   concurrent-edit conflicts on a table shared live across analysts.
+   Cells render as inputs/selects only for this row; every other row
+   (even ones the current user could edit) shows the clean read-only
+   display with an Edit button instead (2026-08-25). */
+let editingProjectId = null;
 
 /* ============================================================
    THEME (light/dark) - defaults to light; only switches to dark
@@ -1565,6 +1590,18 @@ function flashSaved(rowId, field){
   void el.offsetWidth; // restart the animation if it's already running
   el.classList.add("save-flash");
   setTimeout(()=>{ el.classList.remove("save-flash"); }, 1200);
+}
+/* Whole-row equivalent of flashSaved() above — used by the Project
+   Tracker Edit/Save flow, where a successful save clears edit mode and
+   re-renders the row as read-only text before this runs, so there's no
+   single [data-field] input left to glow (2026-08-25). */
+function flashSavedRow(rowId){
+  const row = document.getElementById(rowId);
+  if(!row) return;
+  row.classList.remove("row-save-flash");
+  void row.offsetWidth;
+  row.classList.add("row-save-flash");
+  setTimeout(()=>{ row.classList.remove("row-save-flash"); }, 1200);
 }
 /* ============================================================
    DELIGHT LAYER (2026-08-21) — Lottie micro-animations + confetti
@@ -1846,29 +1883,39 @@ function renderProjects(){
   const ttc = computeTimeToCompletion();
   entries.forEach((p)=>{
     const id = p.id;
-    const editable = canEditProject(p);
+    const canEdit = canEditProject(p);
+    const isEditingThisRow = editingProjectId === id;
+    const showInputs = isEditingThisRow;
     const tr = document.createElement("tr");
     tr.id = "proj-row-" + id;
     const rowStatusClass = p.status === "Assigned" ? "row-not-started" : "row-in-progress";
-    tr.className = "status-stripe " + rowStatusClass + (editable ? "" : " row-readonly");
+    tr.className = "status-stripe " + rowStatusClass + (canEdit ? "" : " row-readonly") + (isEditingThisRow ? " row-editing" : "");
     tr.style.setProperty("--stripe-color", STATUS_HEX[p.status] || "transparent");
     const assigneeCell = isAdmin
       ? selectHtml('assignedTo',["",...ANALYSTS],p.assignedTo,id,'assignedTo')
       : `<span class="assignee-cell">${avatarHtml(p.assignedTo)}<span class="assignee-name">${p.assignedTo || "—"}</span></span>`;
     const staleness = getProjectStaleness(p);
     const stalenessTag = staleness ? `<span class="staleness-tag type-${staleness.type}" title="${staleness.label}">${staleness.type==='overdue'?'⚠':'⏳'} ${staleness.type==='overdue'?'Overdue':'Stale'}</span>` : '';
+    let actionsHtml;
+    if(!canEdit){
+      actionsHtml = viewOnlyTag();
+    }else if(isEditingThisRow){
+      actionsHtml = `<div class="row-actions"><button class="btn" onclick="saveEditProject('${id}')">Save</button><button class="btn secondary" onclick="cancelEditProject('${id}')">Cancel</button></div>`;
+    }else{
+      actionsHtml = `<div class="row-actions"><button class="btn secondary" onclick="startEditProject('${id}')">Edit</button><button class="btn danger" onclick="deleteProject('${id}')">Delete</button></div>`;
+    }
     tr.innerHTML = `
-      <td data-label="Project">${editable ? `<input type="text" data-field="project" value="${p.project}" onchange="updateProject('${id}','project',this.value)">` : `<span class="ro-text">${p.project || "—"}</span>`}</td>
+      <td data-label="Project">${showInputs ? `<input type="text" data-field="project" value="${p.project}">` : `<span class="ro-text">${p.project || "—"}</span>`}</td>
       <td data-label="Assigned to">${assigneeCell}</td>
-      <td data-label="Status">${editable ? `<span class="status-select-wrap ${STATUS_PILL_CLASS[p.status]||'pill-assigned'}">${selectHtml('status',["",...STATUSES],p.status,id,'status')}</span>` : `<span class="status-pill ${STATUS_PILL_CLASS[p.status]||''}">${p.status||"—"}</span>`}${stalenessTag}</td>
-      <td data-label="Priority">${editable ? `<span class="priority-select-wrap" data-priority="${p.priority||''}">${selectHtml('priority',PRIORITIES,p.priority,id,'priority')}</span>` : `<span class="ro-text">${p.priority || "—"}</span>`}</td>
-      <td data-label="Date Assigned">${editable ? `<input type="date" data-field="dateAssigned" value="${p.dateAssigned}" onchange="updateProject('${id}','dateAssigned',this.value)">` : `<span class="ro-text">${p.dateAssigned || "—"}</span>`}</td>
-      <td data-label="Target Date">${editable ? `<input type="date" data-field="targetDate" value="${p.targetDate}" onchange="updateProject('${id}','targetDate',this.value)">` : `<span class="ro-text">${p.targetDate || "—"}</span>`}<br>${predictedBadgeHtml(p, ttc)}</td>
-      <td data-label="Date Completed">${editable ? `<input type="date" data-field="dateCompleted" value="${p.dateCompleted}" onchange="updateProject('${id}','dateCompleted',this.value)">` : `<span class="ro-text">${p.dateCompleted || "—"}</span>`}</td>
+      <td data-label="Status">${showInputs ? `<span class="status-select-wrap ${STATUS_PILL_CLASS[p.status]||'pill-assigned'}">${selectHtml('status',["",...STATUSES],p.status,id,'status').replace(` onchange="updateProject('${id}','status',this.value)"`, '')}</span>` : `<span class="status-pill ${STATUS_PILL_CLASS[p.status]||''}">${p.status||"—"}</span>`}${stalenessTag}</td>
+      <td data-label="Priority">${showInputs ? `<span class="priority-select-wrap" data-priority="${p.priority||''}">${selectHtml('priority',PRIORITIES,p.priority,id,'priority').replace(` onchange="updateProject('${id}','priority',this.value)"`, '')}</span>` : `<span class="ro-text">${p.priority || "—"}</span>`}</td>
+      <td data-label="Date Assigned">${showInputs ? `<input type="date" data-field="dateAssigned" value="${p.dateAssigned}">` : `<span class="ro-text">${p.dateAssigned || "—"}</span>`}</td>
+      <td data-label="Target Date">${showInputs ? `<input type="date" data-field="targetDate" value="${p.targetDate}">` : `<span class="ro-text">${p.targetDate || "—"}</span>`}<br>${predictedBadgeHtml(p, ttc)}</td>
+      <td data-label="Date Completed">${showInputs ? `<input type="date" data-field="dateCompleted" value="${p.dateCompleted}">` : `<span class="ro-text">${p.dateCompleted || "—"}</span>`}</td>
       <td data-label="Time Taken">${timeTakenHtml(p)}</td>
-      <td data-label="Help Needed">${editable ? selectHtml('help',YESNO,p.help,id,'help') : `<span class="ro-text ${p.help==='Yes'?'help-yes':''}">${p.help || "—"}</span>`}</td>
-      <td data-label="Notes">${editable ? `<input type="text" data-field="notes" value="${p.notes}" onchange="updateProject('${id}','notes',this.value)">` : `<span class="ro-text">${p.notes || "—"}</span>`}</td>
-      <td data-label="">${editable ? `<button class="btn danger" onclick="deleteProject('${id}')">Delete</button>` : viewOnlyTag()}</td>
+      <td data-label="Help Needed">${showInputs ? selectHtml('help',YESNO,p.help,id,'help').replace(` onchange="updateProject('${id}','help',this.value)"`, '') : `<span class="ro-text ${p.help==='Yes'?'help-yes':''}">${p.help || "—"}</span>`}</td>
+      <td data-label="Notes">${showInputs ? `<input type="text" data-field="notes" value="${p.notes}">` : `<span class="ro-text">${p.notes || "—"}</span>`}</td>
+      <td data-label="">${actionsHtml}</td>
     `;
     body.appendChild(tr);
   });
@@ -1963,6 +2010,75 @@ async function updateProject(id, field, value){
     p[field] = prevValue;
     if(clearsPendingPick){ p.pickStatus = prevPickStatus; p.pickRequestedBy = prevPickRequestedBy; }
     renderAll();
+    showToast(friendlyWriteError(err, "project"), "danger");
+  }
+}
+/* ------------------------------------------------------------
+   PROJECT TRACKER — explicit Edit / Save / Cancel row model.
+   Replaces the old "every field writes to Supabase on its own
+   onchange" behaviour with a clean read-only row by default and
+   a single batched write when the user clicks Save. Only one row
+   can be in edit mode at a time (editingProjectId). Inputs in an
+   editing row are uncontrolled — nothing touches the `projects`
+   array until Save succeeds, so Cancel is a free no-op re-render.
+   (2026-08-25)
+   ------------------------------------------------------------ */
+function startEditProject(id){
+  if(editingProjectId && editingProjectId !== id){
+    showToast("Finish or cancel your current edit first", "danger");
+    return;
+  }
+  editingProjectId = id;
+  renderAll();
+}
+function cancelEditProject(id){
+  editingProjectId = null;
+  renderAll();
+}
+async function saveEditProject(id){
+  const p = projects.find(x=>x.id===id);
+  if(!p) return;
+  if(!canEditProject(p)){
+    showToast("You can only edit your own projects.", "danger");
+    editingProjectId = null;
+    renderAll();
+    return;
+  }
+  const row = document.getElementById("proj-row-" + id);
+  if(!row) return;
+  const values = {};
+  row.querySelectorAll("[data-field]").forEach((el)=>{
+    // The "Assigned to" cell always carries data-field="assignedTo" (even
+    // outside edit mode, for the admin quick-reassign dropdown) and has
+    // its own instant onchange->updateProject write — it's intentionally
+    // untouched by this Save flow, so skip it here. Folding it in here
+    // would also be wrong: its value is the analyst's display name, and
+    // the "assigned_to" column needs a profile id (see updateProject's
+    // profileIdByName conversion), which this generic loop doesn't do.
+    if(el.dataset.field === "assignedTo") return;
+    values[el.dataset.field] = el.value;
+  });
+  const prevStatus = p.status;
+  const payload = {};
+  Object.keys(values).forEach((field)=>{
+    const column = PROJECT_FIELD_TO_COLUMN[field];
+    if(!column) return;
+    payload[column] = values[field] || null;
+  });
+  try{
+    const { error } = await sb.from("projects").update(payload).eq("id", id);
+    if(error) throw error;
+    Object.keys(values).forEach((field)=>{ p[field] = values[field]; });
+    editingProjectId = null;
+    renderAll();
+    showToast("Project saved ✓");
+    flashSavedRow("proj-row-" + id);
+    if(p.status === "Completed & Approved" && prevStatus !== "Completed & Approved"){
+      celebrateProjectCompletion(id);
+    }
+  }catch(err){
+    // Keep editingProjectId set so the user's typed values (still live in
+    // the DOM) aren't lost — they can retry Save or Cancel manually.
     showToast(friendlyWriteError(err, "project"), "danger");
   }
 }
